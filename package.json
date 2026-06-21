@@ -1,0 +1,42 @@
+{
+  "name": "shri_vishwanath",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "private": true,
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RendoraX/nx.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/RendoraX/nx/issues"
+  },
+  "homepage": "https://github.com/RendoraX/nx#readme",
+  "devDependencies": {
+    "@prisma/client": "^7.8.0",
+    "@types/jsonwebtoken": "^5.2.1",
+    "@types/node": "^20.19.43",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "prisma": "^7.8.0",
+    "turbo": "^2.9.18",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "argon2": "^0.44.0",
+    "bcryptjs": "^3.0.3",
+    "express-rate-limit": "^8.5.2",
+    "helmet": "^8.2.0",
+    "jsonwebtoken": "^9.0.3"
+  }
+}
