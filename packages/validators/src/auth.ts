@@ -1,12 +1,8 @@
 import { z } from "zod";
+import { JWTPayload } from "../../../apps/api/src/modules/auth/auth.types";
 
-export const loginSchema = z.object({
-  email: z.email(),
-  password: z.string().min(8),
-});
-
-export const registerSchema = z.object({
-  name: z.string().min(3),
-  email: z.email(),
-  password: z.string().min(8),
-});
+export const jwtTokenValidator = (payload : JWTPayload) => 
+  z.object({
+    id : z.string(),
+    identifier : z.string()
+  });

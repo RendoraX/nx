@@ -1,17 +1,17 @@
 import z from "zod";
 import dotenv from 'dotenv'
 import path from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 dotenv.config({
-    path : path.resolve('../../.env.local')
-})
+  path: path.resolve(__dirname, "../../../.env.local"),
+});
 
 const envSchema = z.object({
     //DB CONNECTION 
     DATABASE_URL  : z.string(),
-
-    //MAIL HELPER
-    RESEND_API_KEY: z.string().optional(),
 
     //AUTH
     JWT_SECRET : z.string(),
@@ -20,6 +20,9 @@ const envSchema = z.object({
 
     RAZORPAY_KEY_ID: z.string().optional(),
     RAZORPAY_KEY_SECRET: z.string().optional(),
+
+    NODEMAILER_USER : z.string(),
+    NODEMAILER_PASS : z.string()
 });
 
 

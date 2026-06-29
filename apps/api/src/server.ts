@@ -1,15 +1,31 @@
 import express from "express";
-import { Http2ServerRequest } from "http2";
+import helmet from "helmet";
+import cors from "cors";
+import cookieParser from 'cookie-parser'
+import authRoutes from './routes/auth.routes'
 
 const app = express();
 
-app.get("/health", (_ : , res : Http2ServerRequest) => {
+app.use(helmet());
+app.use(cookieParser())
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+  })
+);
+app.use(express.json());
+
+app.get("/health", (_, res) => {
   res.json({
-    status: "ok",
-    message : "Server is running"
+    success: true,
   });
 });
 
+//AUTH ROUTES
+app.use("/api" , authRoutes);
+
+
 app.listen(4000, () => {
-  console.log("API running");
+  console.log("API running on 4000");
 });
