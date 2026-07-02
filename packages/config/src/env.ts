@@ -22,7 +22,11 @@ const envSchema = z.object({
     RAZORPAY_KEY_SECRET: z.string().optional(),
 
     NODEMAILER_USER : z.string(),
-    NODEMAILER_PASS : z.string()
+    NODEMAILER_PASS : z.string(),
+
+    CLOUDINARY_NAME : z.string(),
+    CLOUDINARY_API : z.string(),
+    CLOUDINARY_SECRET : z.string(),
 });
 
 

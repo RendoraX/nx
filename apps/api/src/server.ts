@@ -2,7 +2,12 @@ import express from "express";
 import helmet from "helmet";
 import cors from "cors";
 import cookieParser from 'cookie-parser'
+
+//ROUTES
 import authRoutes from './routes/auth.routes'
+
+import cartsRoutes from './modules/carts/carts.routes'
+import productsRoutes from './modules/products/products.routes'
 
 const app = express();
 
@@ -15,7 +20,6 @@ app.use(
   })
 );
 app.use(express.json());
-
 app.get("/health", (_, res) => {
   res.json({
     success: true,
@@ -24,7 +28,8 @@ app.get("/health", (_, res) => {
 
 //AUTH ROUTES
 app.use("/api" , authRoutes);
-
+app.use("/api", cartsRoutes);
+app.use("/api", productsRoutes);
 
 app.listen(4000, () => {
   console.log("API running on 4000");

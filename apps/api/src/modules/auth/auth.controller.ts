@@ -1,12 +1,9 @@
-import { Http2ServerResponse } from "http2";
 import { registerDTO, resetPasswordDTO } from "./auth.types";
-import { ServerResponse } from "http";
 import { Request, Response } from "express";
 import { forgotPassword, login, logout, logoutAll, register, resetPassword, verificationToken } from "./auth.service";
 import { loginSchema, registerSchema } from "./auth.schema";
 import { verifyRefreshToken } from "../../../../../packages/auth/src/jwt";
 import { UserResponse } from "../users/users.types";
-import { isBigInt64Array } from "util/types";
 
 //completed , tested = 1
 export const registerEndpoint = async ( req : Request, res : Response) => {
@@ -82,7 +79,7 @@ export const loginEndpoint = async (req : Request , res : Response) => {
         console.log((error as any).message)
         return res.status(500).json({
             message : "Internal server error.",
-            error : error | error.message
+            error :  error.message | error
         })
     }
 };
