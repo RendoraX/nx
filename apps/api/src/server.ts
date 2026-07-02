@@ -3,16 +3,28 @@ import helmet from "helmet";
 import cors from "cors";
 import cookieParser from 'cookie-parser'
 
+import { requestLogger } from  '../../../packages/logger/src/index';
+import { requestIdMiddleware } from './middleware/request-id.middleware';
+import { securityHeadersMiddleware } from './middleware/security.middleware';
+import healthRoutes from './health/health.routes';
+
 //ROUTES
 import authRoutes from './routes/auth.routes'
 
 import cartsRoutes from './modules/carts/carts.routes'
 import productsRoutes from './modules/products/products.routes'
+import ordersRoutes from './modules/orders/orders.routes'
+import paymentsRoutes from './modules/payments/payments.routes'
+import deliveryRoutes from './modules/delivery/delivery.routes'
+import adminOrderRoutes from './modules/admin-order/admin-order.routes'
 
 const app = express();
 
 app.use(helmet());
 app.use(cookieParser())
+app.use(requestIdMiddleware);
+app.use(requestLogger);
+app.use(securityHeadersMiddleware);
 app.use(
   cors({
     origin: "http://localhost:3000",
@@ -20,16 +32,16 @@ app.use(
   })
 );
 app.use(express.json());
-app.get("/health", (_, res) => {
-  res.json({
-    success: true,
-  });
-});
+app.use(healthRoutes);
 
 //AUTH ROUTES
 app.use("/api" , authRoutes);
 app.use("/api", cartsRoutes);
 app.use("/api", productsRoutes);
+app.use("/api", ordersRoutes);
+app.use("/api", paymentsRoutes);
+app.use("/api", deliveryRoutes);
+app.use("/api", adminOrderRoutes);
 
 app.listen(4000, () => {
   console.log("API running on 4000");
