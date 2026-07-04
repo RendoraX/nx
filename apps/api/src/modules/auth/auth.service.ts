@@ -1,5 +1,5 @@
-import { createSession, createUser, createVerificationToken, deleteAllSessions, deleteSession, findByEmail, findSession, updatePassword, verifyVerificationToken } from "./auth.repository";
-import { forgotPasswordDTO, loginDTO, refreshTokenDTO, registerDTO, resetPasswordDTO } from "./auth.types";
+import { createSession, createUser, createVerificationToken, deleteAllSessions, deleteSession, findByEmail, findSession, updatePassword, updateSesson, verifyVerificationToken } from "./auth.repository";
+import { forgotPasswordDTO, JWTPayload, loginDTO, refreshTokenDTO, registerDTO, resetPasswordDTO } from "./auth.types";
 import { hashPassword, verifyPassword } from "../../../../../packages/auth/src/password";
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from "../../../../../packages/auth/src/jwt";
 import { veirfyEmail } from "../../../../../packages/email/src/templates/verify-email";
@@ -35,14 +35,30 @@ export const register = async (payload : registerDTO) => {
 
 
 //completed testing = 1
-export const verificationToken = async (token : string) => {
+export const verificationToken = async (paylaod : {
+    token : string;
+    ipAddress : string;
+    userAgent : string;
+}) => {
     try {
-        const valid = await verifyVerificationToken(token as string);
+        const valid = await verifyVerificationToken(paylaod.token as string);
+        const session = await createSession({
+            userId : valid.id,
+            ipAddress : paylaod.ipAddress,
+            userAgent : paylaod.userAgent,
+            expiresAt : new Date(Date.now() + 30)
+        });
         if(!valid) throw new Error("Token verification failed.");
+        valid.sid = session.id as string;
+        const accessToken = generateAccessToken(valid as JWTPayload);
+        const refreshToken = generateRefreshToken(valid as JWTPayload);
+        
+        const refreshTokenHash = await hashPassword(refreshToken as string);
 
-        const accessToken = generateAccessToken(valid);
-        const refreshToken = generateRefreshToken(valid);
-
+        const updatedSession = await updateSesson({
+            newToken : refreshTokenHash,
+            id : session.id
+        });
         return { 
             accessToken , refreshToken
         }
@@ -65,16 +81,17 @@ export const login = async (payload : loginDTO) : Promise<{
         
         if(!isValidPassword) throw new Error("Invalid credentials.");
 
-        const accessToken =  generateAccessToken({id : existing.id ,identifier : existing.email as string});
-        const refreshToken =  generateRefreshToken({id : existing.id ,identifier : existing.email as string});
-
-        await createSession({
+        const createdSession = await createSession({
             userId : existing.id,
-            refreshToken,
             ipAddress : payload.ipAddress,
             userAgent : payload.userAgent,
-            expiresAt : new Date(Date.now() + 30)
+            expiresAt : new Date(Date.now() + 30),
         })
+        const accessToken =  generateAccessToken({id : existing.id ,identifier : existing.email as string , sid : createdSession.id as string});
+        const refreshToken =  generateRefreshToken({id : existing.id ,identifier : existing.email as string , sid : createdSession.id as string});
+        const refreshTokenHash = await hashPassword(refreshToken as string);
+        
+        await updateSesson({id : createdSession.id , newToken : refreshTokenHash});
 
         return { 
             accessToken, refreshToken
@@ -85,13 +102,41 @@ export const login = async (payload : loginDTO) : Promise<{
 };
 
 //completed , test = 0
-export const refreshToken = async (payload : refreshTokenDTO) => {
+export const refreshTokenRotate = async (payload : refreshTokenDTO) => {
     try {
 
-        const isValidrefreshToken = verifyRefreshToken(payload.refreshToken as string);
-        if(!isValidrefreshToken) throw new Error("Invalid Refresh token");
+        const refreshToken = payload.refreshToken as string;
+        const isValidRefreshToken =  verifyRefreshToken(refreshToken);
+        if(!isValidRefreshToken) throw new Error("Refresh Token is expired !!");
 
+        const session = await findSession(isValidRefreshToken.sid as string);
+        if(!session) throw new Error("Session not found !!");
 
+        if(!(verifyPassword(refreshToken , session.refreshTokenHash))){
+            throw new Error("RefreshToken is not valid !!!")
+        };
+        
+        const newAccessToken = generateAccessToken({
+            id : isValidRefreshToken.id as string,
+            identifier : isValidRefreshToken.identifier,
+            sid : session.id as string
+        })
+        const newRefreshTokenString = generateRefreshToken({
+            id : isValidRefreshToken.id as string,
+            identifier : isValidRefreshToken.identifier,
+            sid : session.id as string
+        });
+
+        const newRefreshTokenStringHash = await hashPassword(newRefreshTokenString as string);
+        await updateSesson({
+            id : session.id as string,
+            newToken : newRefreshTokenStringHash as string
+        })
+
+        return {
+            newAccessToken,
+            newRefreshTokenString
+        }
     } catch (error) {
         throw new Error((error as any).message)
     }
@@ -164,7 +209,7 @@ export const validateSession = async (refreshTokan : string) => {
 
   const hash = await hashPassword(refreshTokan);
 
-  const session = await findSession(refreshTokan as string)
+  const session = await findSession(hash as string)
 
   if (!session) {
     throw new Error("Session not found");

@@ -83,6 +83,10 @@ export const verifyVerificationToken = async (token : string) => {
     return {
         id : tokenExist.id,
         identifier : tokenExist.userEmail
+    } as {
+        id : string;
+        identifier : string;
+        sid ?: string
     };
 }
 
@@ -99,11 +103,24 @@ export const createSession = async (sessiondata : any) : Promise<any> => {
     }
 };
 
+
+export const updateSesson = async (payload : {newToken : string , id : string}) => {
+    return await prisma.session.update({
+        where : {
+            id : payload.id as string
+        },
+
+        data : {
+            refreshTokenHash : payload.newToken as string
+        }
+    })
+}
+
 // completed , tested = 0
-export const findSession = async (token : string) => {
+export const findSession = async (id : string) => {
     const session = await prisma.session.findUnique({
         where : {
-            refreshTokenHash : token as string
+            id  : id as string
         }
     });
 

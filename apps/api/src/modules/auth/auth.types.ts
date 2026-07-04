@@ -47,5 +47,6 @@ export interface authResponse{
 export interface JWTPayload{
     id : string;
     identifier : string;
+    sid : string;
 };
 

@@ -1,9 +1,10 @@
 import { registerDTO, resetPasswordDTO } from "./auth.types";
 import { Request, Response } from "express";
-import { forgotPassword, login, logout, logoutAll, register, resetPassword, verificationToken } from "./auth.service";
+import { forgotPassword, login, logout, logoutAll, refreshTokenRotate, register, resetPassword, verificationToken } from "./auth.service";
 import { loginSchema, registerSchema } from "./auth.schema";
 import { verifyRefreshToken } from "../../../../../packages/auth/src/jwt";
 import { UserResponse } from "../users/users.types";
+import { string } from "zod";
 
 //completed , tested = 1
 export const registerEndpoint = async ( req : Request, res : Response) => {
@@ -28,9 +29,13 @@ export const registerEndpoint = async ( req : Request, res : Response) => {
 //completed , tested = 1
 export const verificationTokenEndpoint = async (req : Request ,res : Response) => {
     try {
-        const payload = await req.body;
+        const payload = {
+            token : await req.body.token as string,
+            ipAddress :  req.ip as string,
+            userAgent : req.headers["user-agent"] as string
+        };
 
-        await verificationToken(payload.token as string);
+        await verificationToken(payload);
 
         return  res.status(200).json({
             message : "User verified successfully."
@@ -54,6 +59,7 @@ export const loginEndpoint = async (req : Request , res : Response) => {
             userAgent : await req.headers["user-agent"]      
         };
 
+        console.log(payload)
         
         const loginSchemaValid = loginSchema().parse({...payload , ...metadata});
 
@@ -163,6 +169,28 @@ export const resetPasswordEndpoint = async (req : Request , res : Response) => {
         return res.status(500).json({
             message : "Internal server error",
             error : error | (error as any).message 
+        })
+    }
+}
+
+//completed 
+export const rotateRefreshTokenEndpoint = async (req : Request , res : Response) => {
+    try {
+        const {refreshToken} = await req.cookies;
+
+        const tokens =await refreshTokenRotate({
+            refreshToken
+        });
+        return res.status(200)
+                    .cookie("accessToken" , tokens.newAccessToken as string)
+                    .cookie("refreshToken" , tokens.newRefreshTokenString as string)
+                    .json({
+                        message : "Token rotated successfully !"
+                    });
+    } catch (error : any) {
+        return res.status(500).json({
+            message : "Internal server error.",
+            error : error.message | error
         })
     }
 }
