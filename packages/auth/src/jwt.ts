@@ -27,7 +27,7 @@ export const generateRefreshToken = (payload: JWTPayload): string => {
   }
 };
 
-export const verifyAccessToken = (token: string): string | object => {
+export const verifyAccessToken = (token: string) => {
   try {
     return jwt.verify(token, env.JWT_SECRET, {
       issuer: 'shri_ayu',
@@ -37,7 +37,7 @@ export const verifyAccessToken = (token: string): string | object => {
   }
 };
 
-export const verifyRefreshToken = (token: string): string | object => {
+export const verifyRefreshToken = (token: string) => {
   try {
     return jwt.verify(token, env.JWT_REFRESH_SECRET, {
       issuer: 'shri_ayu',

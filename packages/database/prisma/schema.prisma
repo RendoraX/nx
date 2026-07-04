@@ -42,11 +42,10 @@ enum UserRole {
 
 model Session {
   id String @id @default(cuid())
-
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  refreshTokenHash String @unique
+  refreshTokenHash String 
 
   userAgent String?
   ipAddress String?

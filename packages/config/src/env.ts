@@ -27,6 +27,8 @@ const envSchema = z.object({
     CLOUDINARY_NAME : z.string(),
     CLOUDINARY_API : z.string(),
     CLOUDINARY_SECRET : z.string(),
+
+    BACKEND_URL : z.string()
 });
 
 
