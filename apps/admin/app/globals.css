@@ -1,26 +1,192 @@
+/* tailwind.css */
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #FAF8F2;
+    --secondary-bg: #F2F7F1;
+    --surface-card: #FFFFFF;
+    --primary: #6B8F71;
+    --primary-hover: #58795E;
+    --dark-brand: #4E6B52;
+    --accent-gold: #C6A15B;
+    --accent-sand: #E6D7BF;
+    --border: #E8E5DC;
+    --divider: #ECEEE9;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Custom Component Layout Bindings */
+.cosmic-bg {
+  background-color: #F7F9F6;
 }
+
+.ayurvedic-pattern-bg {
+  position: relative;
+}
+
+.ayurvedic-pattern-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.03;
+  pointer-events: none;
+  background-image: radial-gradient(circle at 25px 25px, #4E6B52 2px, transparent 0);
+  background-size: 50px 50px;
+}
+@layer base {
+  :root {
+    /* Brand Theme Typography */
+    --font-display: 'Cormorant Garamond', Georgia, serif;
+    --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+
+    /* Base Colors */
+    --background: #FAF8F2;
+    --secondary-bg: #F2F7F1;
+    --surface-card: #FFFFFF;
+    
+    /* Brand Accent Colors */
+    --primary: #6B8F71;
+    --primary-hover: #58795E;
+    --dark-brand: #4E6B52;
+    --accent-gold: #C6A15B;
+    --accent-sand: #E6D7BF;
+    
+    /* System States */
+    --success: #5E9B62;
+    --error: #C96A5A;
+    --border: #E8E5DC;
+    --divider: #ECEEE9;
+
+    /* Typography Color Engine */
+    --text-heading: #27332A;
+    --text-body: #55635A;
+    --text-light: #8A968D;
+
+    /* Shadows & Border Radii */
+    --shadow-soft: 0 8px 30px rgba(60, 80, 65, 0.08);
+    --shadow-hover: 0 15px 45px rgba(60, 80, 65, 0.12);
+    --radius-button: 12px;
+    --radius-card: 20px;
+    --radius-input: 14px;
+    
+    /* Admin Specific Core Overrides */
+    --admin-bg: #F7F9F6;
+    --admin-card-border: #E7ECE5;
+    --admin-sidebar: #FFFFFF;
+    --admin-menu-selected: #EAF5EC;
+    --admin-icon-selected: #4E6B52;
+    --admin-menu-hover: #F4F8F2;
+    --admin-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  }
+}
+
+/* Explicit Framework Clean Global Utility Classes */
+.admin-gradient-panel {
+  background: linear-gradient(135deg, var(--dark-brand) 0%, #354a38 100%);
+}
+
+.admin-input-premium {
+  width: 100%;
+  height: 3.25rem;
+  /* Let utility classes (e.g. pl-11 / pr-11) control horizontal padding
+     so icon spacing can be adjusted per-field in the markup */
+  padding-left: 1rem;
+  padding-right: 0.75rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.925rem;
+  color: #27332A;
+  background-color: #FFFFFF;
+  border: 1.5px solid #E7ECE5;
+  border-radius: 14px;
+  transition: all 0.2s ease-in-out;
+  outline: none;
+}
+
+.admin-input-premium:focus {
+  border-color: #6B8F71;
+  box-shadow: 0 0 0 4px rgba(107, 143, 113, 0.12);
+  background-color: #FFFFFF;
+}
+
+.admin-input-premium::placeholder {
+  color: #8A968D;
+  opacity: 0.8;
+}
+
+.admin-btn-submit {
+  width: 100%;
+  height: 3.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background-color: #6B8F71;
+  color: #FFFFFF;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: -0.01em;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(107, 143, 113, 0.2);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+}
+
+/* Helper for icons placed inside input fields */
+.field-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  height: 100%;
+}
+
+/* Ensure svg/icon size and vertical centering */
+.field-icon-btn svg {
+  display: block;
+}
+
+/* Left-side input icon helper: size and non-interactive */
+.input-left-icon {
+  width: 2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.admin-btn-submit:hover {
+  background-color: #58795E;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(88, 121, 94, 0.25);
+}
+
+.admin-btn-submit:active {
+  transform: translateY(1px);
+}
+
+/* Component helpers mapped to CSS variables for consistent theming */
+.card-surface {
+  background: var(--surface-card);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-soft);
+  border: 1px solid var(--admin-card-border);
+}
+
+.hero-left {
+  position: relative;
+}
+
+.page-bg {
+  background: var(--background);
+}
+
+.muted-text { color: var(--text-light); }
+
+.heading-text { color: var(--text-heading); }
+
+.accent-text { color: var(--dark-brand); }
+
+.divider-line { background-color: var(--border); }
