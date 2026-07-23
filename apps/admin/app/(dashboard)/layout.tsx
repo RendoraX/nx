@@ -5,7 +5,8 @@ import {
   LayoutDashboard, FolderTree, ShoppingBag, Box, 
   ShoppingCart, Ticket, Truck, Users, BarChart3, Settings,
   ChevronDown, ChevronRight, Menu, X, 
-  TrendingUp, DollarSign, Clock, AlertTriangle, Award
+  TrendingUp, DollarSign, Clock, AlertTriangle, Award,
+  KeyIcon
 } from 'lucide-react';
 import '../globals.css';
 
@@ -19,6 +20,8 @@ const getActiveTabFromPath = (pathname: string) => {
   if (pathname.startsWith('/users')) return 'Users';
   if (pathname.startsWith('/analytics')) return 'Analytics Overview';
   if (pathname.startsWith('/settings')) return 'Settings';
+  // Match the exact title case string you set in the sidebar array evaluation
+  if (pathname.startsWith('/custom-kit')) return 'Custom Kit'; 
   return 'Dashboard Overview';
 };
 
@@ -44,14 +47,14 @@ export default function MainAppLayout({ children }: { children?: React.ReactNode
 
   const handleNavigation = (route: string) => {
     router.push(route);
-    setIsMobileMenuOpen(false); // Close mobile tray on link execution
+    setIsMobileMenuOpen(false);
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50 text-gray-800 font-sans relative overflow-x-hidden">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-gray-50 text-gray-800 font-sans relative overflow-x-hidden">
       
       {/* MOBILE HEADER BAR */}
-      <header className="lg:hidden w-full bg-white border-b border-gray-200 h-16 px-4 flex items-center justify-between sticky top-0 z-50">
+      <header className="lg:hidden w-full bg-white border-b border-gray-200 h-16 px-4 flex items-center justify-between sticky top-0 z-50 shrink-0">
         <div className="flex items-center gap-2">
           <div className="w-5 h-5 bg-emerald-600 rounded-md rotate-45" />
           <span className="font-bold text-lg tracking-tight text-gray-900">NexaStore</span>
@@ -67,7 +70,7 @@ export default function MainAppLayout({ children }: { children?: React.ReactNode
       {/* SIDEBAR NAVIGATION SHEET */}
       <aside className={`
         fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-gray-200 flex flex-col justify-between shadow-sm transform transition-transform duration-200 ease-in-out
-        lg:translate-x-0 lg:static lg:h-screen
+        lg:translate-x-0 lg:static lg:h-screen lg:z-auto shrink-0
         ${isMobileMenuOpen ? 'translate-x-0 top-16 lg:top-0' : '-translate-x-full'}
       `}>
         <div className="overflow-y-auto flex-1 p-4 space-y-4">
@@ -129,6 +132,7 @@ export default function MainAppLayout({ children }: { children?: React.ReactNode
                     { name: 'Categories', path: '/categories', icon: FolderTree },
                     { name: 'Products', path: '/products', icon: ShoppingBag },
                     { name: 'Inventory', path: '/inventory', icon: Box },
+                    { name: 'Custom Kit', path: '/custom-kit', icon: KeyIcon }
                   ].map(sub => (
                     <button
                       key={sub.name}
@@ -267,7 +271,7 @@ export default function MainAppLayout({ children }: { children?: React.ReactNode
         </div>
 
         {/* User Account Bar Footer */}
-        <div className="p-4 border-t border-gray-100 flex items-center gap-3 bg-gray-50/50">
+        <div className="p-4 border-t border-gray-100 flex items-center gap-3 bg-gray-50/50 shrink-0">
           <div className="w-9 h-9 rounded-full bg-emerald-600 flex items-center justify-center font-bold text-xs text-white">JD</div>
           <div className="truncate">
             <p className="text-xs font-semibold text-gray-900 truncate">James Davis</p>
@@ -285,22 +289,22 @@ export default function MainAppLayout({ children }: { children?: React.ReactNode
       )}
 
       {/* DYNAMIC CANVAS VIEWS */}
-      <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto w-full max-w-[1400px] mx-auto">
-        
-        {/* Responsive Header Node */}
-        <header className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6 pb-4 border-b border-gray-200">
-          <div>
-            <div className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider mb-0.5">Control Terminal</div>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{activeTab}</h1>
-          </div>
-          <div className="text-xs font-mono text-gray-400 bg-white border border-gray-200 px-3 py-1.5 rounded shadow-2xs self-start sm:self-auto">
-            Route: /{activeTab.toLowerCase().replace(/\s+/g, '-')}
-          </div>
-        </header>
+      <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 overflow-y-auto lg:h-screen">
+        <div className="max-w-[1400px] mx-auto w-full">
+          {/* Responsive Header Node */}
+          <header className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6 pb-4 border-b border-gray-200">
+            <div>
+              <div className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider mb-0.5">Control Terminal</div>
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{activeTab}</h1>
+            </div>
+            <div className="text-xs font-mono text-gray-400 bg-white border border-gray-200 px-3 py-1.5 rounded shadow-xs self-start sm:self-auto">
+              Route: /{activeTab.toLowerCase().replace(/\s+/g, '-')}
+            </div>
+          </header>
 
-        {/* Core page layouts injected directly right here */}
-        {children}
-
+          {/* Core page layouts injected directly right here */}
+          {children}
+        </div>
       </main>
     </div>
   );

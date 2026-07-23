@@ -1,7 +1,11 @@
-# Auth API Guide 
+# Auth API Guide
 
-## Payload and DTO's : 
+## Endpoints
+- POST /api/auth/register
+- POST /api/auth/login
+- POST /api/auth/logout
+- POST /api/auth/refresh
 
-```bash
-    1. All DTO's are available in api/src/module 
-```
+## Notes
+- DTOs live under the relevant auth modules in the API source tree.
+- Authentication uses JWT access and refresh tokens.

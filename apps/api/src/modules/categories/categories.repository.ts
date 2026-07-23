@@ -2,7 +2,7 @@ import { prisma } from "../../../../../packages/database/src/client";
 import { createCategoryDTO, deleteCategoryDTO, updateCategoryDTO } from "./categories.types";
 
 
-//completed , test = 0
+//completed , test = 1
 export async function createCategory(payload : createCategoryDTO) {
     await prisma.category.create({
         data : payload
@@ -28,26 +28,35 @@ export async function findBySlug(slug : string){
     });
 };
 
-//completed , test = 0
+//completed , test = 1
 export async function findAll() {
     return await prisma.category.findMany();
 }
 
-//completed , test = 0
+//completed , test = 1
 export async function updateCategory(payload: updateCategoryDTO) {
   const { id, ...data } = payload;
-
   return prisma.category.update({
     where: { id },
     data,
   });
 }
 
-//completed , test = 0 
+//completed , test = 1
 export async function deleteCategory(id : string) {
-    await prisma.category.delete({
+    await prisma.$transaction([
+          prisma.category.updateMany({
+        where : {
+            parentId : id as string
+        },
+        data : {
+            parentId : null
+        }
+    }),
+     prisma.category.delete({
         where : {
             id : id
         }
-    });
+    })
+    ]);
 };

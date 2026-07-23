@@ -1,4 +1,5 @@
 import { configCLD } from "./storage"
+import streamifier from 'streamifier'
 
 export interface imagePayload {
     imageURL : string,
@@ -7,7 +8,7 @@ export interface imagePayload {
 };
 
 
-export async function imageHandler(payload : imagePayload) {
+export async function imageUrlHandler(payload : imagePayload) {
     const {public_id , secure_url } = await configCLD().uploader.upload(
         payload.imageURL,
         {
@@ -25,4 +26,21 @@ export async function imageHandler(payload : imagePayload) {
     return {
         public_id , secure_url
     };
+};
+
+
+export async function uploadBufferToCloudinary(payload: Buffer | Uint8Array): Promise<any> {
+    const buffer = Buffer.isBuffer(payload) ? payload : Buffer.from(payload);
+
+    return new Promise((resolve, reject) => {
+        const uploadStream = configCLD().uploader.upload_stream(
+            { folder: "products" },
+            (err, result) => {
+                if (err) return reject(err);
+                resolve(result);
+            }
+        );
+
+        streamifier.createReadStream(buffer).pipe(uploadStream);
+    });
 }

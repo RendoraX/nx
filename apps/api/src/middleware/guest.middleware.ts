@@ -27,7 +27,7 @@ export async function guestMiddleware(
       return next();
     }
 
-    return res.status(403).json({
+    return res.status(200).json({
       message: "Already authenticated.",
     });
   } catch {

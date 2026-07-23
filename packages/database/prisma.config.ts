@@ -7,12 +7,14 @@ dotenv.config({
     path : path.resolve('../../.env.local')
 })
 
+console.log("dburl",  process.env.DATABASE_URL );
+
 export default defineConfig({
   schema: "./prisma/schema.prisma",
   migrations: {
     path: "./prisma/migrations",
   },
   datasource: {
-    url: env("DATABASE_URL"),
+    url: env("DATABASE_URL")
   },
 });

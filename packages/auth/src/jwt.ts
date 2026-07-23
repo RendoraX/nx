@@ -19,7 +19,7 @@ export const generateRefreshToken = (payload: JWTPayload): string => {
   try {
     const jwtP = jwtTokenValidator(payload);
     return jwt.sign(payload, env.JWT_REFRESH_SECRET, {
-      expiresIn: '1M',
+      expiresIn: '30d',
       issuer: 'shri_ayu',
     });
   } catch (error) {
@@ -43,7 +43,8 @@ export const verifyRefreshToken = (token: string) => {
       issuer: 'shri_ayu',
     });
   } catch (error) {
-    throw new Error("Token verification");
+    console.log((error as any).message)
+    throw new Error("Token verification Failed");
   }
 };
 

@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { createCat, deleteCat, getAllCategory, updateCat } from "./categories.service";
 
 
-//completed , test = 0
+//completed , test = 1
 export const categoryAddEndpoint  = async (req : Request , res : Response) => {
     try {
         
@@ -16,6 +16,8 @@ export const categoryAddEndpoint  = async (req : Request , res : Response) => {
             category_slug : payload.slug as string
         });
     } catch (error : any) {
+
+        console.log(error.message)
         return res.status(500).json({
             message : "Internal server erro !",
             error : (error as any).message | error
@@ -23,13 +25,11 @@ export const categoryAddEndpoint  = async (req : Request , res : Response) => {
     }
 };
 
-//completed , test = 0
+//completed , test = 1
 export const categoryDeleteEndpoint = async (req : Request , res : Response) => {
     try {
           const payload = await req.body;
-
           await deleteCat(payload);
-
           return res.status(200).json({
             message :"Category deleted !"
           })
@@ -41,7 +41,7 @@ export const categoryDeleteEndpoint = async (req : Request , res : Response) => 
     }
 };
 
-//completed , test = 0
+//completed , test = 1
 export const allCategoryEndpoint = async (req : Request ,res : Response) => {
     try {
         const categories = await getAllCategory();
@@ -58,7 +58,7 @@ export const allCategoryEndpoint = async (req : Request ,res : Response) => {
     };
 };
 
-//completed , test = 0
+//completed , test = 1
 export const categoryUpdateEndpoint = async (req : Request , res : Response) => {
     try {
         const payload = await req.body;

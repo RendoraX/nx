@@ -7,11 +7,15 @@ import {
   findBySlug as findProductBySlug,
   findCategoryById,
   findProducts,
-  updateProduct as updateProductRecord,
+
   upsertInventoryEntry,
+  deleteProductImage,
+  getRelatedProductByCategory,
 } from "./products.repository";
 import { createProductSchema, productFiltersSchema, updateProductSchema } from "./products.schema";
 import type { CreateProductDTO, ProductFiltersDTO, UpdateProductDTO } from "./products.types";
+import { uploadBufferToCloudinary , imageUrlHandler} from '../../../../../packages/storage/src/image.service'
+import { string } from "zod";
 
 function generateSlug(name: string) {
   return name
@@ -34,7 +38,19 @@ async function ensureUniqueSlug(baseSlug: string) {
 }
 
 export async function createProduct(payload: CreateProductDTO) {
-  const data = createProductSchema.parse(payload);
+  const fileList = Array.isArray((payload as any).files) ? (payload as any).files : [];
+  const incomingImages = Array.isArray((payload as any).images)
+    ? (payload as any).images
+    : typeof (payload as any).images === "string"
+      ? [(payload as any).images]
+      : [];
+
+  const normalizedPayload = {
+    ...payload,
+    images: incomingImages,
+  };
+
+  const data = createProductSchema.parse(normalizedPayload);
   const category = await findCategoryById(data.categoryId);
 
   if (!category) {
@@ -47,14 +63,38 @@ export async function createProduct(payload: CreateProductDTO) {
     slug,
   });
 
-  await createInventoryEntry(product.id, data.stock ?? 0);
+  await createInventoryEntry(product.id, data.stock ?? 0, (payload as any).variants);
 
+  const uploadedUrl: string[] = [];
+
+  for (const file of fileList) {
+    if (file?.buffer) {
+      const result = await uploadBufferToCloudinary(file.buffer);
+      uploadedUrl.push(result.secure_url);
+    }
+  }
+
+  for (const url of incomingImages) {
+    if (typeof url === "string" && url.startsWith("http")) {
+      const result = await imageUrlHandler({
+        imageURL: url,
+        cat: category.name,
+        name: payload.name as string,
+      });
+      uploadedUrl.push(result.secure_url);
+    }
+  }
+
+  data.images = uploadedUrl;
   if (data.images?.length) {
     await createProductImages(product.id, data.images);
   }
 
   return findProductById(product.id);
 }
+
+
+
 
 export async function getProductBySlug(slug: string) {
   const product = await findProductBySlug(slug);
@@ -66,33 +106,6 @@ export async function getProductBySlug(slug: string) {
   return product;
 }
 
-export async function updateProduct(payload: UpdateProductDTO) {
-  const data = updateProductSchema.parse(payload);
-  const existingProduct = await findProductById(data.id);
-
-  if (!existingProduct) {
-    throw new Error("Product not found");
-  }
-
-  const updatePayload: UpdateProductDTO = {
-    ...data,
-  };
-
-  if (data.name) {
-    const baseSlug = generateSlug(data.name);
-    const slug = await ensureUniqueSlug(baseSlug);
-    updatePayload.name = data.name;
-    (updatePayload as UpdateProductDTO & { slug?: string }).slug = slug;
-  }
-
-  const product = await updateProductRecord(updatePayload);
-
-  if (typeof data.stock === "number") {
-    await upsertInventoryEntry(product.id, data.stock);
-  }
-
-  return findProductById(product.id);
-}
 
 export async function deleteProduct(id: string) {
   const existingProduct = await findProductById(id);
@@ -102,10 +115,16 @@ export async function deleteProduct(id: string) {
   }
 
   await deleteProductRecord(id);
+  await deleteProductImage(id as string);
   return { id };
 }
 
 export async function searchProducts(filters: ProductFiltersDTO = {}) {
   const validatedFilters = productFiltersSchema.parse(filters);
   return findProducts(validatedFilters as ProductFiltersDTO);
+}
+
+export async function getRelatedProduct(id : string){
+  if(!id) throw new Error("Invalid category id.");
+  return getRelatedProductByCategory(id as string);
 }

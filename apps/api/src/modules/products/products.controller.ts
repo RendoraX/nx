@@ -1,15 +1,31 @@
 import type { Request, Response } from "express";
-import { createProduct, deleteProduct, getProductBySlug, searchProducts, updateProduct } from "./products.service";
+import { createProduct, deleteProduct, getProductBySlug, getRelatedProduct, searchProducts} from "./products.service";
+import { success } from "zod";
 
 export const createProductEndpoint = async (req: Request, res: Response) => {
   try {
-    const product = await createProduct(req.body);
+    const rawPayload = typeof req.body?.payload === "string" ? JSON.parse(req.body.payload) : req.body?.payload ?? {};
+    const files = Array.isArray((req as any).files) ? (req as any).files : [];
+    const imageUrls = Array.isArray(req.body?.imageUrls)
+      ? req.body.imageUrls
+      : req.body?.imageUrls
+        ? [req.body.imageUrls]
+        : [];
+
+    const payload = {
+      ...rawPayload,
+      files,
+      images: imageUrls,
+    };
+    console.log(payload.variants)
+    const product = await createProduct(payload);
 
     return res.status(201).json({
       message: "Product created successfully",
       product,
     });
   } catch (error: any) {
+    console.error("Create product failed:", error);
     return res.status(400).json({
       message: "Failed to create product",
       error: error.message,
@@ -22,6 +38,7 @@ export const getProductsEndpoint = async (req: Request, res: Response) => {
     const page = Number(req.query.page ?? 1);
     const limit = Number(req.query.limit ?? 20);
     const isActive = req.query.isActive === "true" ? true : req.query.isActive === "false" ? false : undefined;
+    
 
     const products = await searchProducts({
       search: typeof req.query.search === "string" ? req.query.search : undefined,
@@ -46,38 +63,23 @@ export const getProductsEndpoint = async (req: Request, res: Response) => {
 
 export const getProductBySlugEndpoint = async (req: Request, res: Response) => {
   try {
+    console.log("req")
     const product = await getProductBySlug(req.params.slug as string);
 
     return res.status(200).json({
       message: "Product fetched successfully",
       product,
+      success : true
     });
   } catch (error: any) {
     return res.status(404).json({
       message: "Product not found",
       error: error.message,
+      success : false 
     });
   }
 };
 
-export const updateProductEndpoint = async (req: Request, res: Response) => {
-  try {
-    const product = await updateProduct({
-      id: req.params.id,
-      ...req.body,
-    });
-
-    return res.status(200).json({
-      message: "Product updated successfully",
-      product,
-    });
-  } catch (error: any) {
-    return res.status(400).json({
-      message: "Failed to update product",
-      error: error.message,
-    });
-  }
-};
 
 export const deleteProductEndpoint = async (req: Request, res: Response) => {
   try {
@@ -86,6 +88,7 @@ export const deleteProductEndpoint = async (req: Request, res: Response) => {
     return res.status(200).json({
       message: "Product deleted successfully",
       result,
+      success : true
     });
   } catch (error: any) {
     return res.status(400).json({
@@ -94,3 +97,23 @@ export const deleteProductEndpoint = async (req: Request, res: Response) => {
     });
   }
 };
+
+
+export const getRelatedProductEndpoint = async (req : Request , res : Response) => {
+  try {
+    const categoryId  =  req.params.catid as string;
+    const products = await getRelatedProduct(categoryId);
+
+    return res.status(200).json({
+      message : "related product fetched successfully !",
+      products,
+      success : true
+    })
+  } catch (error : any) {
+    return res.status(500).json({
+      message : "Internal server error",
+      error : error.message | error,
+      success : false
+    })
+  }
+}

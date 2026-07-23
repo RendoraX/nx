@@ -4,15 +4,16 @@ import {
   deleteProductEndpoint,
   getProductBySlugEndpoint,
   getProductsEndpoint,
-  updateProductEndpoint,
+  getRelatedProductEndpoint
 } from "./products.controller";
+import upload from "../../utils/multer";
 
 const route = Router();
 
-route.post("/products", createProductEndpoint);
+route.post("/products" , upload.array("images") ,createProductEndpoint);
 route.get("/products", getProductsEndpoint);
 route.get("/products/:slug", getProductBySlugEndpoint);
-route.patch("/products/:id", updateProductEndpoint);
 route.delete("/products/:id", deleteProductEndpoint);
+route.get('/products/related/:catid' , getRelatedProductEndpoint);
 
 export default route;

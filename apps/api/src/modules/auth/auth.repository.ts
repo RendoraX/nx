@@ -3,7 +3,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "../../../../../packages/database/src/client";
 import { addressResponse, updateAddressDTO, UserResponse  } from "../users/users.types";
 import { registerDTO, updatePasswordDTO } from "./auth.types";
-import { randomBytes } from "crypto";
+import crypto from "crypto";
 
 
 //TESTED
@@ -17,6 +17,21 @@ export const findByEmail = async (
       where: {
         email,
       },
+      include : {
+        cart : true,
+        orders : true ,
+        addresses : {
+            include : {
+                pincode : true
+            }
+        },
+        sessions : true,
+      },
+      omit : {
+        passwordResetToken : true,
+        verificationToken : true,
+        updatedAt : true,
+      }
     });
 
     return user;
@@ -42,31 +57,68 @@ export const createUser = async (userPayload : registerDTO) : Promise<UserRespon
 
 //TESTED
 export const createVerificationToken = async (email : string) => {
-    const token = randomBytes(6).toString("base64");
-
+    const token = crypto.randomInt(100000, 1000000).toString();
+    
     await prisma.verificationToken.create({
         data : {
             token,
             userEmail : email as string
         }
     });
-
+    
     return token;
 }
 
+export const updateVerificationToken = async (email : string)=> {
+    const token = crypto.randomInt(100000, 1000000).toString();
+    await prisma.$transaction([
+         prisma.verificationToken.findFirst({
+            where : {
+                userEmail : email
+            }
+        }),
+         prisma.verificationToken.updateMany({
+            where : {
+                userEmail : email
+            },
+            data : {
+                token 
+            }
+        })
+    ]);
+
+    return token
+}
 //TESTED
 export const verifyVerificationToken = async (token : string) => {
-    const tokenExist = await prisma.verificationToken.findFirst({
-        where : {
-            token : token as string
+    const tokenExist = await prisma.$transaction(async tx => {
+        const existingToken = await tx.verificationToken.findFirst({
+            where : {
+                token : token
+            }
+        });
+
+        if(!existingToken) throw new Error("Token is not valid")
+
+        const user = await tx.user.findUnique({
+            where : {
+                email : existingToken.userEmail as string
+            }
+        });
+
+
+        return {
+            id : user?.id,
+            userEmail : user?.email,
+            existingTokenId : existingToken.id
         }
-    });
+    })
 
     if(!tokenExist) throw new Error("Token is invalid.")
 
     await prisma.verificationToken.delete({
         where : {
-            id : tokenExist.id
+            id : tokenExist.existingTokenId
         }
     });
 
@@ -133,18 +185,27 @@ export const getAllSession = async (userId : string) => {
         where : {
             userId : userId as string
         }
-    })
+    });
+    return sessions;
 }
 
 //completed , test = 1
 export const deleteSession = async (rToken : string) : Promise<any> => {
     try {
-        const deletedSession = await prisma.session.delete({
-            where : {
-                refreshTokenHash : rToken as string
-            }
+        const deletedSession = await prisma.$transaction(async tx => {
+            const validSession = await tx.session.findFirst({
+                where : {
+                    refreshTokenHash : rToken as string
+                }
+            });
+
+            await tx.session.delete({
+                where : {
+                    id : validSession?.id
+                }
+            })
         });
-        return deleteSession;
+        return deletedSession;
     } catch (error) {
         return error;
     }
@@ -185,28 +246,3 @@ export const findById = async (id : string) : Promise<UserResponse | null> => {
     return user as UserResponse;
 };
 
-//unimplemented , testing = 0
-export const updateAddress = async (addressPayload : updateAddressDTO) : Promise<{
-    message : string,
-    error : any
-} | null | addressResponse> => {
-    try {
-        const response = await prisma.address.update({
-            where : {
-                id : addressPayload.id as string
-            },
-
-            data : addressPayload
-        }); 
-
-        return {
-            ...response,
-            line2: response.line2 ?? undefined
-        } as addressResponse;
-    } catch (error) {
-        return {
-            message : "Address update failed.",
-           error  
-        }
-    }
-};

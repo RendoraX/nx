@@ -25,17 +25,25 @@
   "devDependencies": {
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
+    "@tanstack/react-query": "^5.101.2",
     "@types/jsonwebtoken": "^5.2.1",
     "@types/node": "^20.19.43",
     "@types/nodemailer": "^8.0.1",
     "@types/pg": "^8.20.0",
+    "@types/streamifier": "^0.1.2",
+    "axios": "^1.18.1",
+    "axios-cache-interceptor": "^1.12.0",
+    "bullmq": "^5.79.2",
     "cloudinary": "^2.10.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "framer-motion": "^12.42.2",
     "lucide-react": "^1.21.0",
     "pg": "^8.22.0",
     "prisma": "^7.8.0",
+    "react-select": "^5.10.2",
+    "streamifier": "^0.1.1",
     "turbo": "^2.9.18",
     "typescript": "^5.9.3",
     "zod": "^4.4.3"
@@ -43,9 +51,11 @@
   "dependencies": {
     "argon2": "^0.44.0",
     "bcryptjs": "^3.0.3",
+    "bull": "^4.16.5",
     "express-rate-limit": "^8.5.2",
     "helmet": "^8.2.0",
     "jsonwebtoken": "^9.0.3",
-    "nodemailer": "^9.0.1"
+    "nodemailer": "^9.0.1",
+    "redis": "^6.1.0"
   }
 }

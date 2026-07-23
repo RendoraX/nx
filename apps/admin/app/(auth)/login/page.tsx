@@ -24,8 +24,6 @@ export default function AdminLoginPage() {
       const result = await axios.post(`http://localhost:4000/api/auth/login` , loginData , {
         withCredentials: true,
       })
-
-      console.log('Login Data:', result);
       toast.success('Login successful!');
     } catch (error:any) {
       console.error('Login Error:', error.message | error);

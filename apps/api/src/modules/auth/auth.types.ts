@@ -48,5 +48,6 @@ export interface JWTPayload{
     id : string;
     identifier : string;
     sid : string;
+    role : string;
 };
 

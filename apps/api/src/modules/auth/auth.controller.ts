@@ -1,10 +1,10 @@
 import { registerDTO, resetPasswordDTO } from "./auth.types";
 import { Request, Response } from "express";
-import { forgotPassword, login, logout, logoutAll, refreshTokenRotate, register, resetPassword, verificationToken } from "./auth.service";
+import { forgotPassword, getMeByToken, login, logout, logoutAll, refreshTokenRotate, register, resendVerification, resetPassword, verificationToken } from "./auth.service";
 import { loginSchema, registerSchema } from "./auth.schema";
 import { verifyRefreshToken } from "../../../../../packages/auth/src/jwt";
 import { UserResponse } from "../users/users.types";
-import { string } from "zod";
+import { json, string, success } from "zod";
 
 //completed , tested = 1
 export const registerEndpoint = async ( req : Request, res : Response) => {
@@ -15,16 +15,36 @@ export const registerEndpoint = async ( req : Request, res : Response) => {
          await register(registerSchemaValid as registerDTO);        
         
         return res.status(200).json({
-            message : "Register successfully."
+            message : "Register successfully.",
+            success : true
         });
     } catch (error : any) {
-        console.log(error.message)
         return res.status(500).json({
-            message : "Internal server error",
-            error  : error | error.message
+            message : error.message ||  "Internal server error",
+            error  : error | error.message,
+            success : false
         })
     }
 };
+
+
+//compledted . tested = 1
+export const resendVerificationEndpoint = async (req: Request , res : Response )=> {
+    try {
+        const payload = await req.body;
+        await resendVerification(payload);
+        return res.status(200).json({
+            message : "Otp send successfully !",
+            success : true
+        })
+    } catch (error : any) {
+        return res.status(500).json({
+            message : "Internal server error",
+            error : error.message | error,
+            success : false
+        })  
+    }
+}
 
 //completed , tested = 1
 export const verificationTokenEndpoint = async (req : Request ,res : Response) => {
@@ -35,11 +55,25 @@ export const verificationTokenEndpoint = async (req : Request ,res : Response) =
             userAgent : req.headers["user-agent"] as string
         };
 
-        await verificationToken(payload);
+        const cookies = await verificationToken(payload);
 
-        return  res.status(200).json({
-            message : "User verified successfully."
-        });
+        return  res.status(200)
+                .cookie("accessToken", cookies.accessToken, {
+                    httpOnly: true,
+                    sameSite: "lax",
+                    secure: false,
+                    maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+                })
+                .cookie("refreshToken", cookies.refreshToken, {
+                httpOnly: true,
+                sameSite: "lax",
+                secure: false,
+                maxAge: 1000 * 60 * 60 * 24 * 30, // 30 days
+                })
+        .json({
+            message : "User verified successfully.",
+            success : true
+        })
     } catch (error : any) {
         console.log(error.message)
         return res.status(500).json({
@@ -55,37 +89,38 @@ export const loginEndpoint = async (req : Request , res : Response) => {
     try {
         const payload = await req.body;
         const metadata = {
-            ipAddress : await req.ip,
-            userAgent : await req.headers["user-agent"]      
+            ipAddress :  req.ip,
+            userAgent :  req.headers["user-agent"]      
         };
 
-        console.log(payload)
         
         const loginSchemaValid = loginSchema().parse({...payload , ...metadata});
 
         
         const cookies = await login(loginSchemaValid)
 
-        console.log(cookies)
         return  res.status(200)
-        .cookie("accessToken", cookies.accessToken, {
-  httpOnly: true,
-  sameSite: "lax",
-  secure: false,
-})
-        .cookie("refreshToken", cookies.refreshToken, {
-  httpOnly: true,
-  sameSite: "lax",
-  secure: false,
-})
+                .cookie("accessToken", cookies.accessToken, {
+                    httpOnly: true,
+                    sameSite: "lax",
+                    secure: false,
+                    maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+                })
+                .cookie("refreshToken", cookies.refreshToken, {
+                httpOnly: true,
+                sameSite: "lax",
+                secure: false,
+                maxAge: 1000 * 60 * 60 * 24 * 30, // 30 days
+                })
         .json({
-            message : "User logged  successfully."
+            message : "User logged  successfully.",
+            success : true
         })
     } catch (error : any) {
-        console.log((error as any).message)
         return res.status(500).json({
-            message : "Internal server error.",
-            error :  error.message | error
+            message : error.message || "Internal server error.",
+            error :  error.message | error,
+            success : false
         })
     }
 };
@@ -118,6 +153,7 @@ export const logoutAllDevicesEndpoint = async (req : Request , res : Response) =
 
         const data : UserResponse = verifyRefreshToken(token.refreshToken) as UserResponse;
 
+        console.log("data" , data)
         await logoutAll(data.id as string)
 
         return res.status(200)
@@ -128,6 +164,7 @@ export const logoutAllDevicesEndpoint = async (req : Request , res : Response) =
                     });
 
     } catch (error) {
+        console.log((error as any).message)
         return res.status(500).json({
             message : "Internal server error.",
             error : (error as any).message
@@ -190,7 +227,40 @@ export const rotateRefreshTokenEndpoint = async (req : Request , res : Response)
     } catch (error : any) {
         return res.status(500).json({
             message : "Internal server error.",
-            error : error.message | error
+            error : error.message || error
+        })
+    }
+};
+
+
+export const meEndpoint = async (req : Request , res : Response) => {
+    try {
+        const {accessToken , refreshToken} = req.cookies;
+
+        const user = await getMeByToken(accessToken as string);
+
+        if(!user){
+            await logout(refreshToken as string);
+            return res.status(401)
+                        .clearCookie("accessToken")
+                        .clearCookie("refreshToken")
+                        .json({
+                            message : "UN-Priviliged request detected",
+                            success : false,
+                        });
+        }
+            return res.status(200).json({
+                message : "User fetched succesfully !",
+                success : true,
+                user
+            })
+    } catch (error : any) {
+
+        console.error(error.message)
+        return res.status(500).json({
+            message : "Internal server error",
+            success : false,
+            error : error.message || error
         })
     }
 }

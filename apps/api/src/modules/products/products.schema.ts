@@ -6,6 +6,15 @@ const imageSchema = z.object({
   position: z.number().int().nonnegative().optional(),
 });
 
+const variantInputSchema = z.object({
+  sizeUnit: z.string().optional(),
+  sizeValue: z.string().optional(),
+  sku: z.string().optional(),
+  stock: z.number().int().nonnegative().optional(),
+  price: z.number().min(0).optional(),
+  comparePrice: z.number().min(0).optional(),
+});
+
 export const createProductSchema = z.object({
   name: z.string().min(1, "Product name is required"),
   description: z.string().min(1, "Product description is required"),
@@ -15,7 +24,8 @@ export const createProductSchema = z.object({
   categoryId: z.string().min(1, "Category is required"),
   isActive: z.boolean().optional(),
   stock: z.number().int().nonnegative().optional(),
-  images: z.array(imageSchema).optional(),
+  images: z.array(z.string()).optional(),
+  variants: z.array(variantInputSchema).optional(),
 });
 
 export const updateProductSchema = z.object({
@@ -28,7 +38,8 @@ export const updateProductSchema = z.object({
   categoryId: z.string().min(1).optional(),
   isActive: z.boolean().optional(),
   stock: z.number().int().nonnegative().optional(),
-  images: z.array(imageSchema).optional(),
+  images: z.array(z.string()).optional(),
+  variants: z.array(variantInputSchema).optional(),
 });
 
 export const productFiltersSchema = z.object({
