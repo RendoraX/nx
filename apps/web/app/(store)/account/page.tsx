@@ -12,7 +12,8 @@ import {
   Check, 
   Bell, 
   Clock,
-  AlertCircle
+  AlertCircle,
+  Loader2
 } from 'lucide-react';
 
 import { useAuthContext } from '@/providers/AuthProviders';
@@ -26,7 +27,9 @@ const VALID_TABS: ActiveTab[] = ['profile', 'orders', 'addresses', 'sessions', '
 export default function AccountPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { user, logout, logoutAll } = useAuthContext();
+  
+  // Extract loading state along with user context
+  const { user, logout, logoutAll, isLoading } = useAuthContext();
   
   const getInitialTab = (): ActiveTab => {
     const tabParam = searchParams.get('tab') as ActiveTab;
@@ -79,6 +82,7 @@ export default function AccountPage() {
     <div className="min-h-screen bg-gray-50 antialiased flex flex-col text-gray-900">
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         
+        {/* Header Section */}
         <div className="border-b border-gray-200 pb-6 mb-10">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
@@ -96,6 +100,7 @@ export default function AccountPage() {
 
         <div className="flex flex-col lg:flex-row gap-8 items-start">
           
+          {/* Navigation Sidebar */}
           <nav className="w-full lg:w-64 flex-shrink-0 flex flex-row lg:flex-col border-b lg:border-b-0 lg:border-r border-gray-200 pb-4 lg:pb-0 lg:pr-6 gap-1 overflow-x-auto scrollbar-none">
             {[
               { id: 'profile', label: 'Profile & Security', icon: UserIcon },
@@ -124,129 +129,176 @@ export default function AccountPage() {
             })}
           </nav>
 
+          {/* Main Tab Content Display */}
           <div className="flex-1 w-full">
             
+            {/* PROFILE & SECURITY TAB */}
             {activeTab === 'profile' && (
-              <div className="space-y-8 animate-fade-in text-left">
-                <div className="bg-[#1B3B2B] border border-[#1B3B2B] rounded-xl p-8 flex flex-col items-center justify-center text-center relative overflow-hidden shadow-sm">
-                  <div className="absolute inset-0 opacity-10 bg-[linear-gradient(to_right,#FCFAF7_1px,transparent_1px),linear-gradient(to_bottom,#FCFAF7_1px,transparent_1px)] bg-[size:4rem_4rem]"></div>
-                  
-                  <div className="relative z-10 space-y-4">
-                    <div className="relative w-24 h-24 mx-auto rounded-full overflow-hidden border-4 border-[#C89B3C] shadow-md bg-white flex items-center justify-center">
-                      <UserIcon className="w-12 h-12 text-[#1B3B2B]" />
+              isLoading ? (
+                /* Profile Loading State Skeleton */
+                <div className="space-y-8 animate-pulse text-left">
+                  {/* Hero Banner Skeleton */}
+                  <div className="bg-[#1B3B2B]/90 border border-[#1B3B2B] rounded-xl p-8 flex flex-col items-center justify-center text-center relative overflow-hidden shadow-sm">
+                    <div className="w-24 h-24 rounded-full bg-white/20 border-4 border-[#C89B3C]/50 flex items-center justify-center mb-4">
+                      <Loader2 className="w-8 h-8 text-[#C89B3C] animate-spin" />
                     </div>
-                    <div>
-                      <div className="flex items-center justify-center gap-2">
-                        <h2 className="font-serif text-2xl font-semibold text-[#FCFAF7] tracking-tight">
-                          {user?.name || 'User Profile'}
-                        </h2>
-                        {user?.isVerified && (
-                          <span className="inline-flex items-center justify-center bg-[#C89B3C] text-[#1B3B2B] p-0.5 rounded-full">
-                            <Check className="h-3 w-3 stroke-[3]" />
+                    <div className="h-6 bg-white/20 rounded w-48 mb-2"></div>
+                    <div className="h-4 bg-white/10 rounded w-36"></div>
+                  </div>
+
+                  {/* Cards Skeleton Grid */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {[1, 2, 3, 4].map((i) => (
+                      <div key={i} className="bg-[#FCFAF7] border border-[#EAE3D2] rounded-xl shadow-sm overflow-hidden p-6 space-y-4">
+                        <div className="h-4 bg-[#EAE3D2] rounded w-1/3 mb-6"></div>
+                        <div className="space-y-3">
+                          <div className="flex justify-between">
+                            <div className="h-3 bg-[#EAE3D2]/70 rounded w-1/4"></div>
+                            <div className="h-3 bg-[#EAE3D2] rounded w-1/3"></div>
+                          </div>
+                          <div className="flex justify-between">
+                            <div className="h-3 bg-[#EAE3D2]/70 rounded w-1/4"></div>
+                            <div className="h-3 bg-[#EAE3D2] rounded w-1/2"></div>
+                          </div>
+                          <div className="flex justify-between">
+                            <div className="h-3 bg-[#EAE3D2]/70 rounded w-1/4"></div>
+                            <div className="h-3 bg-[#EAE3D2] rounded w-1/3"></div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : user ? (
+                /* Loaded Profile Content */
+                <div className="space-y-8 animate-fade-in text-left">
+                  <div className="bg-[#1B3B2B] border border-[#1B3B2B] rounded-xl p-8 flex flex-col items-center justify-center text-center relative overflow-hidden shadow-sm">
+                    <div className="absolute inset-0 opacity-10 bg-[linear-gradient(to_right,#FCFAF7_1px,transparent_1px),linear-gradient(to_bottom,#FCFAF7_1px,transparent_1px)] bg-[size:4rem_4rem]"></div>
+                    
+                    <div className="relative z-10 space-y-4">
+                      <div className="relative w-24 h-24 mx-auto rounded-full overflow-hidden border-4 border-[#C89B3C] shadow-md bg-white flex items-center justify-center">
+                        <UserIcon className="w-12 h-12 text-[#1B3B2B]" />
+                      </div>
+                      <div>
+                        <div className="flex items-center justify-center gap-2">
+                          <h2 className="font-serif text-2xl font-semibold text-[#FCFAF7] tracking-tight">
+                            {user?.name || 'User Profile'}
+                          </h2>
+                          {user?.isVerified && (
+                            <span className="inline-flex items-center justify-center bg-[#C89B3C] text-[#1B3B2B] p-0.5 rounded-full">
+                              <Check className="h-3 w-3 stroke-[3]" />
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-[#EAE3D2] tracking-wide mt-1 font-mono">{user?.email}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    
+                    <div className="bg-[#FCFAF7] border border-[#EAE3D2] rounded-xl shadow-sm overflow-hidden">
+                      <div className="bg-[#1B3B2B]/5 px-6 py-4 border-b border-[#EAE3D2]">
+                        <h4 className="text-xs font-bold text-[#1B3B2B] uppercase tracking-[0.1em]">Personal Details</h4>
+                      </div>
+                      <div className="p-6 divide-y divide-[#EAE3D2]/60 text-sm">
+                        <div className="py-3 flex justify-between gap-4 first:pt-0">
+                          <span className="text-[#7C7467] font-medium">Full Name:</span>
+                          <span className="text-[#1A1A1A] font-semibold">{user?.name || '—'}</span>
+                        </div>
+                        <div className="py-3 flex justify-between gap-4">
+                          <span className="text-[#7C7467] font-medium">Email:</span>
+                          <span className="text-[#1A1A1A] font-semibold break-all">{user?.email || '—'}</span>
+                        </div>
+                        <div className="py-3 flex justify-between gap-4 last:pb-0">
+                          <span className="text-[#7C7467] font-medium">Phone Number:</span>
+                          <span className="text-[#1A1A1A] font-semibold">{user?.phone || 'Not provided'}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bg-[#FCFAF7] border border-[#EAE3D2] rounded-xl shadow-sm overflow-hidden">
+                      <div className="bg-[#1B3B2B]/5 px-6 py-4 border-b border-[#EAE3D2]">
+                        <h4 className="text-xs font-bold text-[#1B3B2B] uppercase tracking-[0.1em]">Account Details</h4>
+                      </div>
+                      <div className="p-6 divide-y divide-[#EAE3D2]/60 text-sm">
+                        <div className="py-3 flex justify-between gap-4 first:pt-0">
+                          <span className="text-[#7C7467] font-medium">Account Authority Tier:</span>
+                          <span className="text-[#1B3B2B] font-bold tracking-wider uppercase text-xs bg-[#1B3B2B]/5 px-2.5 py-0.5 border border-[#1B3B2B]/10 rounded">
+                            {user?.role || 'USER'}
                           </span>
-                        )}
+                        </div>
+                        <div className="py-3 flex justify-between gap-4">
+                          <span className="text-[#7C7467] font-medium">Account Verification:</span>
+                          <span className={`text-xs font-bold uppercase tracking-wide px-2.5 py-0.5 rounded border ${
+                            user?.isVerified 
+                              ? 'bg-emerald-50 text-emerald-800 border-emerald-200' 
+                              : 'bg-amber-50 text-amber-800 border-amber-200'
+                          }`}>
+                            {user?.isVerified ? 'Verified' : 'Pending'}
+                          </span>
+                        </div>
+                        <div className="py-3 flex justify-between gap-4 last:pb-0">
+                          <span className="text-[#7C7467] font-medium">Created Timestamp:</span>
+                          <span className="text-[#1A1A1A] font-semibold">
+                            {user?.createdAt ? new Date(user.createdAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }) : '—'}
+                          </span>
+                        </div>
                       </div>
-                      <p className="text-xs text-[#EAE3D2] tracking-wide mt-1 font-mono">{user?.email}</p>
                     </div>
+
+                    <div className="bg-[#FCFAF7] border border-[#EAE3D2] rounded-xl shadow-sm overflow-hidden">
+                      <div className="bg-[#1B3B2B]/5 px-6 py-4 border-b border-[#EAE3D2]">
+                        <h4 className="text-xs font-bold text-[#1B3B2B] uppercase tracking-[0.1em]">Security Settings</h4>
+                      </div>
+                      <div className="p-6 divide-y divide-[#EAE3D2]/60 text-sm">
+                        <div className="py-3 flex justify-between items-center gap-4 first:pt-0">
+                          <span className="text-[#7C7467] font-medium">Password Authorization:</span>
+                          <button className="px-3 py-1 bg-[#1B3B2B] text-[#FCFAF7] text-[11px] font-bold uppercase tracking-wider rounded hover:bg-[#1B3B2B]/90 transition-colors shadow-sm cursor-pointer">
+                            Reset Password
+                          </button>
+                        </div>
+                        <div className="py-3 flex justify-between gap-4 last:pb-0">
+                          <span className="text-[#7C7467] font-medium">Connected Active Sessions:</span>
+                          <span className="text-[#1A1A1A] font-semibold font-mono">
+                            {user?.sessions?.filter((s: any) => !s.revoked).length || 0} Tracks Active
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bg-[#FCFAF7] border border-[#EAE3D2] rounded-xl shadow-sm overflow-hidden">
+                      <div className="bg-[#1B3B2B]/5 px-6 py-4 border-b border-[#EAE3D2]">
+                        <h4 className="text-xs font-bold text-[#1B3B2B] uppercase tracking-[0.1em]">Platform Context</h4>
+                      </div>
+                      <div className="p-6 divide-y divide-[#EAE3D2]/60 text-sm">
+                        <div className="py-3 flex justify-between gap-4 first:pt-0">
+                          <span className="text-[#7C7467] font-medium">Linked Addresses:</span>
+                          <span className="text-[#1A1A1A] font-semibold">{user?.addresses?.length || 0} Saved</span>
+                        </div>
+                        <div className="py-3 flex justify-between gap-4">
+                          <span className="text-[#7C7467] font-medium">Submitted Reviews:</span>
+                          <span className="text-[#1A1A1A] font-semibold">{user?.reviews?.length || 0} Items</span>
+                        </div>
+                        <div className="py-3 flex justify-between gap-4 last:pb-0">
+                          <span className="text-[#7C7467] font-medium">Pending Notifications:</span>
+                          <span className="text-[#1A1A1A] font-semibold">
+                            {user?.notifications?.filter((n: any) => !n.isRead).length || 0} Unread
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
                   </div>
                 </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  
-                  <div className="bg-[#FCFAF7] border border-[#EAE3D2] rounded-xl shadow-sm overflow-hidden">
-                    <div className="bg-[#1B3B2B]/5 px-6 py-4 border-b border-[#EAE3D2]">
-                      <h4 className="text-xs font-bold text-[#1B3B2B] uppercase tracking-[0.1em]">Personal Details</h4>
-                    </div>
-                    <div className="p-6 divide-y divide-[#EAE3D2]/60 text-sm">
-                      <div className="py-3 flex justify-between gap-4 first:pt-0">
-                        <span className="text-[#7C7467] font-medium">Full Name:</span>
-                        <span className="text-[#1A1A1A] font-semibold">{user?.name || '—'}</span>
-                      </div>
-                      <div className="py-3 flex justify-between gap-4">
-                        <span className="text-[#7C7467] font-medium">Email:</span>
-                        <span className="text-[#1A1A1A] font-semibold break-all">{user?.email || '—'}</span>
-                      </div>
-                      <div className="py-3 flex justify-between gap-4 last:pb-0">
-                        <span className="text-[#7C7467] font-medium">Phone Number:</span>
-                        <span className="text-[#1A1A1A] font-semibold">{user?.phone || 'Not provided'}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-[#FCFAF7] border border-[#EAE3D2] rounded-xl shadow-sm overflow-hidden">
-                    <div className="bg-[#1B3B2B]/5 px-6 py-4 border-b border-[#EAE3D2]">
-                      <h4 className="text-xs font-bold text-[#1B3B2B] uppercase tracking-[0.1em]">Account Details</h4>
-                    </div>
-                    <div className="p-6 divide-y divide-[#EAE3D2]/60 text-sm">
-                      <div className="py-3 flex justify-between gap-4 first:pt-0">
-                        <span className="text-[#7C7467] font-medium">Account Authority Tier:</span>
-                        <span className="text-[#1B3B2B] font-bold tracking-wider uppercase text-xs bg-[#1B3B2B]/5 px-2.5 py-0.5 border border-[#1B3B2B]/10 rounded">
-                          {user?.role || 'USER'}
-                        </span>
-                      </div>
-                      <div className="py-3 flex justify-between gap-4">
-                        <span className="text-[#7C7467] font-medium">Account Verification:</span>
-                        <span className={`text-xs font-bold uppercase tracking-wide px-2.5 py-0.5 rounded border ${
-                          user?.isVerified 
-                            ? 'bg-emerald-50 text-emerald-800 border-emerald-200' 
-                            : 'bg-amber-50 text-amber-800 border-amber-200'
-                        }`}>
-                          {user?.isVerified ? 'Verified' : 'Pending'}
-                        </span>
-                      </div>
-                      <div className="py-3 flex justify-between gap-4 last:pb-0">
-                        <span className="text-[#7C7467] font-medium">Created Timestamp:</span>
-                        <span className="text-[#1A1A1A] font-semibold">
-                          {user?.createdAt ? new Date(user.createdAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }) : '—'}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-[#FCFAF7] border border-[#EAE3D2] rounded-xl shadow-sm overflow-hidden">
-                    <div className="bg-[#1B3B2B]/5 px-6 py-4 border-b border-[#EAE3D2]">
-                      <h4 className="text-xs font-bold text-[#1B3B2B] uppercase tracking-[0.1em]">Security Settings</h4>
-                    </div>
-                    <div className="p-6 divide-y divide-[#EAE3D2]/60 text-sm">
-                      <div className="py-3 flex justify-between items-center gap-4 first:pt-0">
-                        <span className="text-[#7C7467] font-medium">Password Authorization:</span>
-                        <button className="px-3 py-1 bg-[#1B3B2B] text-[#FCFAF7] text-[11px] font-bold uppercase tracking-wider rounded hover:bg-[#1B3B2B]/90 transition-colors shadow-sm cursor-pointer">
-                          Reset Password
-                        </button>
-                      </div>
-                      <div className="py-3 flex justify-between gap-4 last:pb-0">
-                        <span className="text-[#7C7467] font-medium">Connected Active Sessions:</span>
-                        <span className="text-[#1A1A1A] font-semibold font-mono">
-                          {user?.sessions?.filter((s: any) => !s.revoked).length || 0} Tracks Active
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-[#FCFAF7] border border-[#EAE3D2] rounded-xl shadow-sm overflow-hidden">
-                    <div className="bg-[#1B3B2B]/5 px-6 py-4 border-b border-[#EAE3D2]">
-                      <h4 className="text-xs font-bold text-[#1B3B2B] uppercase tracking-[0.1em]">Platform Context</h4>
-                    </div>
-                    <div className="p-6 divide-y divide-[#EAE3D2]/60 text-sm">
-                      <div className="py-3 flex justify-between gap-4 first:pt-0">
-                        <span className="text-[#7C7467] font-medium">Linked Addresses:</span>
-                        <span className="text-[#1A1A1A] font-semibold">{user?.addresses?.length || 0} Saved</span>
-                      </div>
-                      <div className="py-3 flex justify-between gap-4">
-                        <span className="text-[#7C7467] font-medium">Submitted Reviews:</span>
-                        <span className="text-[#1A1A1A] font-semibold">{user?.reviews?.length || 0} Items</span>
-                      </div>
-                      <div className="py-3 flex justify-between gap-4 last:pb-0">
-                        <span className="text-[#7C7467] font-medium">Pending Notifications:</span>
-                        <span className="text-[#1A1A1A] font-semibold">
-                          {user?.notifications?.filter((n: any) => !n.isRead).length || 0} Unread
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
+              ) : (
+                /* Fallback if user profile failed to load */
+                <div className="bg-white border border-gray-200 rounded-lg p-12 text-center shadow-sm">
+                  <AlertCircle className="h-8 w-8 text-amber-500 mx-auto mb-3" />
+                  <p className="text-sm font-medium text-gray-700">Unable to retrieve profile details.</p>
+                  <p className="text-xs text-gray-400 mt-1">Please try refreshing or log in again.</p>
                 </div>
-              </div>
+              )
             )}
 
             {activeTab === 'orders' && (

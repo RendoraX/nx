@@ -55,10 +55,8 @@ model Address {
 
   postalCode String
 
-  pincodeId String
-  pincode   Pincode @relation(fields: [pincodeId], references: [id])
-
   isDefault Boolean @default(false)
+  isDeleted Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -292,19 +290,6 @@ enum OrderStatus {
   OUT_FOR_DELIVERY
   DELIVERED
   CANCELLED
-}
-
-model Pincode {
-  id         String @id @default(cuid())
-  postalCode String @unique
-  city       String
-  state      String
-  country    String @default("India")
-
-  addresses Address[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
 
 //specially user for the custom pooja kit build for admin and give to user 

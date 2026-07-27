@@ -1,6 +1,8 @@
 import { Router } from "express";
 import { forgotPasswordInitEndpoint, loginEndpoint, logoutAllDevicesEndpoint, logoutEndpoint, meEndpoint, registerEndpoint, resendVerificationEndpoint, resetPasswordEndpoint, rotateRefreshTokenEndpoint, verificationTokenEndpoint } from "./auth.controller";
-
+import {authMiddleware} from '../../middleware/auth.middleware'
+import {guestMiddleware} from '../../middleware/guest.middleware'
+import { securityHeadersMiddleware } from '../../middleware/security.middleware'
 const router = Router();
 
 
@@ -13,6 +15,12 @@ router.post("/reset-pass" , resetPasswordEndpoint);
 router.post("/logout" , logoutEndpoint);
 router.post("/logout-all" , logoutAllDevicesEndpoint);
 router.post("/rt-token" , rotateRefreshTokenEndpoint);
-router.get('/me' , meEndpoint)
+
+router.get(
+    '/me' ,
+    authMiddleware,
+    securityHeadersMiddleware,
+    meEndpoint
+     )
 
 export default router;

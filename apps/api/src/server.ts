@@ -33,6 +33,7 @@ app.use(
     origin: [
       "http://localhost:3000",
       "http://localhost:3001",
+      "https://app.apidog.com"
     ],
     credentials: true,
   })
@@ -53,6 +54,9 @@ app.use("/api", inventoryRoutes);
 app.use("/api", userAdminRouter);
 app.use("/api", adminKitRouter);
 
+
+
+app.set("trust proxy" , true)
 app.listen(4000, () => {
   console.log("API running on 4000");
 });

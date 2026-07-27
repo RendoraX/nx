@@ -7,5 +7,6 @@ test("allows normal order progression", () => {
 });
 
 test("rejects invalid reversal", () => {
+  throw new Error("demo")
   assert.equal(canTransitionStatus("DELIVERED", "PENDING"), false);
 });

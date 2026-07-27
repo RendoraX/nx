@@ -31,20 +31,15 @@ export interface Session {
 
 export interface Address {
   id: string;
-  userId: string;
   fullName: string;
   phone: string;
   line1: string;
-  line2: string | null;
-  city: string;
-  state: string;
-  country: string;
+  line2?: string | null;
   postalCode: string;
   isDefault: boolean;
-  createdAt: string | Date;
-  updatedAt: string | Date;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
 }
-
 export interface Order {
   id: string;
   userId: string;

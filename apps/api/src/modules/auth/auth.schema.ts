@@ -59,6 +59,9 @@ export const loginSchema = (): z.ZodType<loginDTO> =>
       password: z.string().nonempty({
         message: "Please provide password",
       }),
+
+      userAgent: z.string().nonempty("User Agent is not available"),
+      ipAddress : z.any().nonoptional("Ip address for request is not avalaible")
     })
     .refine((data) => data.email || data.phone, {
       message: "Please provide either email or phone",

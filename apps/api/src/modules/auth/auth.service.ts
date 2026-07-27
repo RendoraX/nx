@@ -1,4 +1,4 @@
-import { createSession, createUser, createVerificationToken, deleteAllSessions, deleteSession, findByEmail, findSession, updatePassword, updateSesson, updateVerificationToken, verifyVerificationToken } from "./auth.repository";
+import { createSession, createUser, createVerificationToken, deleteAllSessions, deleteSession, findByEmail, findById, findSession, updatePassword, updateSesson, updateVerificationToken, verifyVerificationToken } from "./auth.repository";
 import { forgotPasswordDTO, JWTPayload, loginDTO, refreshTokenDTO, registerDTO, resetPasswordDTO } from "./auth.types";
 import { hashPassword, verifyPassword } from "../../../../../packages/auth/src/password";
 import { generateAccessToken, generateRefreshToken, verifyAccessToken, verifyRefreshToken } from "../../../../../packages/auth/src/jwt";
@@ -64,7 +64,9 @@ export const verificationToken = async (payload: {
             userId: valid.id, // Make sure this is the User.id
             ipAddress: payload.ipAddress,
             userAgent: payload.userAgent,
-            expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+            expiresAt: new Date(
+                        new Date().setMonth(new Date().getMonth() + 1)
+                    ), // 30 days
         });
 
         const accessToken = generateAccessToken({
@@ -105,22 +107,25 @@ export const login = async (payload : loginDTO) : Promise<{
         
         const existing = await findByEmail(payload.email as string);
         if(!existing) throw new Error("User not exits.")
-        const isValidPassword = await verifyPassword(payload.password as string , existing.password as string);
+            const isValidPassword = await verifyPassword(payload.password as string , existing.password as string);
         
         if(!isValidPassword) throw new Error("Invalid credentials.");
-
+        
         const createdSession = await createSession({
             userId : existing.id,
             ipAddress : payload.ipAddress,
             userAgent : payload.userAgent,
-            expiresAt : new Date(Date.now() + 30),
+            expiresAt: new Date(
+                new Date().setMonth(new Date().getMonth() + 1)
+            )
         })
-        const accessToken =  generateAccessToken({id : existing.id ,identifier : existing.email as string , sid : createdSession.id as string , role :existing.role});
-        const refreshToken =  generateRefreshToken({id : existing.id ,identifier : existing.email as string , sid : createdSession.id as string , role : existing.role});
+        const accessToken =  generateAccessToken({id : existing.id ,identifier : existing.id as string , sid : createdSession.id as string , role :existing.role});
+        const refreshToken =  generateRefreshToken({id : existing.id ,identifier : existing.id as string , sid : createdSession.id as string , role : existing.role});
         const refreshTokenHash = await hashPassword(refreshToken as string);
         
         await updateSesson({id : createdSession.id , newToken : refreshTokenHash});
-
+        
+        console.log(existing)
         return { 
             accessToken, refreshToken
         }
@@ -231,30 +236,28 @@ export const resetPassword = async (payload : resetPasswordDTO) => {
 export const getMeByToken = async (token : string) => {
     try {
         const validTokenData = verifyAccessToken(token as string);
-        console.log("====================================\ntoken data \n " , validTokenData)
         if(!validTokenData) throw new Error("Access Token is not valid !!");
-        
-        const user =  await findByEmail(validTokenData.identifier) as any;
+        const user =  await findById(validTokenData.identifier) as any;
         user.currentSessionId = validTokenData.sid as string;
 
         const {password , ...userWP} = user;
         return userWP;
     } catch (error : any) {
+        console.log( "===================================\n\n\n", error.message , "\n\n\n=============================")
         throw new Error(error.message || "Error while getting me !");
     }
 }
 //=============MIDDLEWARE=============//
-
-export const validateSession = async (refreshTokan : string) => {
-    const payload =  verifyRefreshToken(refreshTokan);
+export const validateSession = async (refreshToken: string) => {
+  const payload = verifyRefreshToken(refreshToken);
 
   if (!payload) {
     throw new Error("Invalid refresh token");
   }
 
-  const hash = await hashPassword(refreshTokan);
+  const hash = await hashPassword(refreshToken);
 
-  const session = await findSession(hash as string)
+  const session = await findSession(hash);
 
   if (!session) {
     throw new Error("Session not found");
@@ -264,8 +267,17 @@ export const validateSession = async (refreshTokan : string) => {
     throw new Error("Session revoked");
   }
 
-  if (session.expiresAt < new Date()) {
+  if (session.expiresAt.getTime() <= Date.now()) {
     throw new Error("Session expired");
+  }
+
+  // Extra security checks
+  if (session.userId !== payload.userId) {
+    throw new Error("Session user mismatch");
+  }
+
+  if (session.refreshTokenHash !== hash) {
+    throw new Error("Session hash mismatch");
   }
 
   return {

@@ -10,10 +10,11 @@ export interface changePassDTO{
 };
 
 export interface createAddressDTO{
+    userId : string
     fullName : string;
     phone : string;
-    liine1 : string;
-    liine2 ?: string;
+    line1 : string;
+    line2 ?: string;
 
     city : string;
     state : string;
@@ -22,6 +23,8 @@ export interface createAddressDTO{
     
     isDefault : boolean;
 };
+
+
 
 export interface updateAddressDTO{
     id : string;
@@ -55,7 +58,10 @@ export interface userProfileResponse extends UserResponse {
     addresses : addressResponse[];
 };
 
-
+export interface deleteAddressDTO{
+    id : string;
+    userId : string;
+}
 
 
 //=================ADDRESS TYPES================//

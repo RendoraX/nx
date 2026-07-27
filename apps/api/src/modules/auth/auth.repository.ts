@@ -21,8 +21,8 @@ export const findByEmail = async (
         cart : true,
         orders : true ,
         addresses : {
-            include : {
-                pincode : true
+            where : {
+                isDeleted : false
             }
         },
         sessions : true,
@@ -241,7 +241,22 @@ export const findById = async (id : string) : Promise<UserResponse | null> => {
     const user = await prisma.user.findFirst({
         where : {
             id : id as string
-        }
+        },
+        include : {
+        cart : true,
+        orders : true ,
+        addresses : {
+            where : {
+                isDeleted : false
+            }
+        },
+        sessions : true,
+      },
+      omit : {
+        passwordResetToken : true,
+        verificationToken : true,
+        updatedAt : true,
+      }
     });
     return user as UserResponse;
 };

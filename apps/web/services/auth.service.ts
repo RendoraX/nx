@@ -1,13 +1,12 @@
 // apps/web/services/auth.service.ts
 import api from '@/lib/axios';
-import { User, AuthResponse, GenericApiResponse } from '../types/auth';
 
 export const AuthService = {
   /**
    * Registers a new account footprint. Does not log user in automatically 
    * to satisfy strict secure verification flow.
    */
-  async register(data: Record<string, any>): Promise<GenericApiResponse> {
+  async register(data: Record<string, any>): Promise<any> {
     try {
       const response = await api.post('http://localhost:4000/api/auth/register', data);
       return response.data;
@@ -31,7 +30,7 @@ export const AuthService = {
   /**
    * Performs standard authentication. Resolves access tokens safely.
    */
-  async login(data: Record<string, any>): Promise<AuthResponse> {
+  async login(data: Record<string, any>): Promise<any> {
     try {
       const response = await api.post('/api/auth/login', data);
       return response.data;
@@ -44,7 +43,7 @@ export const AuthService = {
   /**
    * Invalidates remote sessions and triggers server cookie removal sweeps.
    */
-  async logout(): Promise<GenericApiResponse> {
+  async logout(): Promise<any> {
     try {
       const response = await api.post('http://localhost:4000/api/auth/logout');
       return response.data;
@@ -56,7 +55,7 @@ export const AuthService = {
   /**
    * Invalidates remote sessions and triggers server cookie removal sweeps.
    */
-  async logoutAll(): Promise<GenericApiResponse> {
+  async logoutAll(): Promise<any> {
     try {
       const response = await api.post('http://localhost:4000/api/auth/logout-all');
       return response.data;
@@ -70,7 +69,7 @@ export const AuthService = {
    * Generates a generic payload notification request for password modifications.
    * Returns a generic success response to prevent account enumeration.
    */
-  async forgotPassword(email: string): Promise<GenericApiResponse> {
+  async forgotPassword(email: string): Promise<any> {
     try {
       const response = await api.post('/api/auth/forgot-password', { email });
       return response.data;
@@ -83,7 +82,7 @@ export const AuthService = {
   /**
    * Uses validation verification tokens to finalize credentials overrides.
    */
-  async resetPassword(data: Record<string, any>): Promise<GenericApiResponse> {
+  async resetPassword(data: Record<string, any>): Promise<any> {
     try {
       const response = await api.post('/api/auth/reset-password', data);
       return response.data;
@@ -96,7 +95,7 @@ export const AuthService = {
   /**
    * Confirms email ownership tokens during user boarding lifecycle steps.
    */
-  async verifyEmail(token: string): Promise<GenericApiResponse> {
+  async verifyEmail(token: string): Promise<any> {
     try {
       const response = await api.post('http://localhost:4000/api/auth/verify-email', { token });
       return response.data;
@@ -109,7 +108,7 @@ export const AuthService = {
   /**
    * Queries active session profiles utilizing background token verification parameters.
    */
-  async me(): Promise<AuthResponse> {
+  async me(): Promise<any> {
     try {
       const response = await api.get('/api/auth/me');
       return response.data;

@@ -51,7 +51,7 @@ export const verificationTokenEndpoint = async (req : Request ,res : Response) =
     try {
         const payload = {
             token : await req.body.token as string,
-            ipAddress :  req.ip as string,
+            ipAddress :  req.ip || req.socket.remoteAddress as string,
             userAgent : req.headers["user-agent"] as string
         };
 
@@ -94,10 +94,7 @@ export const loginEndpoint = async (req : Request , res : Response) => {
         };
 
         
-        const loginSchemaValid = loginSchema().parse({...payload , ...metadata});
-
-        
-        const cookies = await login(loginSchemaValid)
+        const cookies = await login({...payload ,...metadata})
 
         return  res.status(200)
                 .cookie("accessToken", cookies.accessToken, {
@@ -255,8 +252,6 @@ export const meEndpoint = async (req : Request , res : Response) => {
                 user
             })
     } catch (error : any) {
-
-        console.error(error.message)
         return res.status(500).json({
             message : "Internal server error",
             success : false,
