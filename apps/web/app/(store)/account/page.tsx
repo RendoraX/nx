@@ -254,7 +254,7 @@ export default function AccountPage() {
             )}
 
             {activeTab === 'addresses' && (
-              <AccountAddressesTab initialAddresses={user?.addresses}/>
+              <AccountAddressesTab />
             )}
 
             {activeTab === 'sessions' && (

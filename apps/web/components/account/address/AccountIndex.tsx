@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { MapPin, Plus, Trash2, Home } from 'lucide-react';
+import { MapPin, Plus, Trash2, Home, Loader2, Compass, ShieldCheck } from 'lucide-react';
 import AddressFormDialog from './AddressFormDialouge';
 import { useAddressBook } from '@/hooks/useAddressBooks';
+import { useAuthContext } from '@/providers/AuthProviders';
 
 interface Address {
   id: string;
@@ -15,119 +16,201 @@ interface Address {
   state: string;
   country: string;
   postalCode: string;
-  isDefault: boolean;
+  isDefault?: boolean;
 }
 
-interface AccountAddressesTabProps {
-  initialAddresses?: Address[];
-  onAddAddress?: (address: Omit<Address, 'id'>) => Promise<Address | void>;
-  onDeleteAddress?: (id: string) => Promise<void>;
-}
-
-export default function AccountAddressesTab({ 
-  initialAddresses, 
-}: AccountAddressesTabProps) {
+export default function AccountAddressesTab() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [hasMounted, setHasMounted] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
   
-  // No local state synchronization needed anymore!
-  const { addAddress: onAddAddress, removeAddress: onDeleteAddress, addresses } = useAddressBook();
+  const { loading, refreshSession } = useAuthContext();
+  const { 
+    addAddress: onAddAddress, 
+    removeAddress: onDeleteAddress, 
+    addresses,
+    isProcessing 
+  } = useAddressBook();
 
-  const handleCreateAddress = async (newAddressData: Address) => {
+  // Guard against SSR hydration mismatches
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
+
+  const handleCreateAddress = async (newAddressData: any) => {
     try {
+      setIsSyncing(true);
       await onAddAddress(newAddressData);
+      // Re-fetch fresh profile & address state from server
+      await refreshSession();
       setIsDialogOpen(false);
     } catch (error) {
       console.error("Could not register address:", error);
       alert("Failed to save the address. Please try again.");
+    } finally {
+      setIsSyncing(false);
     }
   };
 
   const handleDelete = async (id: string) => {
     if (!window.confirm("Remove this target address from your allocation profile?")) return;
     try {
+      setIsSyncing(true);
       await onDeleteAddress(id);
+      // Re-fetch fresh profile & address state from server
+      await refreshSession();
     } catch (error) {
       console.error("Could not remove address:", error);
       alert("Failed to delete the address.");
+    } finally {
+      setIsSyncing(false);
     }
   };
 
+  // 1. Skeleton Loading State
+  if (!hasMounted || loading) {
+    return (
+      <div className="space-y-8 animate-pulse text-left">
+        <div className="bg-[#1B3B2B] border border-[#1B3B2B]/40 rounded-2xl p-8 flex items-center justify-between shadow-lg">
+          <div className="space-y-3">
+            <div className="h-7 w-56 bg-white/10 rounded-md"></div>
+            <div className="h-3 w-80 bg-white/10 rounded-md"></div>
+          </div>
+          <div className="h-11 w-40 bg-white/10 rounded-xl"></div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-[#FCFAF7] border border-[#EAE3D2] rounded-2xl p-8 h-56 flex items-center justify-center shadow-sm">
+            <Loader2 className="w-6 h-6 text-[#C89B3C] animate-spin" />
+          </div>
+          <div className="bg-[#FCFAF7] border border-[#EAE3D2] rounded-2xl p-8 h-56 flex items-center justify-center shadow-sm">
+            <Loader2 className="w-6 h-6 text-[#C89B3C] animate-spin" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const typedAddresses = (addresses || []) as Address[];
+  const isBusy = isProcessing || isSyncing;
 
   return (
     <div className="space-y-8 animate-fade-in text-left">
-      <div className="bg-[#1B3B2B] border border-[#1B3B2B] rounded-xl p-8 flex flex-col sm:flex-row items-center justify-between relative overflow-hidden shadow-sm">
-        <div className="absolute inset-0 opacity-10 bg-[linear-gradient(to_right,#FCFAF7_1px,transparent_1px),linear-gradient(to_bottom,#FCFAF7_1px,transparent_1px)] bg-[size:4rem_4rem]"></div>
+      {/* Premium Header Banner */}
+      <div className="bg-gradient-to-r from-[#11291D] via-[#1B3B2B] to-[#11291D] border border-[#C89B3C]/30 rounded-2xl p-8 flex flex-col sm:flex-row items-center justify-between relative overflow-hidden shadow-xl">
+        {/* Subtle Luxury Grid Overlay */}
+        <div className="absolute inset-0 opacity-[0.06] bg-[linear-gradient(to_right,#FCFAF7_1px,transparent_1px),linear-gradient(to_bottom,#FCFAF7_1px,transparent_1px)] bg-[size:3rem_3rem]"></div>
+        
+        {/* Ambient Gold Glow Effect */}
+        <div className="absolute -top-12 -left-12 w-48 h-48 bg-[#C89B3C]/10 rounded-full blur-3xl pointer-events-none"></div>
+
         <div className="relative z-10 space-y-2 text-center sm:text-left">
-          <h2 className="font-serif text-2xl font-semibold text-[#FCFAF7] tracking-tight">Delivery Registry</h2>
-          <p className="text-xs text-[#EAE3D2] tracking-wide max-w-md">
-            Manage your spatial target coordinates and default distribution profiles for fast order placement processing.
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#C89B3C]/15 border border-[#C89B3C]/30 rounded-full text-[10px] font-semibold text-[#C89B3C] uppercase tracking-widest mb-1">
+            <Compass className="w-3 h-3" /> Private Registry
+          </div>
+          <h2 className="font-serif text-2xl font-bold text-[#FCFAF7] tracking-tight">Delivery Coordinates</h2>
+          <p className="text-xs text-[#EAE3D2]/80 tracking-wide max-w-md font-light leading-relaxed">
+            Manage your verified destination points and primary delivery dispatch targets.
           </p>
         </div>
         
-        {(addresses as any).length > 0 && (
-          <button 
-            onClick={() => setIsDialogOpen(true)}
-            className="relative z-10 mt-6 sm:mt-0 px-5 py-3 bg-[#FCFAF7] text-[#1B3B2B] hover:bg-[#EAE3D2] text-xs font-bold uppercase tracking-widest rounded-lg shadow-sm transition-all flex items-center gap-2 cursor-pointer border border-[#EAE3D2]"
-          >
-            <Plus className="h-4 w-4 stroke-[2.5]" /> Add New Address
-          </button>
-        )}
+        <button 
+          onClick={() => setIsDialogOpen(true)}
+          disabled={isBusy}
+          className="relative z-10 mt-6 sm:mt-0 px-6 py-3.5 bg-gradient-to-r from-[#C89B3C] to-[#B38730] text-[#FCFAF7] hover:brightness-110 text-xs font-semibold uppercase tracking-widest rounded-xl shadow-md transition-all flex items-center gap-2.5 cursor-pointer border border-[#C89B3C]/40 active:scale-[0.98] disabled:opacity-50"
+        >
+          {isBusy ? (
+            <Loader2 className="h-4 w-4 animate-spin text-white" />
+          ) : (
+            <Plus className="h-4 w-4 stroke-[2.5]" />
+          )}
+          <span>Add New Location</span>
+        </button>
       </div>
 
-      {/* <div>
-        {addresses.length === 0 ? (
-          <div className="bg-[#FCFAF7] border border-[#EAE3D2] rounded-xl p-20 text-center max-w-xl mx-auto shadow-sm">
-            <MapPin className="h-12 w-12 text-[#A39785] mx-auto mb-4 stroke-[1.5]" />
-            <h4 className="font-serif text-lg text-[#1B3B2B] font-medium">No Address Matrix Registered</h4>
-            <p className="text-sm text-[#7C7467] font-light mt-1 max-w-xs mx-auto">
-              Your profile doesn't map to active delivery coordinates yet. Add an allocation point to enable shipments.
+      {/* Address Grid or Empty State */}
+      <div>
+        {typedAddresses.length === 0 ? (
+          <div className="bg-[#FCFAF7] border border-[#EAE3D2] rounded-2xl p-16 text-center max-w-xl mx-auto shadow-sm relative overflow-hidden">
+            <div className="w-16 h-16 bg-[#1B3B2B]/5 rounded-2xl flex items-center justify-center text-[#C89B3C] mx-auto mb-5 border border-[#C89B3C]/20 shadow-inner">
+              <MapPin className="h-8 w-8 stroke-[1.25]" />
+            </div>
+            <h4 className="font-serif text-xl text-[#1B3B2B] font-semibold tracking-tight">No Locations Registered</h4>
+            <p className="text-xs text-[#7C7467] font-light mt-2 max-w-xs mx-auto leading-relaxed">
+              Your profile currently has no destination points attached. Register an address to enable tailored logistics.
             </p>
             <button
               onClick={() => setIsDialogOpen(true)}
-              className="mt-6 px-4 py-2.5 border border-[#1B3B2B] text-[#1B3B2B] text-xs font-bold uppercase tracking-wider rounded-md hover:bg-[#1B3B2B]/5 transition-all cursor-pointer"
+              className="mt-6 px-5 py-3 border border-[#1B3B2B] text-[#1B3B2B] hover:bg-[#1B3B2B] hover:text-[#FCFAF7] text-xs font-semibold uppercase tracking-wider rounded-xl transition-all duration-200 cursor-pointer shadow-sm"
             >
-              Configure First Address
+              Set Up First Location
             </button>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {addresses.map((address) => (
+            {typedAddresses.map((address) => (
               <div 
                 key={address.id}
-                className={`bg-[#FCFAF7] border rounded-xl p-6 shadow-sm flex flex-col justify-between gap-6 transition-all hover:border-[#1B3B2B]/20 relative ${
-                  address.isDefault ? 'border-[#C89B3C]' : 'border-[#EAE3D2]'
+                className={`group bg-white border rounded-2xl p-7 shadow-sm hover:shadow-xl flex flex-col justify-between transition-all duration-300 relative overflow-hidden ${
+                  address.isDefault 
+                    ? 'border-[#C89B3C] ring-1 ring-[#C89B3C]/30 bg-gradient-to-b from-[#FCFAF7] to-white' 
+                    : 'border-[#EAE3D2] hover:border-[#1B3B2B]/30'
                 }`}
               >
+                {/* Gold Accent Bar for Default Card */}
                 {address.isDefault && (
-                  <span className="absolute top-4 right-4 inline-flex items-center gap-1 text-[9px] font-bold text-[#C89B3C] uppercase tracking-widest bg-[#C89B3C]/10 border border-[#C89B3C]/20 px-2 py-0.5 rounded-full">
-                    <Home className="h-2.5 w-2.5" /> Primary Default
-                  </span>
+                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#C89B3C] via-[#E8C878] to-[#C89B3C]"></div>
                 )}
 
-                <div className="space-y-3">
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 bg-[#1B3B2B]/5 rounded-md flex items-center justify-center text-[#1B3B2B] flex-shrink-0 mt-0.5 border border-[#1B3B2B]/10">
-                      <MapPin className="h-4 w-4 text-[#C89B3C]" />
+                <div className="space-y-5">
+                  {/* Card Header & Badge */}
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${
+                        address.isDefault 
+                          ? 'bg-[#C89B3C]/10 text-[#C89B3C] border border-[#C89B3C]/30' 
+                          : 'bg-[#1B3B2B]/5 text-[#1B3B2B] border border-[#1B3B2B]/10 group-hover:border-[#C89B3C]/40 group-hover:text-[#C89B3C]'
+                      }`}>
+                        <MapPin className="h-5 w-5 stroke-[1.75]" />
+                      </div>
+                      <div>
+                        <h4 className="font-serif font-semibold text-base text-[#1B3B2B] tracking-tight">{address.fullName}</h4>
+                        <p className="text-[11px] font-mono text-[#A39785] mt-0.5 tracking-wide">{address.phone}</p>
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="font-serif font-medium text-sm text-[#1A1A1A]">{address.fullName}</h4>
-                      <p className="text-xs font-mono text-[#7C7467] mt-0.5">{address.phone}</p>
-                    </div>
+
+                    {address.isDefault && (
+                      <span className="inline-flex items-center gap-1.5 text-[9px] font-bold text-[#C89B3C] uppercase tracking-widest bg-[#C89B3C]/10 border border-[#C89B3C]/30 px-3 py-1 rounded-full shadow-2xs">
+                        <Home className="h-3 w-3 stroke-[2]" /> Primary
+                      </span>
+                    )}
                   </div>
 
-                  <div className="text-xs text-[#7C7467] space-y-1 pl-11 font-light leading-relaxed">
-                    <p>{address.line1}</p>
+                  {/* Address Body */}
+                  <div className="text-xs text-[#524B42] space-y-1 font-light leading-relaxed pl-1">
+                    <p className="font-medium text-[#1A1A1A]">{address.line1}</p>
                     {address.line2 && <p>{address.line2}</p>}
                     <p>{address.city}, {address.state}</p>
-                    <p className="font-mono text-[#1A1A1A] font-medium">{address.postalCode}, {address.country}</p>
+                    <div className="pt-1 flex items-center gap-2">
+                      <span className="font-mono font-semibold text-[#1B3B2B] bg-[#FCFAF7] border border-[#EAE3D2] px-2 py-0.5 rounded-md text-[11px]">
+                        {address.postalCode}
+                      </span>
+                      <span className="text-[#A39785] text-[11px] font-medium uppercase tracking-wider">{address.country}</span>
+                    </div>
                   </div>
                 </div>
 
-                <div className="border-t border-[#EAE3D2]/60 pt-4 flex justify-end pl-11">
+                {/* Footer Actions */}
+                <div className="border-t border-[#EAE3D2]/60 pt-4 mt-6 flex items-center justify-between text-xs">
+                  <span className="text-[10px] text-[#A39785] font-mono flex items-center gap-1">
+                    <ShieldCheck className="w-3 h-3 text-[#1B3B2B]" /> Verified Coordinate
+                  </span>
+                  
                   <button
                     onClick={() => handleDelete(address.id)}
-                    className="p-1.5 text-[#A39785] hover:text-red-500 hover:bg-red-500/5 rounded-md transition-all cursor-pointer"
-                    title="Delete Coordinate Profile"
+                    disabled={isBusy}
+                    className="p-2 text-[#A39785] hover:text-red-600 hover:bg-red-50 rounded-lg transition-all cursor-pointer disabled:opacity-40"
+                    title="Remove Address"
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
@@ -136,7 +219,7 @@ export default function AccountAddressesTab({
             ))}
           </div>
         )}
-      </div> */}
+      </div>
 
       <AddressFormDialog 
         isOpen={isDialogOpen}

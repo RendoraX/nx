@@ -34,8 +34,7 @@ export const addressService = {
   },
 
   // Purge a target allocation node from ledger
-  async delete(id: string): Promise<void> {
-    const res = await fetch(`http://localhost:4000/api/account/addresses/${id}`, { method: 'DELETE' });
-    if (!res.ok) throw new Error('Failed to purge selected address record');
+  async delete(id: string): Promise<CacheAxiosResponse> {
+    return await api.delete(`http://localhost:4000/api/account/address/${id}/d`);
   }
 };

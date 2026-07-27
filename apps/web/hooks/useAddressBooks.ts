@@ -57,13 +57,13 @@ export function useAddressBook() {
     });
   };
 
-  const removeAddress = async (id: string): Promise<void> => {
+  const removeAddress = async (id: string) => {
     return new Promise((resolve, reject) => {
       startTransition(async () => {
         try {
-          const result = await deleteAddressAction(id);
+          const result = await addressService.delete(id);
           
-          if (result.success) {
+          if (result.data.success) {
             // Update context state safely
             setUser((prev: any) => {
               if (!prev) return prev;
@@ -72,9 +72,9 @@ export function useAddressBook() {
                 addresses: (prev.addresses || []).filter((item: any) => item.id !== id),
               };
             });
-            resolve();
+            resolve({});
           } else {
-            reject(new Error(result.error || "Purge transaction failed"));
+            reject(new Error(result.data.error || "Purge transaction failed"));
           }
         } catch (error) {
           reject(error);
