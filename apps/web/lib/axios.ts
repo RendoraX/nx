@@ -1,17 +1,14 @@
 // lib/api.ts
+import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
+import { setupCache } from "axios-cache-interceptor";
 
-import axios, {
-  AxiosError,
-  InternalAxiosRequestConfig,
-} from "axios";
+const api = setupCache(
+  axios.create({
+    baseURL: "http://localhost:4000",
+    withCredentials: true,
+  })
+);
 
-import {setupCache} from 'axios-cache-interceptor'
-const api = setupCache(axios.create({
-  baseURL: "http://localhost:4000",
-  withCredentials: true,
-}));
-
-// Extend Axios config
 interface RetryRequestConfig extends InternalAxiosRequestConfig {
   _retry?: boolean;
 }
@@ -34,6 +31,13 @@ const processQueue = (error?: unknown) => {
   failedQueue = [];
 };
 
+// Safe redirect utility to avoid infinite reloads
+const safeRedirectToLogin = () => {
+  if (typeof window !== "undefined" && window.location.pathname !== "/login") {
+    window.location.href = "/login";
+  }
+};
+
 api.interceptors.response.use(
   (response) => response,
 
@@ -49,15 +53,20 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
+    // Bypass redirect loop if fetching user session state on load
+    if (originalRequest.url?.includes("/api/auth/me")) {
+      return Promise.reject(error);
+    }
+
     // Don't refresh if refresh endpoint itself failed
     if (originalRequest.url?.includes("/auth/refresh")) {
-      window.location.href = "/login";
+      safeRedirectToLogin();
       return Promise.reject(error);
     }
 
     // Already retried once
     if (originalRequest._retry) {
-      window.location.href = "/login";
+      safeRedirectToLogin();
       return Promise.reject(error);
     }
 
@@ -83,8 +92,7 @@ api.interceptors.response.use(
       return api(originalRequest);
     } catch (refreshError) {
       processQueue(refreshError);
-
-      window.location.href = "/login";
+      safeRedirectToLogin();
 
       return Promise.reject(refreshError);
     } finally {

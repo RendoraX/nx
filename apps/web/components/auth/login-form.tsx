@@ -8,8 +8,6 @@ import { useLogin } from '../../hooks/useLogin';
 import { PasswordInput } from './password-input';
 import { AuthCard } from './auth-card';
 import { Mail, Loader2, ArrowRight } from 'lucide-react';
-import { toast } from 'sonner';
-
 
 export function LoginForm() {
   const searchParams = useSearchParams();
@@ -28,13 +26,17 @@ export function LoginForm() {
       return;
     }
 
-    const redirectTo = searchParams.get('redirectTo') || '/';
-    await login({
-      email,
-      password
+    // Safely extract redirect parameter and ensure it isn't pointing back to /login
+    const rawRedirect = searchParams.get('redirectTo');
+    const redirectTo = rawRedirect && rawRedirect !== '/login' ? rawRedirect : '/account';
+
+    await login(
+      {
+        email,
+        password,
       },
       redirectTo
-  );
+    );
   };
 
   return (

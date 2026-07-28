@@ -21,33 +21,27 @@ export function proxy(request: NextRequest) {
   const sessionToken = request.cookies.get("accessToken")?.value;
 
   const isProtectedRoute = PROTECTED_ROUTES.some(
-    (route) =>
-      pathname === route || pathname.startsWith(`${route}/`)
+    (route) => pathname === route || pathname.startsWith(`${route}/`)
   );
 
   const isAuthRoute = AUTH_ROUTES.some(
-    (route) =>
-      pathname === route || pathname.startsWith(`${route}/`)
+    (route) => pathname === route || pathname.startsWith(`${route}/`)
   );
 
-  // User is logged in:
-  // Don't allow login/signup/register pages
+  // 1. User is logged in: don't allow access to auth pages
   if (sessionToken && isAuthRoute) {
-    return NextResponse.redirect(
-      new URL("/account", request.url)
-    );
+    return NextResponse.redirect(new URL("/account", request.url));
   }
 
-  // User is not logged in:
-  // Redirect protected pages to login
+  // 2. User is not logged in: redirect protected pages to login
   if (!sessionToken && isProtectedRoute) {
     const loginUrl = new URL("/login", request.url);
 
-    // Preserve the complete requested URL
-    loginUrl.searchParams.set(
-      "redirectTo",
-      request.nextUrl.pathname + request.nextUrl.search
-    );
+    // Prevent storing /login as the redirect target
+    const currentPath = request.nextUrl.pathname + request.nextUrl.search;
+    if (!currentPath.startsWith("/login")) {
+      loginUrl.searchParams.set("redirectTo", currentPath);
+    }
 
     return NextResponse.redirect(loginUrl);
   }
