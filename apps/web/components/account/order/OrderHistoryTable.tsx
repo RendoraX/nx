@@ -34,55 +34,10 @@ interface Order {
 
 interface AccountOrdersTabProps {
   orders?: Order[];
+  isLoading?: boolean;
 }
 
-const DUMMY_TEST_ORDERS: Order[] = [
-  {
-    id: "54stg47851sa963",
-    status: "Waiting for delivery",
-    totalAmount: 124.50,
-    createdAt: "2026-05-25",
-    items: [
-      {
-        id: "item-1",
-        quantity: 1,
-        price: 40.50,
-        product: { id: "kale-til", name: "Red Bali Premium Botanical Extract (Size 102)" },
-        attributes: [{ label: "Capsule size", value: "00 (500mg-600mg)" }]
-      },
-      {
-        id: "item-2",
-        quantity: 1,
-        price: 39.95,
-        product: { id: "prod-2", name: "Signature Sample Pack (4 Varietals)" },
-        attributes: [{ label: "Strains", value: "Green Borneo, White Horn" }]
-      },
-      {
-        id: "item-3",
-        quantity: 1,
-        price: 44.05,
-        product: { id: "kale-til", name: "EZK Tailored Short Sleeve Organic Blend" },
-        attributes: [{ label: "Size", value: "XL" }]
-      }
-    ]
-  },
-  {
-    id: "98abc12345xy789",
-    status: "Delivered",
-    totalAmount: 80.20,
-    createdAt: "2026-04-12",
-    items: [
-      {
-        id: "item-4",
-        quantity: 2,
-        price: 40.10,
-        product: { id: "prod-1", name: "Red Bali Premium Botanical Extract (Size 00)" }
-      }
-    ]
-  }
-];
-
-export default function AccountOrdersTab({ orders }: AccountOrdersTabProps) {
+export default function AccountOrdersTab({ orders, isLoading = false }: AccountOrdersTabProps) {
   const displayedOrders = orders && orders.length > 0 ? orders : [];
   
   // Track open state IDs. First item open by default for a better user experience.
@@ -95,6 +50,71 @@ export default function AccountOrdersTab({ orders }: AccountOrdersTabProps) {
       prev.includes(orderId) ? prev.filter((id) => id !== orderId) : [...prev, orderId]
     );
   };
+
+  // Luxury Skeleton Loader for fetching state
+  if (isLoading) {
+    return (
+      <div className="space-y-8 animate-fade-in text-left">
+        {/* Banner Skeleton */}
+        <div className="bg-[#1B3B2B] border border-[#1B3B2B] rounded-xl p-8 flex flex-col sm:flex-row items-center justify-between relative overflow-hidden shadow-sm">
+          <div className="space-y-3 text-center sm:text-left w-full sm:w-1/2">
+            <div className="h-7 w-48 bg-[#FCFAF7]/10 rounded-md animate-pulse"></div>
+            <div className="h-3 w-3/4 bg-[#FCFAF7]/10 rounded-md animate-pulse"></div>
+          </div>
+          <div className="mt-6 sm:mt-0 bg-[#FCFAF7]/10 backdrop-blur-sm border border-[#FCFAF7]/20 rounded-lg px-6 py-4 flex items-center gap-4 min-w-[200px]">
+            <div className="h-8 w-8 bg-[#C89B3C]/30 rounded-full animate-pulse"></div>
+            <div className="space-y-2">
+              <div className="h-2.5 w-20 bg-[#FCFAF7]/20 rounded animate-pulse"></div>
+              <div className="h-6 w-24 bg-[#FCFAF7]/30 rounded animate-pulse"></div>
+            </div>
+          </div>
+        </div>
+
+        {/* Orders Card Skeletons */}
+        <div className="space-y-6">
+          {[1, 2].map((idx) => (
+            <div key={idx} className="bg-[#FCFAF7] border border-[#EAE3D2] rounded-xl shadow-sm overflow-hidden">
+              {/* Card Header Skeleton */}
+              <div className="bg-[#1B3B2B]/5 px-6 py-5 border-b border-[#EAE3D2] flex flex-wrap items-center justify-between gap-4">
+                <div className="flex flex-wrap items-center gap-x-8 gap-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-7 h-7 bg-[#1B3B2B]/10 rounded-md animate-pulse"></div>
+                    <div className="space-y-1.5">
+                      <div className="h-2 w-16 bg-[#A39785]/20 rounded animate-pulse"></div>
+                      <div className="h-3.5 w-28 bg-[#1A1A1A]/20 rounded animate-pulse"></div>
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="h-2 w-14 bg-[#A39785]/20 rounded animate-pulse"></div>
+                    <div className="h-3.5 w-24 bg-[#1A1A1A]/20 rounded animate-pulse"></div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="h-2 w-20 bg-[#A39785]/20 rounded animate-pulse"></div>
+                    <div className="h-3.5 w-20 bg-[#1B3B2B]/20 rounded animate-pulse"></div>
+                  </div>
+                </div>
+                <div className="h-6 w-28 bg-[#1B3B2B]/10 rounded-md border border-[#EAE3D2] animate-pulse"></div>
+              </div>
+
+              {/* Items Skeleton Row */}
+              <div className="p-6 bg-white divide-y divide-[#EAE3D2]/60">
+                <div className="flex items-center justify-between gap-4 py-3">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-[#FCFAF7] border border-[#EAE3D2] rounded-md animate-pulse"></div>
+                    <div className="space-y-2">
+                      <div className="h-4 w-64 bg-[#1A1A1A]/15 rounded animate-pulse"></div>
+                      <div className="h-3 w-40 bg-[#A39785]/20 rounded animate-pulse"></div>
+                    </div>
+                  </div>
+                  <div className="h-4 w-20 bg-[#1A1A1A]/15 rounded animate-pulse"></div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 animate-fade-in text-left">
