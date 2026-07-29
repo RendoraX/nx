@@ -1,23 +1,32 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { act, useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { 
   User as UserIcon, 
   MapPin, 
   Package, 
   Laptop, 
-  Trash2, 
   Star, 
   Check, 
   Bell, 
-  Clock,
+  ShieldCheck,
+  KeyRound,
+  ChevronRight,
+  LogOut,
+  Mail,
+  Phone,
+  X,
+  Loader2,
   AlertCircle
 } from 'lucide-react';
 
 import { useAuthContext } from '@/providers/AuthProviders';
+import { AuthService } from '@/services/auth.service';
+import { PasswordInput } from '@/components/auth/password-input';
 import AccountOrdersTab from '@/components/account/order/OrderHistoryTable';
 import AccountAddressesTab from '@/components/account/address/AccountIndex';
+import AccountSessionsTab from '@/components/account/session/session';
 
 type ActiveTab = 'profile' | 'orders' | 'addresses' | 'sessions' | 'reviews' | 'notifications';
 
@@ -26,7 +35,7 @@ const VALID_TABS: ActiveTab[] = ['profile', 'orders', 'addresses', 'sessions', '
 export default function AccountPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { user, logout, logoutAll } = useAuthContext();
+  const { user, logout } = useAuthContext();
   
   const getInitialTab = (): ActiveTab => {
     const tabParam = searchParams.get('tab') as ActiveTab;
@@ -37,9 +46,14 @@ export default function AccountPage() {
   };
 
   const [activeTab, setActiveTab] = useState<ActiveTab>(getInitialTab);
-  const [sessions, setSessions] = useState<any[]>([]);
 
-  const currentSessionId = user?.currentSessionId || null;
+  // Password Reset Modal State
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isSubmittingPassword, setIsSubmittingPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [passwordSuccess, setPasswordSuccess] = useState(false);
 
   useEffect(() => {
     const tabParam = searchParams.get('tab') as ActiveTab;
@@ -57,52 +71,77 @@ export default function AccountPage() {
     router.push(`/account?${params.toString()}`);
   };
 
-  useEffect(() => {
-    if (user) {
-      setSessions(user.sessions || []);
+  const handlePasswordResetSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordError(null);
+
+    if (password.length < 8) {
+      setPasswordError('Password must be at least 8 characters long.');
+      return;
     }
-  }, [user]);
 
-  const handleRevokeSession = (id: string) => {
-    setSessions(prev => prev.filter(sess => sess.id !== id));
-  };
+    if (password !== confirmPassword) {
+      setPasswordError('Passwords do not match.');
+      return;
+    }
 
-  const handleRevokeAllOtherSessions = async () => {
     try {
-      await logoutAll();
-    } catch (error) {
-      console.error('Failed to revoke other sessions:', error);
+      setIsSubmittingPassword(true);
+      const res = await AuthService.resetPassword({ password });
+      if (res.success) {
+        setPasswordSuccess(true);
+        setTimeout(() => {
+          setIsPasswordModalOpen(false);
+          setPasswordSuccess(false);
+          setPassword('');
+          setConfirmPassword('');
+        }, 2000);
+      }
+    } catch (err: any) {
+      setPasswordError(err?.message || 'Failed to update password. Please try again.');
+    } finally {
+      setIsSubmittingPassword(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 antialiased flex flex-col text-gray-900">
-      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="min-h-screen bg-[#FDFCFB] antialiased flex flex-col text-gray-900 selection:bg-[#C89B3C]/20">
+      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-16">
         
-        <div className="border-b border-gray-200 pb-6 mb-10">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        {/* Header Banner */}
+        <div className="border-b border-[#EAE3D2] pb-8 mb-10">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight text-gray-900">My Account</h1>
-              <p className="text-sm text-gray-500 mt-1">Manage your profile, orders, and security settings.</p>
+              <span className="text-[11px] font-bold tracking-[0.2em] text-[#C89B3C] uppercase mb-2 block font-mono">
+                Client Portal
+              </span>
+              <h1 className="text-3xl lg:text-4xl font-serif font-semibold text-[#1B3B2B] tracking-tight">
+                My Account
+              </h1>
+              <p className="text-sm text-[#7C7467] mt-1 font-light">
+                Manage your personal details, order reservations, and security preferences.
+              </p>
             </div>
             <button 
               onClick={logout}
-              className="self-start sm:self-auto px-4 py-2 border border-gray-300 text-gray-700 hover:bg-gray-50 text-xs font-medium rounded-md transition-colors cursor-pointer"
+              className="self-start sm:self-auto px-5 py-2.5 border border-[#1B3B2B]/20 text-[#1B3B2B] hover:bg-[#1B3B2B] hover:text-[#FCFAF7] text-xs font-semibold tracking-wider uppercase rounded-lg transition-all duration-300 flex items-center gap-2 cursor-pointer shadow-sm group"
             >
-              Log Out
+              <LogOut className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5" />
+              <span>Log Out</span>
             </button>
           </div>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-8 items-start">
+        <div className="flex flex-col lg:flex-row gap-10 items-start">
           
-          <nav className="w-full lg:w-64 flex-shrink-0 flex flex-row lg:flex-col border-b lg:border-b-0 lg:border-r border-gray-200 pb-4 lg:pb-0 lg:pr-6 gap-1 overflow-x-auto scrollbar-none">
+          {/* Navigation Sidebar */}
+          <nav className="w-full lg:w-72 flex-shrink-0 flex flex-row lg:flex-col border-b lg:border-b-0 lg:border-r border-[#EAE3D2] pb-4 lg:pb-0 lg:pr-8 gap-2 overflow-x-auto scrollbar-none">
             {[
               { id: 'profile', label: 'Profile & Security', icon: UserIcon },
               { id: 'orders', label: 'Order History', icon: Package },
               { id: 'addresses', label: 'Saved Addresses', icon: MapPin },
               { id: 'sessions', label: 'Logged-in Devices', icon: Laptop },
-              { id: 'reviews', label: 'My Reviews', icon: Star },
+              { id: 'reviews', label: 'Product Reviews', icon: Star },
               { id: 'notifications', label: 'Notifications', icon: Bell }
             ].map((tab) => {
               const Icon = tab.icon;
@@ -111,286 +150,261 @@ export default function AccountPage() {
                 <button
                   key={tab.id}
                   onClick={() => handleTabChange(tab.id as ActiveTab)}
-                  className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-md transition-all whitespace-nowrap ${
+                  className={`flex items-center justify-between px-4 py-3.5 text-xs font-semibold tracking-wider uppercase rounded-xl transition-all duration-300 whitespace-nowrap cursor-pointer ${
                     isSelected 
-                      ? "bg-green-700 text-white" 
-                      : "bg-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                      ? "bg-[#1B3B2B] text-[#FCFAF7] shadow-md translate-x-1" 
+                      : "bg-transparent text-[#7C7467] hover:text-[#1B3B2B] hover:bg-[#1B3B2B]/5"
                   }`}
                 >
-                  <Icon className="h-4 w-4 stroke-[2]" />
-                  <span>{tab.label}</span>
+                  <div className="flex items-center gap-3">
+                    <Icon className={`h-4 w-4 stroke-[2] ${isSelected ? 'text-[#C89B3C]' : 'text-[#7C7467]'}`} />
+                    <span>{tab.label}</span>
+                  </div>
+                  <ChevronRight className={`h-3.5 w-3.5 hidden lg:block opacity-0 transition-opacity ${isSelected ? 'opacity-100 text-[#C89B3C]' : ''}`} />
                 </button>
               );
             })}
           </nav>
 
+          {/* Tab Content Canvas */}
           <div className="flex-1 w-full">
             
+            {/* PROFILE TAB */}
             {activeTab === 'profile' && (
               <div className="space-y-8 animate-fade-in text-left">
-                <div className="bg-[#1B3B2B] border border-[#1B3B2B] rounded-xl p-8 flex flex-col items-center justify-center text-center relative overflow-hidden shadow-sm">
-                  <div className="absolute inset-0 opacity-10 bg-[linear-gradient(to_right,#FCFAF7_1px,transparent_1px),linear-gradient(to_bottom,#FCFAF7_1px,transparent_1px)] bg-[size:4rem_4rem]"></div>
+                
+                {/* Hero Profile Card */}
+                <div className="bg-[#1B3B2B] rounded-2xl p-8 lg:p-10 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden shadow-xl border border-[#C89B3C]/30">
+                  <div className="absolute inset-0 opacity-5 bg-[linear-gradient(to_right,#FCFAF7_1px,transparent_1px),linear-gradient(to_bottom,#FCFAF7_1px,transparent_1px)] bg-[size:3rem_3rem]"></div>
                   
-                  <div className="relative z-10 space-y-4">
-                    <div className="relative w-24 h-24 mx-auto rounded-full overflow-hidden border-4 border-[#C89B3C] shadow-md bg-white flex items-center justify-center">
+                  <div className="relative z-10 flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
+                    <div className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-[#C89B3C] shadow-lg bg-[#FCFAF7] flex items-center justify-center flex-shrink-0">
                       <UserIcon className="w-12 h-12 text-[#1B3B2B]" />
                     </div>
                     <div>
-                      <div className="flex items-center justify-center gap-2">
-                        <h2 className="font-serif text-2xl font-semibold text-[#FCFAF7] tracking-tight">
-                          {user?.name || 'User Profile'}
+                      <div className="flex items-center justify-center md:justify-start gap-2.5">
+                        <h2 className="font-serif text-2xl lg:text-3xl font-semibold text-[#FCFAF7] tracking-tight">
+                          {user?.name || 'Valued Member'}
                         </h2>
                         {user?.isVerified && (
-                          <span className="inline-flex items-center justify-center bg-[#C89B3C] text-[#1B3B2B] p-0.5 rounded-full">
+                          <span className="inline-flex items-center justify-center bg-[#C89B3C] text-[#1B3B2B] p-1 rounded-full shadow" title="Verified Account">
                             <Check className="h-3 w-3 stroke-[3]" />
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-[#EAE3D2] tracking-wide mt-1 font-mono">{user?.email}</p>
+                      <p className="text-xs text-[#EAE3D2]/80 tracking-widest uppercase mt-1 font-mono">{user?.email}</p>
                     </div>
+                  </div>
+
+                  <div className="relative z-10 flex items-center gap-2 bg-[#FCFAF7]/10 backdrop-blur-md px-4 py-2 rounded-full border border-[#FCFAF7]/15">
+                    <ShieldCheck className="h-4 w-4 text-[#C89B3C]" />
+                    <span className="text-xs font-semibold tracking-wider text-[#FCFAF7] uppercase">
+                      {user?.isVerified ? 'Verified Client' : 'Pending Verification'}
+                    </span>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Details Section */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   
-                  <div className="bg-[#FCFAF7] border border-[#EAE3D2] rounded-xl shadow-sm overflow-hidden">
-                    <div className="bg-[#1B3B2B]/5 px-6 py-4 border-b border-[#EAE3D2]">
-                      <h4 className="text-xs font-bold text-[#1B3B2B] uppercase tracking-[0.1em]">Personal Details</h4>
-                    </div>
-                    <div className="p-6 divide-y divide-[#EAE3D2]/60 text-sm">
-                      <div className="py-3 flex justify-between gap-4 first:pt-0">
-                        <span className="text-[#7C7467] font-medium">Full Name:</span>
-                        <span className="text-[#1A1A1A] font-semibold">{user?.name || '—'}</span>
+                  {/* Personal Overview */}
+                  <div className="bg-[#FCFAF7] border border-[#EAE3D2] rounded-2xl shadow-sm hover:shadow-md transition-shadow p-6 lg:p-8 flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center gap-3 border-b border-[#EAE3D2] pb-4 mb-6">
+                        <div className="p-2 bg-[#1B3B2B]/5 rounded-lg text-[#1B3B2B]">
+                          <UserIcon className="h-5 w-5" />
+                        </div>
+                        <h3 className="font-serif text-lg font-semibold text-[#1B3B2B]">Personal Overview</h3>
                       </div>
-                      <div className="py-3 flex justify-between gap-4">
-                        <span className="text-[#7C7467] font-medium">Email:</span>
-                        <span className="text-[#1A1A1A] font-semibold break-all">{user?.email || '—'}</span>
-                      </div>
-                      <div className="py-3 flex justify-between gap-4 last:pb-0">
-                        <span className="text-[#7C7467] font-medium">Phone Number:</span>
-                        <span className="text-[#1A1A1A] font-semibold">{user?.phone || 'Not provided'}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-[#FCFAF7] border border-[#EAE3D2] rounded-xl shadow-sm overflow-hidden">
-                    <div className="bg-[#1B3B2B]/5 px-6 py-4 border-b border-[#EAE3D2]">
-                      <h4 className="text-xs font-bold text-[#1B3B2B] uppercase tracking-[0.1em]">Account Details</h4>
-                    </div>
-                    <div className="p-6 divide-y divide-[#EAE3D2]/60 text-sm">
-                      <div className="py-3 flex justify-between gap-4 first:pt-0">
-                        <span className="text-[#7C7467] font-medium">Account Authority Tier:</span>
-                        <span className="text-[#1B3B2B] font-bold tracking-wider uppercase text-xs bg-[#1B3B2B]/5 px-2.5 py-0.5 border border-[#1B3B2B]/10 rounded">
-                          {user?.role || 'USER'}
-                        </span>
-                      </div>
-                      <div className="py-3 flex justify-between gap-4">
-                        <span className="text-[#7C7467] font-medium">Account Verification:</span>
-                        <span className={`text-xs font-bold uppercase tracking-wide px-2.5 py-0.5 rounded border ${
-                          user?.isVerified 
-                            ? 'bg-emerald-50 text-emerald-800 border-emerald-200' 
-                            : 'bg-amber-50 text-amber-800 border-amber-200'
-                        }`}>
-                          {user?.isVerified ? 'Verified' : 'Pending'}
-                        </span>
-                      </div>
-                      <div className="py-3 flex justify-between gap-4 last:pb-0">
-                        <span className="text-[#7C7467] font-medium">Created Timestamp:</span>
-                        <span className="text-[#1A1A1A] font-semibold">
-                          {user?.createdAt ? new Date(user.createdAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }) : '—'}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-[#FCFAF7] border border-[#EAE3D2] rounded-xl shadow-sm overflow-hidden">
-                    <div className="bg-[#1B3B2B]/5 px-6 py-4 border-b border-[#EAE3D2]">
-                      <h4 className="text-xs font-bold text-[#1B3B2B] uppercase tracking-[0.1em]">Security Settings</h4>
-                    </div>
-                    <div className="p-6 divide-y divide-[#EAE3D2]/60 text-sm">
-                      <div className="py-3 flex justify-between items-center gap-4 first:pt-0">
-                        <span className="text-[#7C7467] font-medium">Password Authorization:</span>
-                        <button className="px-3 py-1 bg-[#1B3B2B] text-[#FCFAF7] text-[11px] font-bold uppercase tracking-wider rounded hover:bg-[#1B3B2B]/90 transition-colors shadow-sm cursor-pointer">
-                          Reset Password
-                        </button>
-                      </div>
-                      <div className="py-3 flex justify-between gap-4 last:pb-0">
-                        <span className="text-[#7C7467] font-medium">Connected Active Sessions:</span>
-                        <span className="text-[#1A1A1A] font-semibold font-mono">
-                          {user?.sessions?.filter((s: any) => !s.revoked).length || 0} Tracks Active
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-[#FCFAF7] border border-[#EAE3D2] rounded-xl shadow-sm overflow-hidden">
-                    <div className="bg-[#1B3B2B]/5 px-6 py-4 border-b border-[#EAE3D2]">
-                      <h4 className="text-xs font-bold text-[#1B3B2B] uppercase tracking-[0.1em]">Platform Context</h4>
-                    </div>
-                    <div className="p-6 divide-y divide-[#EAE3D2]/60 text-sm">
-                      <div className="py-3 flex justify-between gap-4 first:pt-0">
-                        <span className="text-[#7C7467] font-medium">Linked Addresses:</span>
-                        <span className="text-[#1A1A1A] font-semibold">{user?.addresses?.length || 0} Saved</span>
-                      </div>
-                      <div className="py-3 flex justify-between gap-4">
-                        <span className="text-[#7C7467] font-medium">Submitted Reviews:</span>
-                        <span className="text-[#1A1A1A] font-semibold">{user?.reviews?.length || 0} Items</span>
-                      </div>
-                      <div className="py-3 flex justify-between gap-4 last:pb-0">
-                        <span className="text-[#7C7467] font-medium">Pending Notifications:</span>
-                        <span className="text-[#1A1A1A] font-semibold">
-                          {user?.notifications?.filter((n: any) => !n.isRead).length || 0} Unread
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'orders' && (
-              <AccountOrdersTab orders={user?.orders}/>
-            )}
-
-            {activeTab === 'addresses' && (
-              <AccountAddressesTab />
-            )}
-
-            {activeTab === 'sessions' && (
-              <div className="space-y-4 text-left">
-                <div className="border-b border-gray-200 pb-3 mb-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                  <div>
-                    <h3 className="text-lg font-medium text-gray-900">Logged-in Devices</h3>
-                    <p className="text-sm text-gray-500 mt-1">Review and manage the devices currently logged into your account.</p>
-                  </div>
-                  {sessions.filter(sess => sess.id !== currentSessionId && !sess.revoked).length > 0 && (
-                    <button
-                      onClick={handleRevokeAllOtherSessions}
-                      className="self-start sm:self-auto px-4 py-2 bg-red-50 text-red-700 hover:bg-red-100 border border-red-200 text-xs font-semibold rounded-md transition-colors cursor-pointer flex items-center gap-1.5"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" /> Log Out All Other Devices
-                    </button>
-                  )}
-                </div>
-
-                {sessions.length === 0 ? (
-                  <div className="bg-white border border-gray-200 rounded-lg p-16 text-center shadow-sm">
-                    <AlertCircle className="h-8 w-8 text-gray-400 mx-auto mb-3" />
-                    <p className="text-sm text-gray-500">No active login sessions found.</p>
-                  </div>
-                ) : (
-                  <div className="bg-white border border-gray-200 rounded-lg divide-y divide-gray-200 shadow-sm">
-                    {sessions.map((sess) => {
-                      const isExpired = new Date(sess.expiresAt) < new Date();
-                      const isCurrentSession = sess.id === currentSessionId;
                       
-                      return (
-                        <div key={sess.id} className={`p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${sess.revoked || isExpired ? 'opacity-50 bg-gray-50' : ''}`}>
-                          <div className="flex items-start gap-4">
-                            <div className="p-2.5 bg-gray-50 border border-gray-200 rounded-md text-green-700">
-                              <Laptop className="h-5 w-5 stroke-[2]" />
-                            </div>
-                            <div className="space-y-1">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <p className="text-sm font-semibold text-gray-900">{sess.userAgent || 'Unknown Browser / Device'}</p>
-                                {isCurrentSession && !sess.revoked && !isExpired && (
-                                  <span className="text-[10px] font-bold bg-green-50 border border-green-200 text-green-700 px-2 py-0.5 rounded-full">Current Active Session</span>
-                                )}
-                                {!isCurrentSession && !sess.revoked && !isExpired && (
-                                  <span className="text-[10px] font-bold bg-blue-50 border border-blue-200 text-blue-700 px-2 py-0.5 rounded-full">Other Active Device</span>
-                                )}
-                                {(sess.revoked || isExpired) && (
-                                  <span className="text-[10px] font-bold bg-gray-100 border border-gray-300 text-gray-500 px-2 py-0.5 rounded-full">Logged Out</span>
-                                )}
-                              </div>
-                              <div className="flex flex-wrap items-center gap-x-4 gap-y-0.5 text-xs text-gray-500">
-                                <span>IP Address: {sess.ipAddress || 'Unknown IP'}</span>
-                                <span>•</span>
-                                <span className="flex items-center gap-1">
-                                  <Clock className="h-3 w-3" /> Last Active: {sess.lastUsedAt ? new Date(sess.lastUsedAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : '—'}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                          {!sess.revoked && !isExpired && (
-                            <button 
-                              onClick={() => handleRevokeSession(sess.id)}
-                              className="px-3 py-1.5 border border-red-200 text-red-600 hover:bg-red-50 text-xs font-medium rounded-md transition-colors cursor-pointer self-start sm:self-auto"
-                            >
-                              Log Out Device
-                            </button>
-                          )}
+                      <div className="space-y-4 text-sm">
+                        <div className="flex items-center justify-between py-2 border-b border-[#EAE3D2]/40">
+                          <span className="text-[#7C7467] font-medium">Full Name</span>
+                          <span className="text-[#1A1A1A] font-semibold">{user?.name || '—'}</span>
                         </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {activeTab === 'reviews' && (
-              <div className="space-y-4 text-left">
-                <div className="border-b border-gray-200 pb-3 mb-2">
-                  <h3 className="text-lg font-medium text-gray-900">Your Product Reviews</h3>
-                </div>
-
-                {!user?.reviews || user.reviews.length === 0 ? (
-                  <div className="bg-white border border-gray-200 rounded-lg p-16 text-center shadow-sm">
-                    <Star className="h-8 w-8 text-gray-400 mx-auto mb-3" />
-                    <p className="text-sm text-gray-500">You haven't written any reviews yet.</p>
-                  </div>
-                ) : (
-                  user.reviews.map((rev: any) => (
-                    <div key={rev.id} className="bg-white border border-gray-200 rounded-lg p-6 space-y-3 shadow-sm">
-                      <div className="flex justify-between items-start border-b border-gray-50 pb-3">
-                        <div>
-                          <h4 className="font-semibold text-sm text-gray-900">{rev.product?.name || 'Product'}</h4>
-                          <span className="text-xs text-gray-400 block mt-0.5">Reviewed on: {new Date(rev.createdAt).toLocaleDateString('en-IN')}</span>
+                        <div className="flex items-center justify-between py-2 border-b border-[#EAE3D2]/40">
+                          <span className="text-[#7C7467] font-medium flex items-center gap-2">
+                            <Mail className="h-3.5 w-3.5 text-[#C89B3C]" /> Email Address
+                          </span>
+                          <span className="text-[#1A1A1A] font-semibold font-mono text-xs break-all">{user?.email || '—'}</span>
                         </div>
-                        <div className="flex gap-0.5 text-amber-500">
-                          {Array.from({ length: rev.rating }).map((_, i) => (
-                            <Star key={i} className="h-3.5 w-3.5 fill-current" />
-                          ))}
+                        <div className="flex items-center justify-between py-2">
+                          <span className="text-[#7C7467] font-medium flex items-center gap-2">
+                            <Phone className="h-3.5 w-3.5 text-[#C89B3C]" /> Phone Number
+                          </span>
+                          <span className="text-[#1A1A1A] font-semibold">{user?.phone || 'Not provided'}</span>
                         </div>
                       </div>
-                      <p className="text-sm text-gray-600 italic font-light">"{rev.comment || 'No written review text provided.'}"</p>
                     </div>
-                  ))
-                )}
-              </div>
-            )}
-
-            {activeTab === 'notifications' && (
-              <div className="space-y-4 text-left">
-                <div className="border-b border-gray-200 pb-3 mb-2">
-                  <h3 className="text-lg font-medium text-gray-900">Account Notifications</h3>
-                </div>
-
-                {!user?.notifications || user.notifications.length === 0 ? (
-                  <div className="bg-white border border-gray-200 rounded-lg p-16 text-center shadow-sm">
-                    <Bell className="h-8 w-8 text-gray-400 mx-auto mb-3" />
-                    <p className="text-sm text-gray-500">Your notifications inbox is empty.</p>
                   </div>
-                ) : (
-                  <div className="bg-white border border-gray-200 rounded-lg divide-y divide-gray-100 shadow-sm">
-                    {user.notifications.map((notif: any) => (
-                      <div key={notif.id} className={`p-6 space-y-1.5 transition-colors ${!notif.isRead ? 'bg-green-50/40' : ''}`}>
-                        <div className="flex items-center justify-between">
-                          <h4 className="font-semibold text-sm text-gray-900">{notif.title}</h4>
-                          <span className="text-xs text-gray-400">{new Date(notif.createdAt).toLocaleDateString('en-IN')}</span>
+
+                  {/* Security Card */}
+                  <div className="bg-[#FCFAF7] border border-[#EAE3D2] rounded-2xl shadow-sm hover:shadow-md transition-shadow p-6 lg:p-8 flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center gap-3 border-b border-[#EAE3D2] pb-4 mb-6">
+                        <div className="p-2 bg-[#1B3B2B]/5 rounded-lg text-[#1B3B2B]">
+                          <KeyRound className="h-5 w-5" />
                         </div>
-                        <p className="text-sm text-gray-600 font-light leading-relaxed">{notif.message}</p>
+                        <h3 className="font-serif text-lg font-semibold text-[#1B3B2B]">Security & Access</h3>
                       </div>
-                    ))}
+                      
+                      <div className="space-y-4 text-sm">
+                        <div className="flex items-center justify-between py-2 border-b border-[#EAE3D2]/40">
+                          <span className="text-[#7C7467] font-medium">Account Status</span>
+                          <span className={`text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full border ${
+                            user?.isVerified 
+                              ? 'bg-emerald-50 text-emerald-900 border-emerald-200' 
+                              : 'bg-amber-50 text-amber-900 border-amber-200'
+                          }`}>
+                            {user?.isVerified ? 'Active & Secure' : 'Action Required'}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between py-2">
+                          <span className="text-[#7C7467] font-medium">Password Authorization</span>
+                          <button 
+                            onClick={() => setIsPasswordModalOpen(true)}
+                            className="px-4 py-2 bg-[#1B3B2B] text-[#FCFAF7] text-[11px] font-bold tracking-wider uppercase rounded-lg hover:bg-[#C89B3C] hover:text-[#1B3B2B] transition-all duration-300 shadow-sm cursor-pointer"
+                          >
+                            Update Password
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                )}
+
+                </div>
               </div>
             )}
+
+            {/* OTHER TABS */}
+            {activeTab === 'orders' && <AccountOrdersTab orders={user?.orders}/>}
+            {activeTab === 'addresses' && <AccountAddressesTab />}
+            {activeTab === 'sessions' && <AccountSessionsTab />}
+            {activeTab === 'reviews' && <div className="min-h-[400px] w-full flex items-center justify-center bg-[#FDFCFB] p-6">
+                <div className="max-w-md w-full bg-[#FCFAF7] border border-[#EAE3D2] rounded-2xl p-8 lg:p-10 text-center shadow-md relative overflow-hidden">
+                  
+                  {/* Subtle background glow */}
+                  <div className="absolute -top-12 -right-12 w-32 h-32 bg-[#C89B3C]/10 rounded-full blur-2xl"></div>
+                  
+                  <span className="text-[11px] font-bold tracking-[0.25em] text-[#C89B3C] uppercase mb-3 block font-mono">
+                    Under Development
+                  </span>
+                  
+                  <h2 className="font-serif text-3xl font-semibold text-[#1B3B2B] tracking-tight mb-3">
+                    Coming Soon
+                  </h2>
+                  
+                  <p className="text-sm text-[#7C7467] font-light leading-relaxed mb-6">
+                    We are crafting something exceptional for this section. Stay tuned for future updates.
+                  </p>
+
+                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#1B3B2B]/5 rounded-full border border-[#1B3B2B]/10">
+                    <span className="w-2 h-2 rounded-full bg-[#C89B3C] animate-pulse"></span>
+                    <span className="text-xs font-semibold tracking-wider text-[#1B3B2B] uppercase">
+                      In Progress
+                    </span>
+                  </div>
+
+                </div>
+              </div>
+            }
+            {activeTab === 'notifications' && 
+              <div className="min-h-[400px] w-full flex items-center justify-center bg-[#FDFCFB] p-6">
+                <div className="max-w-md w-full bg-[#FCFAF7] border border-[#EAE3D2] rounded-2xl p-8 lg:p-10 text-center shadow-md relative overflow-hidden">
+                  
+                  {/* Subtle background glow */}
+                  <div className="absolute -top-12 -right-12 w-32 h-32 bg-[#C89B3C]/10 rounded-full blur-2xl"></div>
+                  
+                  <span className="text-[11px] font-bold tracking-[0.25em] text-[#C89B3C] uppercase mb-3 block font-mono">
+                    Under Development
+                  </span>
+                  
+                  <h2 className="font-serif text-3xl font-semibold text-[#1B3B2B] tracking-tight mb-3">
+                    Coming Soon
+                  </h2>
+                  
+                  <p className="text-sm text-[#7C7467] font-light leading-relaxed mb-6">
+                    We are crafting something exceptional for this section. Stay tuned for future updates.
+                  </p>
+
+                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#1B3B2B]/5 rounded-full border border-[#1B3B2B]/10">
+                    <span className="w-2 h-2 rounded-full bg-[#C89B3C] animate-pulse"></span>
+                    <span className="text-xs font-semibold tracking-wider text-[#1B3B2B] uppercase">
+                      In Progress
+                    </span>
+                  </div>
+
+                </div>
+              </div>
+            }
 
           </div>
         </div>
       </main>
+
+      {/* UPDATE PASSWORD MODAL */}
+      {isPasswordModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#1B3B2B]/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-[#FCFAF7] border border-[#EAE3D2] rounded-2xl max-w-md w-full p-8 shadow-2xl relative text-left">
+            
+            <button 
+              onClick={() => setIsPasswordModalOpen(false)}
+              className="absolute top-6 right-6 text-[#7C7467] hover:text-[#1B3B2B] transition-colors p-1"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="mb-6">
+              <h3 className="font-serif text-xl font-semibold text-[#1B3B2B]">Update Your Password</h3>
+              <p className="text-xs text-[#7C7467] mt-1 font-light">Set a new password for your account.</p>
+            </div>
+
+            {passwordSuccess ? (
+              <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-center space-y-2">
+                <Check className="w-6 h-6 text-emerald-600 mx-auto" />
+                <p className="text-xs font-semibold text-emerald-900">Password updated successfully!</p>
+              </div>
+            ) : (
+              <form onSubmit={handlePasswordResetSubmit} className="space-y-4">
+                {passwordError && (
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0" />
+                    <span>{passwordError}</span>
+                  </div>
+                )}
+
+                <PasswordInput
+                  label="New Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="At least 8 characters"
+                  disabled={isSubmittingPassword}
+                  required
+                />
+
+                <PasswordInput
+                  label="Confirm New Password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Repeat new password"
+                  disabled={isSubmittingPassword}
+                  required
+                />
+
+                <div className="pt-2">
+                  <button
+                    type="submit"
+                    disabled={isSubmittingPassword}
+                    className="w-full h-11 bg-[#1B3B2B] hover:bg-[#C89B3C] text-[#FCFAF7] hover:text-[#1B3B2B] font-semibold text-xs tracking-wider uppercase rounded-xl transition-all duration-300 shadow flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                  >
+                    {isSubmittingPassword ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Confirm Password Update'}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
