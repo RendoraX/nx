@@ -1,10 +1,8 @@
-// apps/web/app/account/services/addressService.ts
-
+// services/address.service.ts
 import api from "@/lib/axios";
-import { CacheAxiosResponse } from "axios-cache-interceptor";
 
 export interface AddressPayload {
-  id : string
+  id?: string;
   fullName: string;
   phone: string;
   line1: string;
@@ -13,28 +11,25 @@ export interface AddressPayload {
   state: string;
   country: string;
   postalCode: string;
-  isDefault: boolean;
+  isDefault?: boolean;
 }
 
-
-/**
- * Handles all network operations communicating with your Prisma backend endpoint
- */
 export const addressService = {
-  // Fetch all addresses for the authenticated user
-  async getAll(): Promise<CacheAxiosResponse[]> {
-    const res = await api.get('http://localhost:4000/api/account/addresses');
-    return res.data.addresses
+  async getAll(): Promise<AddressPayload[]> {
+    // Use relative paths since baseURL is already configured
+    const res = await api.get('/api/account/addresses', {
+      cache: false,
+    });
+    return res.data.addresses || res.data;
   },
 
-  // Save a new address profile to database
-  async create(payload: AddressPayload): Promise<CacheAxiosResponse> {
-    const res = await api.post('http://localhost:4000/api/account/address' , payload);
-    return res
+  async create(payload: AddressPayload) {
+    const res = await api.post('/api/account/address', payload);
+    return res.data;
   },
 
-  // Purge a target allocation node from ledger
-  async delete(id: string): Promise<CacheAxiosResponse> {
-    return await api.delete(`http://localhost:4000/api/account/address/${id}/d`);
+  async delete(id: string) {
+    const res = await api.delete(`/api/account/address/${id}/d`);
+    return res.data;
   }
 };

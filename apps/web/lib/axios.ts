@@ -31,7 +31,6 @@ const processQueue = (error?: unknown) => {
   failedQueue = [];
 };
 
-// Safe redirect utility to avoid infinite reloads
 const safeRedirectToLogin = () => {
   if (typeof window !== "undefined" && window.location.pathname !== "/login") {
     window.location.href = "/login";
@@ -48,23 +47,23 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    // Only handle 401s
+    // Only handle 401 Unauthorized errors
     if (error.response?.status !== 401) {
       return Promise.reject(error);
     }
 
-    // Bypass redirect loop if fetching user session state on load
+    // Bypass redirect loop if fetching initial user profile
     if (originalRequest.url?.includes("/api/auth/me")) {
       return Promise.reject(error);
     }
 
-    // Don't refresh if refresh endpoint itself failed
-    if (originalRequest.url?.includes("/auth/refresh")) {
+    // Don't refresh if the refresh endpoint itself failed
+    if (originalRequest.url?.includes("/api/auth/rt-token")) {
       safeRedirectToLogin();
       return Promise.reject(error);
     }
 
-    // Already retried once
+    // Prevent infinite retry loop
     if (originalRequest._retry) {
       safeRedirectToLogin();
       return Promise.reject(error);
@@ -72,7 +71,6 @@ api.interceptors.response.use(
 
     originalRequest._retry = true;
 
-    // Another request is already refreshing
     if (isRefreshing) {
       return new Promise((resolve, reject) => {
         failedQueue.push({
@@ -85,7 +83,8 @@ api.interceptors.response.use(
     isRefreshing = true;
 
     try {
-      await api.post("/auth/refresh");
+      // Hit your actual Express refresh endpoint
+      await api.post("/api/auth/rt-token");
 
       processQueue();
 

@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
-import { deleteAddressAction } from '../app/(store)/account/actions/Address';
+import { useState, useTransition, useCallback } from 'react';
 import { addressService, AddressPayload } from '@/services/address.service';
 import { useAuthContext } from '@/providers/AuthProviders';
 
@@ -10,45 +9,41 @@ export function useAddressBook() {
   const [isPending, startTransition] = useTransition();
   const [validationErrors, setValidationErrors] = useState<Record<string, string[]>>({});
 
-  // 1. Single Source of Truth: Derive directly from context.
-  // Fallback to empty array prevents "cannot read length of undefined"
   const addresses: AddressPayload[] = user?.addresses || [];
 
-  const addAddress = async (newAddress: AddressPayload): Promise<AddressPayload | void> => {
+  // Dedicated server re-fetch method
+  const refetchAddresses = useCallback(async () => {
+    try {
+      const freshAddresses = await addressService.getAll();
+      setUser((prev: any) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          addresses: freshAddresses,
+        };
+      });
+    } catch (error) {
+      console.error("Failed to refetch addresses:", error);
+    }
+  }, [setUser]);
+
+  const addAddress = async (newAddress: AddressPayload) => {
     setValidationErrors({});
     
     return new Promise((resolve, reject) => {
       startTransition(async () => {
         try {
-          const result = await addressService.create(newAddress);
+          const resData = await addressService.create(newAddress);
           
-          if (result.data?.success && result.data) {
-            const typedAddress: AddressPayload = {
-              line2: result.data.line2 ?? null,
-              ...result.data.address,
-            };
-
-            // 2. Fixed Syntax: Wrap in parentheses () to return the object correctly
-            setUser((prev: any) => {
-              if (!prev) return prev;
-
-              // Handle toggling other defaults if the new address is the primary default
-              const cleanExistingAddresses = typedAddress.isDefault
-                ? (prev.addresses || []).map((item: any) => ({ ...item, isDefault: false }))
-                : (prev.addresses || []);
-
-              return {
-                ...prev, // Keep existing user fields safe
-                addresses: [...cleanExistingAddresses, typedAddress],
-              };
-            });
-
-            resolve(typedAddress);
+          if (resData?.success) {
+            // Re-fetch clean list straight from DB
+            await refetchAddresses();
+            resolve(resData);
           } else {
-            if (result.data?.error) {
-              setValidationErrors(result.data.error as Record<string, string[]>);
+            if (resData?.error) {
+              setValidationErrors(resData.error as Record<string, string[]>);
             }
-            reject(new Error(result.data?.error || "Execution processing intercept"));
+            reject(new Error(resData?.message || resData?.error || "Execution error"));
           }
         } catch (error) {
           reject(error);
@@ -61,20 +56,14 @@ export function useAddressBook() {
     return new Promise((resolve, reject) => {
       startTransition(async () => {
         try {
-          const result = await addressService.delete(id);
+          const resData = await addressService.delete(id);
           
-          if (result.data.success) {
-            // Update context state safely
-            setUser((prev: any) => {
-              if (!prev) return prev;
-              return {
-                ...prev,
-                addresses: (prev.addresses || []).filter((item: any) => item.id !== id),
-              };
-            });
-            resolve({});
+          if (resData?.success) {
+            // Re-fetch clean list straight from DB
+            await refetchAddresses();
+            resolve(resData);
           } else {
-            reject(new Error(result.data.error || "Purge transaction failed"));
+            reject(new Error(resData?.message || resData?.error || "Purge failed"));
           }
         } catch (error) {
           reject(error);
@@ -89,5 +78,6 @@ export function useAddressBook() {
     validationErrors,
     addAddress,
     removeAddress,
+    refetchAddresses,
   };
 }

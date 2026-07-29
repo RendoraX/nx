@@ -25,24 +25,23 @@ export default function AccountAddressesTab() {
   const [isSyncing, setIsSyncing] = useState(false);
   
   const { loading, refreshSession } = useAuthContext();
-  const { 
+  
+  // Guard against SSR hydration mismatches
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
+
+const { 
     addAddress: onAddAddress, 
     removeAddress: onDeleteAddress, 
     addresses,
     isProcessing 
   } = useAddressBook();
 
-  // Guard against SSR hydration mismatches
-  useEffect(() => {
-    setHasMounted(true);
-  }, []);
-
   const handleCreateAddress = async (newAddressData: any) => {
     try {
       setIsSyncing(true);
       await onAddAddress(newAddressData);
-      // Re-fetch fresh profile & address state from server
-      await refreshSession();
       setIsDialogOpen(false);
     } catch (error) {
       console.error("Could not register address:", error);
@@ -57,8 +56,6 @@ export default function AccountAddressesTab() {
     try {
       setIsSyncing(true);
       await onDeleteAddress(id);
-      // Re-fetch fresh profile & address state from server
-      await refreshSession();
     } catch (error) {
       console.error("Could not remove address:", error);
       alert("Failed to delete the address.");

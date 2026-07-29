@@ -116,5 +116,15 @@ export const AuthService = {
     } catch (error: any) {
       throw error?.response?.data || new Error('Active authorization trace unverified.');
     }
+  },
+  
+  async updatePassword(payload : {password : string}){
+    try {
+      const response = await api.put("http://localhost:4000/api/auth/account/cred/update" , {password : payload.password as string})
+
+      return response
+    } catch (error : any) {
+      throw error?.response?.data || new Error('Active authorization trace unverified.');
+    }
   }
 };
