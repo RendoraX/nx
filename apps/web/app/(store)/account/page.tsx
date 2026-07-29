@@ -1,6 +1,6 @@
 'use client';
 
-import React, { act, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { 
   User as UserIcon, 
@@ -32,10 +32,57 @@ type ActiveTab = 'profile' | 'orders' | 'addresses' | 'sessions' | 'reviews' | '
 
 const VALID_TABS: ActiveTab[] = ['profile', 'orders', 'addresses', 'sessions', 'reviews', 'notifications'];
 
+/**
+ * Premium Luxury Loading Skeleton for Profile Tab
+ */
+function ProfileSkeleton() {
+  return (
+    <div className="space-y-8 animate-pulse text-left">
+      {/* Hero Card Skeleton */}
+      <div className="bg-[#1B3B2B]/90 rounded-2xl p-8 lg:p-10 flex flex-col md:flex-row items-center justify-between gap-6 border border-[#C89B3C]/20 shadow-xl">
+        <div className="flex flex-col md:flex-row items-center gap-6 w-full">
+          <div className="w-24 h-24 rounded-full bg-[#FCFAF7]/10 border-2 border-[#C89B3C]/30 flex-shrink-0" />
+          <div className="space-y-3 text-center md:text-left w-full max-w-xs">
+            <div className="h-7 bg-[#FCFAF7]/20 rounded-md w-3/4 mx-auto md:mx-0" />
+            <div className="h-4 bg-[#FCFAF7]/10 rounded-md w-1/2 mx-auto md:mx-0" />
+          </div>
+        </div>
+        <div className="w-36 h-9 bg-[#FCFAF7]/10 rounded-full border border-[#FCFAF7]/10 flex-shrink-0" />
+      </div>
+
+      {/* Details Cards Skeleton */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {[1, 2].map((i) => (
+          <div key={i} className="bg-[#FCFAF7] border border-[#EAE3D2] rounded-2xl p-6 lg:p-8 space-y-6 shadow-sm">
+            <div className="flex items-center gap-3 border-b border-[#EAE3D2] pb-4">
+              <div className="w-9 h-9 bg-[#1B3B2B]/10 rounded-lg" />
+              <div className="h-5 bg-[#1B3B2B]/10 rounded-md w-1/3" />
+            </div>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center py-2 border-b border-[#EAE3D2]/40">
+                <div className="h-4 bg-gray-200 rounded w-1/4" />
+                <div className="h-4 bg-gray-200 rounded w-1/3" />
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-[#EAE3D2]/40">
+                <div className="h-4 bg-gray-200 rounded w-1/3" />
+                <div className="h-4 bg-gray-200 rounded w-1/2" />
+              </div>
+              <div className="flex justify-between items-center py-2">
+                <div className="h-4 bg-gray-200 rounded w-1/4" />
+                <div className="h-4 bg-gray-200 rounded w-1/3" />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function AccountPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { user, logout } = useAuthContext();
+  const { user, logout, loading: authLoading } = useAuthContext();
   
   const getInitialTab = (): ActiveTab => {
     const tabParam = searchParams.get('tab') as ActiveTab;
@@ -87,8 +134,8 @@ export default function AccountPage() {
 
     try {
       setIsSubmittingPassword(true);
-      const res = await AuthService.resetPassword({ password });
-      if (res.success) {
+      const res = await AuthService.updatePassword({ password });
+      if (res.data.success) {
         setPasswordSuccess(true);
         setTimeout(() => {
           setIsPasswordModalOpen(false);
@@ -171,172 +218,163 @@ export default function AccountPage() {
             
             {/* PROFILE TAB */}
             {activeTab === 'profile' && (
-              <div className="space-y-8 animate-fade-in text-left">
-                
-                {/* Hero Profile Card */}
-                <div className="bg-[#1B3B2B] rounded-2xl p-8 lg:p-10 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden shadow-xl border border-[#C89B3C]/30">
-                  <div className="absolute inset-0 opacity-5 bg-[linear-gradient(to_right,#FCFAF7_1px,transparent_1px),linear-gradient(to_bottom,#FCFAF7_1px,transparent_1px)] bg-[size:3rem_3rem]"></div>
+              authLoading || !user ? (
+                <ProfileSkeleton />
+              ) : (
+                <div className="space-y-8 animate-fade-in text-left">
                   
-                  <div className="relative z-10 flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
-                    <div className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-[#C89B3C] shadow-lg bg-[#FCFAF7] flex items-center justify-center flex-shrink-0">
-                      <UserIcon className="w-12 h-12 text-[#1B3B2B]" />
-                    </div>
-                    <div>
-                      <div className="flex items-center justify-center md:justify-start gap-2.5">
-                        <h2 className="font-serif text-2xl lg:text-3xl font-semibold text-[#FCFAF7] tracking-tight">
-                          {user?.name || 'Valued Member'}
-                        </h2>
-                        {user?.isVerified && (
-                          <span className="inline-flex items-center justify-center bg-[#C89B3C] text-[#1B3B2B] p-1 rounded-full shadow" title="Verified Account">
-                            <Check className="h-3 w-3 stroke-[3]" />
-                          </span>
-                        )}
+                  {/* Hero Profile Card */}
+                  <div className="bg-[#1B3B2B] rounded-2xl p-8 lg:p-10 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden shadow-xl border border-[#C89B3C]/30">
+                    <div className="absolute inset-0 opacity-5 bg-[linear-gradient(to_right,#FCFAF7_1px,transparent_1px),linear-gradient(to_bottom,#FCFAF7_1px,transparent_1px)] bg-[size:3rem_3rem]"></div>
+                    
+                    <div className="relative z-10 flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
+                      <div className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-[#C89B3C] shadow-lg bg-[#FCFAF7] flex items-center justify-center flex-shrink-0">
+                        <UserIcon className="w-12 h-12 text-[#1B3B2B]" />
                       </div>
-                      <p className="text-xs text-[#EAE3D2]/80 tracking-widest uppercase mt-1 font-mono">{user?.email}</p>
+                      <div>
+                        <div className="flex items-center justify-center md:justify-start gap-2.5">
+                          <h2 className="font-serif text-2xl lg:text-3xl font-semibold text-[#FCFAF7] tracking-tight">
+                            {user.name}
+                          </h2>
+                          {user.isVerified && (
+                            <span className="inline-flex items-center justify-center bg-[#C89B3C] text-[#1B3B2B] p-1 rounded-full shadow" title="Verified Account">
+                              <Check className="h-3 w-3 stroke-[3]" />
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-[#EAE3D2]/80 tracking-widest uppercase mt-1 font-mono">{user.email}</p>
+                      </div>
+                    </div>
+
+                    <div className="relative z-10 flex items-center gap-2 bg-[#FCFAF7]/10 backdrop-blur-md px-4 py-2 rounded-full border border-[#FCFAF7]/15">
+                      <ShieldCheck className="h-4 w-4 text-[#C89B3C]" />
+                      <span className="text-xs font-semibold tracking-wider text-[#FCFAF7] uppercase">
+                        {user.isVerified ? 'Verified Client' : 'Pending Verification'}
+                      </span>
                     </div>
                   </div>
 
-                  <div className="relative z-10 flex items-center gap-2 bg-[#FCFAF7]/10 backdrop-blur-md px-4 py-2 rounded-full border border-[#FCFAF7]/15">
-                    <ShieldCheck className="h-4 w-4 text-[#C89B3C]" />
-                    <span className="text-xs font-semibold tracking-wider text-[#FCFAF7] uppercase">
-                      {user?.isVerified ? 'Verified Client' : 'Pending Verification'}
-                    </span>
+                  {/* Details Section */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    {/* Personal Overview */}
+                    <div className="bg-[#FCFAF7] border border-[#EAE3D2] rounded-2xl shadow-sm hover:shadow-md transition-shadow p-6 lg:p-8 flex flex-col justify-between">
+                      <div>
+                        <div className="flex items-center gap-3 border-b border-[#EAE3D2] pb-4 mb-6">
+                          <div className="p-2 bg-[#1B3B2B]/5 rounded-lg text-[#1B3B2B]">
+                            <UserIcon className="h-5 w-5" />
+                          </div>
+                          <h3 className="font-serif text-lg font-semibold text-[#1B3B2B]">Personal Overview</h3>
+                        </div>
+                        
+                        <div className="space-y-4 text-sm">
+                          <div className="flex items-center justify-between py-2 border-b border-[#EAE3D2]/40">
+                            <span className="text-[#7C7467] font-medium">Full Name</span>
+                            <span className="text-[#1A1A1A] font-semibold">{user.name}</span>
+                          </div>
+                          <div className="flex items-center justify-between py-2 border-b border-[#EAE3D2]/40">
+                            <span className="text-[#7C7467] font-medium flex items-center gap-2">
+                              <Mail className="h-3.5 w-3.5 text-[#C89B3C]" /> Email Address
+                            </span>
+                            <span className="text-[#1A1A1A] font-semibold font-mono text-xs break-all">{user.email}</span>
+                          </div>
+                          <div className="flex items-center justify-between py-2">
+                            <span className="text-[#7C7467] font-medium flex items-center gap-2">
+                              <Phone className="h-3.5 w-3.5 text-[#C89B3C]" /> Phone Number
+                            </span>
+                            <span className="text-[#1A1A1A] font-semibold">{user.phone || 'Not provided'}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Security Card */}
+                    <div className="bg-[#FCFAF7] border border-[#EAE3D2] rounded-2xl shadow-sm hover:shadow-md transition-shadow p-6 lg:p-8 flex flex-col justify-between">
+                      <div>
+                        <div className="flex items-center gap-3 border-b border-[#EAE3D2] pb-4 mb-6">
+                          <div className="p-2 bg-[#1B3B2B]/5 rounded-lg text-[#1B3B2B]">
+                            <KeyRound className="h-5 w-5" />
+                          </div>
+                          <h3 className="font-serif text-lg font-semibold text-[#1B3B2B]">Security & Access</h3>
+                        </div>
+                        
+                        <div className="space-y-4 text-sm">
+                          <div className="flex items-center justify-between py-2 border-b border-[#EAE3D2]/40">
+                            <span className="text-[#7C7467] font-medium">Account Status</span>
+                            <span className={`text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full border ${
+                              user.isVerified 
+                                ? 'bg-emerald-50 text-emerald-900 border-emerald-200' 
+                                : 'bg-amber-50 text-amber-900 border-amber-200'
+                            }`}>
+                              {user.isVerified ? 'Active & Secure' : 'Action Required'}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between py-2">
+                            <span className="text-[#7C7467] font-medium">Password Authorization</span>
+                            <button 
+                              onClick={() => setIsPasswordModalOpen(true)}
+                              className="px-4 py-2 bg-[#1B3B2B] text-[#FCFAF7] text-[11px] font-bold tracking-wider uppercase rounded-lg hover:bg-[#C89B3C] hover:text-[#1B3B2B] transition-all duration-300 shadow-sm cursor-pointer"
+                            >
+                              Update Password
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
                   </div>
                 </div>
-
-                {/* Details Section */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  
-                  {/* Personal Overview */}
-                  <div className="bg-[#FCFAF7] border border-[#EAE3D2] rounded-2xl shadow-sm hover:shadow-md transition-shadow p-6 lg:p-8 flex flex-col justify-between">
-                    <div>
-                      <div className="flex items-center gap-3 border-b border-[#EAE3D2] pb-4 mb-6">
-                        <div className="p-2 bg-[#1B3B2B]/5 rounded-lg text-[#1B3B2B]">
-                          <UserIcon className="h-5 w-5" />
-                        </div>
-                        <h3 className="font-serif text-lg font-semibold text-[#1B3B2B]">Personal Overview</h3>
-                      </div>
-                      
-                      <div className="space-y-4 text-sm">
-                        <div className="flex items-center justify-between py-2 border-b border-[#EAE3D2]/40">
-                          <span className="text-[#7C7467] font-medium">Full Name</span>
-                          <span className="text-[#1A1A1A] font-semibold">{user?.name || '—'}</span>
-                        </div>
-                        <div className="flex items-center justify-between py-2 border-b border-[#EAE3D2]/40">
-                          <span className="text-[#7C7467] font-medium flex items-center gap-2">
-                            <Mail className="h-3.5 w-3.5 text-[#C89B3C]" /> Email Address
-                          </span>
-                          <span className="text-[#1A1A1A] font-semibold font-mono text-xs break-all">{user?.email || '—'}</span>
-                        </div>
-                        <div className="flex items-center justify-between py-2">
-                          <span className="text-[#7C7467] font-medium flex items-center gap-2">
-                            <Phone className="h-3.5 w-3.5 text-[#C89B3C]" /> Phone Number
-                          </span>
-                          <span className="text-[#1A1A1A] font-semibold">{user?.phone || 'Not provided'}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Security Card */}
-                  <div className="bg-[#FCFAF7] border border-[#EAE3D2] rounded-2xl shadow-sm hover:shadow-md transition-shadow p-6 lg:p-8 flex flex-col justify-between">
-                    <div>
-                      <div className="flex items-center gap-3 border-b border-[#EAE3D2] pb-4 mb-6">
-                        <div className="p-2 bg-[#1B3B2B]/5 rounded-lg text-[#1B3B2B]">
-                          <KeyRound className="h-5 w-5" />
-                        </div>
-                        <h3 className="font-serif text-lg font-semibold text-[#1B3B2B]">Security & Access</h3>
-                      </div>
-                      
-                      <div className="space-y-4 text-sm">
-                        <div className="flex items-center justify-between py-2 border-b border-[#EAE3D2]/40">
-                          <span className="text-[#7C7467] font-medium">Account Status</span>
-                          <span className={`text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full border ${
-                            user?.isVerified 
-                              ? 'bg-emerald-50 text-emerald-900 border-emerald-200' 
-                              : 'bg-amber-50 text-amber-900 border-amber-200'
-                          }`}>
-                            {user?.isVerified ? 'Active & Secure' : 'Action Required'}
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between py-2">
-                          <span className="text-[#7C7467] font-medium">Password Authorization</span>
-                          <button 
-                            onClick={() => setIsPasswordModalOpen(true)}
-                            className="px-4 py-2 bg-[#1B3B2B] text-[#FCFAF7] text-[11px] font-bold tracking-wider uppercase rounded-lg hover:bg-[#C89B3C] hover:text-[#1B3B2B] transition-all duration-300 shadow-sm cursor-pointer"
-                          >
-                            Update Password
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                </div>
-              </div>
+              )
             )}
 
             {/* OTHER TABS */}
             {activeTab === 'orders' && <AccountOrdersTab orders={user?.orders}/>}
             {activeTab === 'addresses' && <AccountAddressesTab />}
             {activeTab === 'sessions' && <AccountSessionsTab />}
-            {activeTab === 'reviews' && <div className="min-h-[400px] w-full flex items-center justify-center bg-[#FDFCFB] p-6">
-                <div className="max-w-md w-full bg-[#FCFAF7] border border-[#EAE3D2] rounded-2xl p-8 lg:p-10 text-center shadow-md relative overflow-hidden">
-                  
-                  {/* Subtle background glow */}
-                  <div className="absolute -top-12 -right-12 w-32 h-32 bg-[#C89B3C]/10 rounded-full blur-2xl"></div>
-                  
-                  <span className="text-[11px] font-bold tracking-[0.25em] text-[#C89B3C] uppercase mb-3 block font-mono">
-                    Under Development
-                  </span>
-                  
-                  <h2 className="font-serif text-3xl font-semibold text-[#1B3B2B] tracking-tight mb-3">
-                    Coming Soon
-                  </h2>
-                  
-                  <p className="text-sm text-[#7C7467] font-light leading-relaxed mb-6">
-                    We are crafting something exceptional for this section. Stay tuned for future updates.
-                  </p>
-
-                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#1B3B2B]/5 rounded-full border border-[#1B3B2B]/10">
-                    <span className="w-2 h-2 rounded-full bg-[#C89B3C] animate-pulse"></span>
-                    <span className="text-xs font-semibold tracking-wider text-[#1B3B2B] uppercase">
-                      In Progress
-                    </span>
-                  </div>
-
-                </div>
-              </div>
-            }
-            {activeTab === 'notifications' && 
+            {activeTab === 'reviews' && (
               <div className="min-h-[400px] w-full flex items-center justify-center bg-[#FDFCFB] p-6">
                 <div className="max-w-md w-full bg-[#FCFAF7] border border-[#EAE3D2] rounded-2xl p-8 lg:p-10 text-center shadow-md relative overflow-hidden">
-                  
-                  {/* Subtle background glow */}
                   <div className="absolute -top-12 -right-12 w-32 h-32 bg-[#C89B3C]/10 rounded-full blur-2xl"></div>
-                  
                   <span className="text-[11px] font-bold tracking-[0.25em] text-[#C89B3C] uppercase mb-3 block font-mono">
                     Under Development
                   </span>
-                  
                   <h2 className="font-serif text-3xl font-semibold text-[#1B3B2B] tracking-tight mb-3">
                     Coming Soon
                   </h2>
-                  
                   <p className="text-sm text-[#7C7467] font-light leading-relaxed mb-6">
                     We are crafting something exceptional for this section. Stay tuned for future updates.
                   </p>
-
                   <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#1B3B2B]/5 rounded-full border border-[#1B3B2B]/10">
                     <span className="w-2 h-2 rounded-full bg-[#C89B3C] animate-pulse"></span>
                     <span className="text-xs font-semibold tracking-wider text-[#1B3B2B] uppercase">
                       In Progress
                     </span>
                   </div>
-
                 </div>
               </div>
-            }
+            )}
+            {activeTab === 'notifications' && (
+              <div className="min-h-[400px] w-full flex items-center justify-center bg-[#FDFCFB] p-6">
+                <div className="max-w-md w-full bg-[#FCFAF7] border border-[#EAE3D2] rounded-2xl p-8 lg:p-10 text-center shadow-md relative overflow-hidden">
+                  <div className="absolute -top-12 -right-12 w-32 h-32 bg-[#C89B3C]/10 rounded-full blur-2xl"></div>
+                  <span className="text-[11px] font-bold tracking-[0.25em] text-[#C89B3C] uppercase mb-3 block font-mono">
+                    Under Development
+                  </span>
+                  <h2 className="font-serif text-3xl font-semibold text-[#1B3B2B] tracking-tight mb-3">
+                    Coming Soon
+                  </h2>
+                  <p className="text-sm text-[#7C7467] font-light leading-relaxed mb-6">
+                    We are crafting something exceptional for this section. Stay tuned for future updates.
+                  </p>
+                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#1B3B2B]/5 rounded-full border border-[#1B3B2B]/10">
+                    <span className="w-2 h-2 rounded-full bg-[#C89B3C] animate-pulse"></span>
+                    <span className="text-xs font-semibold tracking-wider text-[#1B3B2B] uppercase">
+                      In Progress
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
 
           </div>
         </div>
