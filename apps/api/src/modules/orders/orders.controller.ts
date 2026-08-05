@@ -9,10 +9,11 @@ export const createOrderEndpoint = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
-    const order = await createOrderForUser(userId, req.body);
-    return res.status(201).json({ message: "Order created", order });
+    const order = await createOrderForUser(userId, await req.body);
+    return res.status(201).json({ message: "Order created", order , success : true});
   } catch (error: any) {
-    return res.status(400).json({ message: error.message ?? "Failed to create order" });
+    console.log(error.message)
+    return res.status(400).json({ message: error.message ?? "Failed to create order" , success : false });
   }
 };
 
@@ -32,9 +33,9 @@ export const getOrderEndpoint = async (req: AuthRequest, res: Response) => {
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
     const order = await getOrderById(userId, req.params.id as string);
-    return res.status(200).json({ order });
+    return res.status(200).json({ order  , message  : "Order with id fetched !!" , success : true});
   } catch (error: any) {
-    return res.status(400).json({ message: error.message ?? "Failed to fetch order" });
+    return res.status(400).json({ message: error.message ?? "Failed to fetch order"  , error : error.message || error , success : false});
   }
 };
 

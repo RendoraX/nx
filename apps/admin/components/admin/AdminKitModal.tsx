@@ -206,7 +206,6 @@ export default function AdminKitModal({
     });
   };
 
-  console.log("all Products" , allAvailableProducts)
   return (
     <div className="fixed inset-0 bg-stone-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 transition-all duration-300 animate-fadeIn">
       <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden flex flex-col max-h-[92vh] border border-stone-100 transform scale-100 animate-scaleUp">

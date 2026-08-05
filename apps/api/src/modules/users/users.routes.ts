@@ -23,7 +23,6 @@ router.get(
 router.post(
     '/account/address',
     authMiddleware,
-    guestMiddleware,
     createAddressEndpoint
 );
 
@@ -31,7 +30,6 @@ router.post(
 router.get(
     '/account/addresses',
     authMiddleware,
-    guestMiddleware,
     getAddressesEndpoint
 );
 
@@ -39,7 +37,6 @@ router.get(
 router.delete(
     '/account/address/:id/d',
     authMiddleware,
-    guestMiddleware,
     deleteAddressEndpoint
 )
 

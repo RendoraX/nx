@@ -1,3 +1,4 @@
+import api from '@/lib/interceptor/axiosRES';
 import { OrderDetails, OrderSummary, OrderStatus } from '@/types/orders';
 
 export interface OrderFilters {
@@ -9,39 +10,38 @@ export interface OrderFilters {
   order?: 'asc' | 'desc';
 }
 
+
+const BASE_URL = "http://localhost:4000"
+
 class OrderService {
   async getOrdersList(filters: OrderFilters = {}): Promise<{ data: OrderDetails[]; total: number }> {
     const params = new URLSearchParams(filters as any);
-    const res = await fetch(`/api/admin/orders?${params.toString()}`);
-    if (!res.ok) throw new Error('Failed to resolve data node collection metrics.');
-    return res.json();
+    const res = await api.get(`${BASE_URL}/api/admin/orders?${params.toString()}`);
+    if (!res.data.success) throw new Error('Failed to resolve data node collection metrics.');
+    return res.data.orders;
   }
 
   async getOrderSummary(): Promise<OrderSummary> {
-    const res = await fetch('/api/admin/orders/summary');
-    if (!res.ok) throw new Error('Summary telemetry unreachable.');
-    return res.json();
+    const res = await api.get(`${BASE_URL}/api/admin/orders/summary`);
+    if (!res.data.success) throw new Error('Summary telemetry unreachable.');
+    return res.data;
   }
 
   async getOrderDetails(id: string): Promise<OrderDetails> {
-    const res = await fetch(`/api/admin/orders/${id}`);
-    if (!res.ok) throw new Error('Target log identity parsing failed.');
-    return res.json();
+    const res = await api.get(`${BASE_URL}/api/admin/orders/${id}`);
+    if (!res.data.success) throw new Error('Target log identity parsing failed.');
+    return res.data.order;
   }
 
   async updateOrderStatus(id: string, status: OrderStatus): Promise<OrderDetails> {
-    const res = await fetch(`/api/admin/orders/${id}/status`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status }),
-    });
-    if (!res.ok) throw new Error('Transaction execution denied by host rule.');
-    return res.json();
+    const res = await api.patch(`${BASE_URL}/api/admin/orders/${id}/status`, { status });
+    if (!res.data.success) throw new Error('Transaction execution denied by host rule.');
+    return res.data.order;
   }
 
   async cancelOrder(id: string): Promise<void> {
-    const res = await fetch(`/api/admin/orders/${id}/cancel`, { method: 'PATCH' });
-    if (!res.ok) throw new Error('Cancellation sequence abort fault.');
+    const res = await api.patch(`${BASE_URL}/api/admin/orders/${id}/cancel`, { method: 'PATCH' });
+    if (!res.data.success) throw new Error('Cancellation sequence abort fault.');
   }
 }
 

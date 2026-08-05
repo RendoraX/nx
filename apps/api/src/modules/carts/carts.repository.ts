@@ -6,7 +6,21 @@ export async function findCartByUser(userId: string) {
     include: {
       items: {
         include: {
-          product: true,
+          variant: {
+            include: {
+              inventory: true,
+              product: {
+                include: {
+                  images: {
+                    orderBy: {
+                      position: "asc",
+                    },
+                  },
+                  category: true,
+                },
+              },
+            },
+          },
         },
       },
     },
@@ -19,9 +33,9 @@ export async function createCart(userId: string) {
   });
 }
 
-export async function findCartItem(cartId: string, productId: string) {
+export async function findCartItem(cartId: string, variantId: string) {
   return prisma.cartItem.findFirst({
-    where: { cartId, productId },
+    where: { cartId, variantId},
   });
 }
 
@@ -31,12 +45,12 @@ export async function findCartItemById(itemId: string) {
   });
 }
 
-export async function addItem(cartId: string, productId: string, quantity: number) {
+export async function addItem(cartId: string,     variantId: string, quantity: number) {
   return prisma.cartItem.create({
     data: {
       cartId,
-      productId,
-      quantity,
+      variantId,
+      quantity
     },
   });
 }

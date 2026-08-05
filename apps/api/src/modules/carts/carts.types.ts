@@ -1,5 +1,5 @@
 export interface AddToCartDTO {
-  productId: string;
+  variantId: string;
   quantity: number;
 }
 

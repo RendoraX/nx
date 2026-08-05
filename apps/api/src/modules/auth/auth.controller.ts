@@ -1,6 +1,6 @@
 import { registerDTO, resetPasswordDTO } from "./auth.types";
 import { Request, Response } from "express";
-import { forgotPassword, getMeByToken, login, logout, logoutAll, refreshTokenRotate, register, resendVerification, resetPassword, verificationToken } from "./auth.service";
+import { forgotPassword, getAllSession, getMeByToken, login, logout, logoutAll, refreshTokenRotate, register, resendVerification, resetPassword, revokeSession, updatePassword, verificationToken } from "./auth.service";
 import { loginSchema, registerSchema } from "./auth.schema";
 import { verifyRefreshToken } from "../../../../../packages/auth/src/jwt";
 import { UserResponse } from "../users/users.types";
@@ -252,10 +252,74 @@ export const meEndpoint = async (req : Request , res : Response) => {
                 user
             })
     } catch (error : any) {
+        console.log(error.message)
         return res.status(500).json({
             message : "Internal server error",
             success : false,
             error : error.message || error
         })
     }
+};
+
+
+export const getAllSessionEndpoint = async( req : Request , res : Response)=>{
+    try {
+        const {accessToken} = req.cookies;
+        const sessions = await getAllSession(accessToken as string);
+        return res.status(200).json({
+            message : "Sesssion fetched succesfully !",
+            success : true,
+            sessions
+        });
+    } catch (error) {
+        console.log("======================================\nsessin erroe : " , (error as any).message)
+        return res.status(500).json({
+            message : "Internal server error",
+            success : false,
+            error : (error as any).message || error || "Error while getting all session"
+        })
+    }
+};
+
+export const sessionRevokeEndpoint  = async (req : Request , res : Response) => {
+    try {
+        const sessionId = req.params.sessionId as string;
+        const userId : string = (req as any).user.id as string
+        console.log("Session with this id is revoked")
+        await revokeSession({userId  , sessionId})
+
+        return res.status(200).json({
+            message : "Session revoked successfully ",
+            success : true
+        });
+    } catch (error) {
+        console.log((error as any).message )
+        return res.status(500).json({
+            message :"internal server erro",
+            success : false,
+            error : (error as any).message || error || "Error while revoking session"
+        })
+    }
 }
+
+
+export const updatePasswordEndpoint  = async (req : Request , res : Response) => {
+    try {
+        const payload = await req.body;
+        const userId : string = (req as any).user.id as string
+
+        await updatePassword({id : userId as string , password : payload.password as string})
+
+        return res.status(200).json({
+            message : "Password updated successfully ",
+            success : true
+        });
+    } catch (error) {
+        return res.status(500).json({
+            message :"internal server erro",
+            success : false,
+            error : (error as any).message || error || "Error while revoking session"
+        })
+    }
+};
+

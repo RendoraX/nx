@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { forgotPasswordInitEndpoint, loginEndpoint, logoutAllDevicesEndpoint, logoutEndpoint, meEndpoint, registerEndpoint, resendVerificationEndpoint, resetPasswordEndpoint, rotateRefreshTokenEndpoint, verificationTokenEndpoint } from "./auth.controller";
+import { forgotPasswordInitEndpoint, getAllSessionEndpoint, loginEndpoint, logoutAllDevicesEndpoint, logoutEndpoint, meEndpoint, registerEndpoint, resendVerificationEndpoint, resetPasswordEndpoint, rotateRefreshTokenEndpoint, sessionRevokeEndpoint, updatePasswordEndpoint, verificationTokenEndpoint } from "./auth.controller";
 import {authMiddleware} from '../../middleware/auth.middleware'
 import {guestMiddleware} from '../../middleware/guest.middleware'
 import { securityHeadersMiddleware } from '../../middleware/security.middleware'
@@ -23,4 +23,26 @@ router.get(
     meEndpoint
      )
 
+
+
+     //session routes
+
+
+router.get(
+    '/account/sessions',
+    authMiddleware,
+    getAllSessionEndpoint
+);
+
+router.post(
+    '/account/sessions/:sessionId/revoke',
+    authMiddleware,
+    sessionRevokeEndpoint
+);
+
+router.put(
+    '/account/cred/update',
+    authMiddleware,
+    updatePasswordEndpoint
+)
 export default router;

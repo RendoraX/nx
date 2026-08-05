@@ -14,6 +14,7 @@ export async function createPoojaKit(payload : any) {
         const validData = createCustomKitSchema.parse(payload)
         return await createCustomPoojaKit(validData)
     } catch (error) {
+        console.log((error as any).message , "custom kit create message")
         throw new Error((error as any).message || error || "Get all kits error")
     }
 };

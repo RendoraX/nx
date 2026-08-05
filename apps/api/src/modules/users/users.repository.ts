@@ -42,6 +42,15 @@ export async function getAddressesByUserId(userId : string){
     });
 };
 
+export async function findAddressByIdAndUser(addressId : string , userId : string) {
+  return await prisma.address.findUnique({
+    where : {
+      userId,
+      id : addressId
+    }
+  })
+}
+
 //user only
 export async function createAddressById(payload : createAddressDTO) {
     return await prisma.address.create({
@@ -105,3 +114,4 @@ export async function deleteAddressById(payload: deleteAddressDTO) {
     }
   });
 }
+

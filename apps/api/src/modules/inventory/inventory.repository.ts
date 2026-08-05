@@ -1,10 +1,20 @@
 import { prisma } from "../../../../../packages/database/src/client";
 
-export async function findInventory(inventoryId: string) {
+export async function findInventory(id: string) {
   return prisma.inventory.findUnique({
-    where: { id: inventoryId },
+    where: { 
+      id
+     },
     include: { variant: true },
   });
+}
+
+export async function findInventoryByVariantId(id : string) {
+  return prisma.inventory.findUnique({
+    where : {
+      variantId : id as string
+    }
+  })
 }
 
 export async function updateStock(inventoryId: string, stock: number) {
@@ -34,7 +44,7 @@ export async function decreaseStock(inventoryId: string, amount: number) {
 }
 
 export async function reserveStock(inventoryId: string, amount: number) {
-  return prisma.$transaction(async (tx) => {
+  return await prisma.$transaction(async (tx) => {
     const inv = await tx.inventory.findUnique({ where: { id: inventoryId } });
     if (!inv || inv.stock < amount) throw new Error("Insufficient stock to reserve");
 

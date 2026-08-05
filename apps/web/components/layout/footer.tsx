@@ -39,9 +39,9 @@ export function Footer() {
         </div>
 
         <div>
-          <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-[#C89B3C] mb-4">Corporate Matrix</h4>
+          <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-[#C89B3C] mb-4">Subscribe NewsLetter</h4>
           <p className="text-xs text-[#FAF8F3]/70 leading-relaxed font-light mb-2">
-            Subscribe to acquire ancestral health notifications and custom seasonal wellness dispatches.
+            Subscribe to get best health notifications and custom ayurvedic kit's.
           </p>
           <input 
             type="email" 
@@ -53,7 +53,6 @@ export function Footer() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 pt-8 border-t border-[#FAF8F3]/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] text-[#FAF8F3]/50 tracking-widest uppercase font-bold">
         <span>© 2026 Shri Ayurved Inc. All Rights Reserved.</span>
-        <span>Telemetry Hub Node Connected</span>
       </div>
     </footer>
   );

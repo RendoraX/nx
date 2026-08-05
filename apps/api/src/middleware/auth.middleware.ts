@@ -24,7 +24,6 @@ export async function authMiddleware(
     }
 
     const payload = verifyAccessToken(accessToken);
-
     if (!payload) {
       return res.status(401).json({
         success: false,
@@ -33,7 +32,10 @@ export async function authMiddleware(
       });
     }
     
-    if (!payload.sid || !payload.id) {
+    // Resolve user ID flexibly across standard JWT claims
+    const userIdFromToken = payload.id || payload.userId || payload.sub || payload.identifier;
+
+    if (!payload.sid || !userIdFromToken) {
       return res.status(401).json({
         success: false,
         code: "TOKEN_PAYLOAD_INVALID",
@@ -52,22 +54,28 @@ export async function authMiddleware(
     }
     
     if (session.revoked) {
-      return res.status(401).json({
+      return res.status(401).clearCookie("accessToken").clearCookie("refreshToken").json({
         success: false,
         code: "SESSION_REVOKED",
         message: "Session revoked.",
       });
     }
     
-    if (session.expiresAt.getTime() <= Date.now()) {
-      return res.status(401).json({
+    const expiresAt = new Date(session.expiresAt).getTime();
+    if (expiresAt <= Date.now()) {
+      return res.status(401).clearCookie("accessToken").clearCookie("refreshToken").json({
         success: false,
         code: "SESSION_EXPIRED",
         message: "Session expired.",
       });
     }
     
-    if (String(session.userId) !== String(payload.identifier)) {
+    // Safe ID comparison
+    const sessionUserId = String(session.userId);
+    const tokenUserId = String(userIdFromToken);
+
+    if (sessionUserId !== tokenUserId) {
+      console.error(`[Auth Mismatch] Session User: ${sessionUserId} | Token User: ${tokenUserId}`);
       return res.status(401).json({
         success: false,
         code: "USER_MISMATCH",

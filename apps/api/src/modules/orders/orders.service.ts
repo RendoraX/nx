@@ -1,4 +1,7 @@
-import { releaseStock, reserveStock } from "../inventory/inventory.repository";
+import { prisma } from "../../../../../packages/database/src/client";
+import { clearCart, findCartByUser } from "../carts/carts.repository";
+import { findInventory, releaseStock, reserveStock } from "../inventory/inventory.repository";
+import { findAddressByIdAndUser } from "../users/users.repository";
 import { createOrder, cancelOrder, findById, findByUser, updateStatus } from "./orders.repository";
 import { createOrderSchema, updateOrderStatusSchema } from "./orders.schema";
 import type { CreateOrderDTO, UpdateOrderStatusDTO } from "./orders.types";
@@ -13,6 +16,9 @@ const ORDER_STATUS_FLOW = [
   "DELIVERED",
   "CANCELLED",
 ] as const;
+
+const SHIPPING_THRESHOLD = 500;
+const STANDARD_SHIPPING_FEE = 40;
 
 export function canTransitionStatus(fromStatus: string, toStatus: string) {
   if (fromStatus === "DELIVERED" && toStatus !== "DELIVERED") {
@@ -34,21 +40,79 @@ export function canTransitionStatus(fromStatus: string, toStatus: string) {
 }
 
 export async function createOrderForUser(userId: string, payload: CreateOrderDTO) {
+  // 1. Validate Payload
   const data = createOrderSchema.parse(payload);
 
-  // Placeholder checkout flow: reserve inventory for each cart item in a real implementation.
-  await reserveStock("placeholder-product-id", 1);
+  // 2. Fetch User Cart
+  const cart = await findCartByUser(userId);
+  if (!cart || !cart.items || cart.items.length === 0) {
+    throw new Error("Cannot process checkout: Cart is empty or does not exist.");
+  }
 
-  const order = await createOrder({
-    userId,
-    addressId: data.addressId,
-    subtotal: 0,
-    shippingAmount: 0,
-    totalAmount: 0,
-    status: "PENDING",
+  // 3. Verify Address Ownership
+  const address = await findAddressByIdAndUser(data.addressId, userId);
+  if (!address) {
+    throw new Error("Invalid address: Selected address does not exist or belong to user.");
+  }
+
+  // 4. Calculate Financial Totals & Structure Order Items
+  let subtotal = 0;
+  const orderItemsData = cart.items.map((cartItem) => {
+    const itemPrice = Number(cartItem.variant?.price ?? 0);
+    const itemQuantity = cartItem.quantity;
+
+    subtotal += itemPrice * itemQuantity;
+
+    return {
+      productId: cartItem.variant?.product?.id || "",
+      variantId: cartItem.variantId,
+      quantity: itemQuantity,
+      price: itemPrice,
+    };
   });
 
-  return order;
+  const shippingAmount = subtotal >= SHIPPING_THRESHOLD ? 0 : STANDARD_SHIPPING_FEE;
+  const totalAmount = subtotal + shippingAmount;
+
+  // 5. Execute Atomic Transaction
+  return await prisma.$transaction(async (tx) => {
+    // Reserve Stock
+    for (const item of cart.items) {
+      const inventoryId = item.variant?.inventory?.id;
+      if (!inventoryId) {
+        throw new Error(`Inventory reference missing for item: ${item.id}`);
+      }
+
+      const inventory = await findInventory( inventoryId);
+      if (!inventory || inventory.stock < item.quantity) {
+        throw new Error(
+          `Insufficient stock available for product "${item.variant?.product?.name  || 'item'}".`
+        );
+      }
+
+      await reserveStock( inventoryId, item.quantity);
+    }
+
+    // Create Order with properly formatted items array
+    console.log("================Provider+++++++++++++++++++" , payload.paymentMethod)
+    const createdOrder = await createOrder(
+      {
+        userId,
+        addressId: data.addressId,
+        subtotal,
+        shippingAmount,
+        totalAmount,
+        items: orderItemsData,
+        paymentMethod : payload.paymentMethod as string
+      },
+      tx
+    );
+
+    // Clear Cart Items
+    await clearCart(cart.id);
+
+    return createdOrder;
+  });
 }
 
 export async function getOrdersForUser(userId: string) {

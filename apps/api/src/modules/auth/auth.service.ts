@@ -1,10 +1,11 @@
-import { createSession, createUser, createVerificationToken, deleteAllSessions, deleteSession, findByEmail, findById, findSession, updatePassword, updateSesson, updateVerificationToken, verifyVerificationToken } from "./auth.repository";
-import { forgotPasswordDTO, JWTPayload, loginDTO, refreshTokenDTO, registerDTO, resetPasswordDTO } from "./auth.types";
+import { createSession, createUser, createVerificationToken, deleteAllSessions, deleteSession, findByEmail, findById, findSession, getAllSessionByUserId, revokeSessionById, updatePasswordById, updateSesson, updateVerificationToken, verifyVerificationToken } from "./auth.repository";
+import { forgotPasswordDTO, JWTPayload, loginDTO, refreshTokenDTO, registerDTO, resetPasswordDTO, updatePasswordDTO } from "./auth.types";
 import { hashPassword, verifyPassword } from "../../../../../packages/auth/src/password";
 import { generateAccessToken, generateRefreshToken, verifyAccessToken, verifyRefreshToken } from "../../../../../packages/auth/src/jwt";
 import { veirfyEmail } from "../../../../../packages/email/src/templates/verify-email";
 import { resetPasswordEmail } from "../../../../../packages/email/src/templates/reset-password";
 import { resetPasswordSuccessEmail } from "../../../../../packages/email/src/templates/reset-password-success";
+import { revokeSessionSchema, updatePasswordSchema } from "./auth.schema";
 
 
 
@@ -130,6 +131,7 @@ export const login = async (payload : loginDTO) : Promise<{
             accessToken, refreshToken
         }
     } catch (error : any) {
+        console.log( "Login error =========", error.message)
         throw new Error(error.message as string);
     }
 };
@@ -218,9 +220,9 @@ export const resetPassword = async (payload : resetPasswordDTO) => {
         if(!verifiedToken) throw new Error("Token is invalid");
 
         const hashedPassword = await hashPassword(payload.password as string);
-        await updatePassword({
-            hashedPassword : hashedPassword as string,
-            email : verifiedToken.identifier as string
+        await updatePasswordById({
+            password : hashedPassword as string,
+            id : verifiedToken.identifier as string
         });
 
         const user = await findByEmail(verifiedToken.identifier as string);
@@ -232,19 +234,54 @@ export const resetPassword = async (payload : resetPasswordDTO) => {
     }    
 };
 
+
+export const updatePassword = async (payload : updatePasswordDTO) =>{
+    try {
+        const isValidData = updatePasswordSchema().parse(payload);
+        const hashedPassword = await hashPassword(isValidData.password as string)
+
+        return updatePasswordById({id : isValidData.id as string , password : hashedPassword as string});
+    } catch (error) {
+        throw new Error((error as any).message || error || "Error while updating password")
+    }
+}
 //completed , test = 0;;
 export const getMeByToken = async (token : string) => {
     try {
         const validTokenData = verifyAccessToken(token as string);
         if(!validTokenData) throw new Error("Access Token is not valid !!");
         const user =  await findById(validTokenData.identifier) as any;
+        console.log(validTokenData)
         user.currentSessionId = validTokenData.sid as string;
-
         const {password , ...userWP} = user;
         return userWP;
     } catch (error : any) {
         console.log( "===================================\n\n\n", error.message , "\n\n\n=============================")
         throw new Error(error.message || "Error while getting me !");
+    }
+};
+
+export const getAllSession = async(accessToken : string) : Promise<any> => {
+    try {
+        const isValidToken = verifyAccessToken(accessToken);
+        if(!isValidToken) throw new Error("Token is invalid !");
+        return await getAllSessionByUserId(isValidToken.id)
+    } catch (error) {
+        throw new Error((error as any).message || error || "Error while fetching all sessio")
+    }
+}
+
+export const revokeSession = async(payload : {
+    userId : string,
+    sessionId : string
+})=>{
+    try {
+        const isValidData = revokeSessionSchema().parse(payload);
+        if(!isValidData) throw new Error("Data is not valid")
+        
+        return await revokeSessionById(isValidData.userId , isValidData.sessionId);
+    } catch (error) {
+        throw new Error((error as any).message || error || "[auth service] : Error while revoking sessio")
     }
 }
 //=============MIDDLEWARE=============//

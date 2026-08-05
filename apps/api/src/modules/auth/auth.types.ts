@@ -32,8 +32,8 @@ export interface resetPasswordDTO{
 };
 
 export interface updatePasswordDTO{
-    hashedPassword : string;
-    email : string
+    password : string;
+    id : string
 }
 
 //============RESPONSE TYPES================//

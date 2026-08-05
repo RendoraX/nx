@@ -1,16 +1,21 @@
-// app/account/order/[orderid]/page.tsx
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState, use } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { 
   ArrowLeft, 
   Package, 
   Calendar, 
   MapPin, 
   ExternalLink,
-  AlertCircle
+  AlertCircle,
+  Loader2,
+  Phone,
+  ShieldCheck,
+  Crown
 } from 'lucide-react';
+import { useOrders } from '@/hooks/secure_hook/useOrder'; // Adjust path if needed
 
 type OrderStatus = 
   | 'PENDING'
@@ -21,101 +26,70 @@ type OrderStatus =
   | 'DELIVERED'
   | 'CANCELLED';
 
-interface ProductAttribute {
-  label: string;
-  value: string;
-}
+export default function OrderDetailPage({ params }: { params: Promise<{ orderid: string }> }) {
+  // Unwrap params safely for Next.js 14/15 App Router
+  const resolvedParams = use(params);
+  const orderId = resolvedParams.orderid;
 
-interface OrderItem {
-  id: string;
-  productId: string;
-  name: string;
-  imageUrl?: string;
-  attributes: ProductAttribute[];
-  quantity: number;
-  price: number;
-}
+  const { getOrder, cancelOrder, loading: apiLoading, error: apiError } = useOrders();
 
-interface OrderDetail {
-  id: string;
-  createdAt: string;
-  status: OrderStatus;
-  statusLabel: string;
-  totalAmount: number;
-  subtotal: number;
-  tax: number;
-  shippingFee: number;
-  shippingAddress: {
-    fullName: string;
-    line1: string;
-    city: string;
-    state: string;
-    postalCode: string;
-  };
-  items: OrderItem[];
-}
+  const [order, setOrder] = useState<any>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isCancelling, setIsCancelling] = useState<boolean>(false);
 
-const mockOrderData: OrderDetail = {
-  id: "54stg47851sa963",
-  createdAt: "May 25, 2026",
-  status: "PENDING",
-  statusLabel: "Pending Approval",
-  totalAmount: 124.50,
-  subtotal: 114.50,
-  tax: 5.00,
-  shippingFee: 5.00,
-  shippingAddress: {
-    fullName: "Samuel Wilson",
-    line1: "123 Premium Lane, Suite 400",
-    city: "Los Angeles",
-    state: "California",
-    postalCode: "90001"
-  },
-  items: [
-    {
-      id: "item-1",
-      productId: "prod-1",
-      name: "Red Bali Premium Botanical Extract (Size 10)",
-      attributes: [
-        { label: "Capsule size", value: "00 (500mg-600mg per capsule)" },
-        { label: "Capsule quantity", value: "100 capsules" }
-      ],
-      quantity: 1,
-      price: 40.50
+  // 1. Fetch real order data on mount
+  useEffect(() => {
+    if (orderId) {
+      setLoading(true);
+      getOrder(orderId)
+        .then((response: any) => {
+          // Extract order whether returned directly or inside response.order
+          const fetchedOrder = response?.order || response;
+          if (!fetchedOrder || (!fetchedOrder.id && !fetchedOrder._id)) {
+            throw new Error("Order details could not be parsed.");
+          }
+          setOrder(fetchedOrder);
+        })
+        .catch((err: any) => {
+          console.error("Error fetching order details:", err);
+          setError(err?.message || "Failed to load order details.");
+        })
+        .finally(() => {
+          setLoading(false);
+        });
     }
-  ]
-};
+  }, [orderId, getOrder]);
 
-export default function OrderDetailPage({ params }: { params: { orderid: string } }) {
-  const [order, setOrder] = useState<OrderDetail>(mockOrderData);
-  const [isCancelling, setIsCancelling] = useState(false);
+  // Business Protection Guard: Only allow user cancellation during PENDING phase.
+  const isCancellable = order?.status === 'PENDING';
 
-  // Business Protection Guard: Only allow user cancellation during the 'PENDING' phase.
-  // Once status maps to CONFIRMED, PACKED, or beyond, self-service cancellation closes down.
-  const isCancellable = order.status === 'PENDING';
-
+  // 2. Real Cancellation Handler
   const handleCancelOrder = async () => {
     const confirmCancel = window.confirm(
-      "Are you sure you want to cancel your order? We process things quickly, so this action cannot be undone."
+      "Are you sure you want to cancel your order? This action will restore stock and cannot be undone."
     );
     if (!confirmCancel) return;
-    
+
     setIsCancelling(true);
-    
-    // Simulate database update
-    setTimeout(() => {
-      setOrder(prev => ({
+    try {
+      if (cancelOrder) {
+        await cancelOrder(order.id || orderId);
+      }
+      setOrder((prev: any) => ({
         ...prev,
         status: 'CANCELLED',
-        statusLabel: 'Cancelled & Refunded'
       }));
+    } catch (err: any) {
+      alert(err?.message || "Failed to cancel order. Please contact support.");
+    } finally {
       setIsCancelling(false);
-    }, 800);
+    }
   };
 
-  // Humanizes status labels gracefully for customer presentation layers
-  const getFriendlyStatusLabel = (status: OrderStatus): string => {
-    const mapping: Record<OrderStatus, string> = {
+  // Friendly human-readable label mapper
+  const getFriendlyStatusLabel = (status: OrderStatus | string): string => {
+    const mapping: Record<string, string> = {
       PENDING: 'Order Placed',
       CONFIRMED: 'Confirmed & Preparing',
       PACKED: 'Packed & Sealed',
@@ -124,8 +98,69 @@ export default function OrderDetailPage({ params }: { params: { orderid: string 
       DELIVERED: 'Delivered',
       CANCELLED: 'Cancelled & Refunded'
     };
-    return mapping[status];
+    return mapping[status] || status || 'Processing';
   };
+
+  // 3. Premium Loading State
+  if (loading || apiLoading) {
+    return (
+      <div className="min-h-screen bg-[#1B3B2B] text-[#FCFAF7] flex flex-col items-center justify-center p-6 relative overflow-hidden font-sans">
+        <div className="absolute top-1/4 -left-20 w-72 h-72 bg-[#C89B3C]/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-1/4 -right-20 w-72 h-72 bg-[#C89B3C]/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative flex flex-col items-center text-center space-y-6 max-w-sm">
+          <div className="relative w-20 h-20 flex items-center justify-center">
+            <div className="absolute inset-0 border-2 border-[#C89B3C]/20 border-t-[#C89B3C] rounded-full animate-spin" />
+            <Crown className="w-8 h-8 text-[#C89B3C] animate-pulse" />
+          </div>
+
+          <div className="space-y-2">
+            <h3 className="font-serif text-xl font-normal tracking-wide text-[#FCFAF7]">
+              Retrieving Vault Ledger
+            </h3>
+            <p className="text-[11px] font-mono tracking-widest text-[#C89B3C] uppercase">
+              Loading Order Details...
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 4. Error State
+  if (error || apiError || !order) {
+    return (
+      <div className="min-h-screen bg-[#FDFCFB] flex flex-col items-center justify-center p-4 text-center font-sans">
+        <div className="w-14 h-14 bg-red-50 border border-red-200 rounded-full flex items-center justify-center mb-4 text-red-600 shadow-2xs">
+          <AlertCircle className="w-7 h-7" />
+        </div>
+        <h2 className="font-serif text-2xl text-[#1B3B2B] mb-2">Order Not Found</h2>
+        <p className="text-xs text-[#7C7467] max-w-sm mb-6">
+          {error || apiError || 'No record matching this identifier was found in your order history.'}
+        </p>
+        <Link
+          href="/account?tab=orders"
+          className="px-6 py-3 bg-[#1B3B2B] text-[#FCFAF7] text-xs font-bold uppercase tracking-wider rounded-xl hover:bg-[#254f3a] transition-all shadow-md"
+        >
+          Return to Order History
+        </Link>
+      </div>
+    );
+  }
+
+  // Safe Mappings from backend Prisma schema
+  const address = order.Address || order.address || order.shippingAddress || {};
+  const payment = order.payment || {};
+  const itemsList = order.items || order.orderItems || [];
+
+  const formattedDate = order.createdAt 
+    ? new Date(order.createdAt).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' })
+    : 'N/A';
+
+  const subtotal = Number(order.subtotal || 0);
+  const shippingFee = Number(order.shippingAmount || order.shippingFee || 0);
+  const totalAmount = Number(order.totalAmount || 0);
+  const paymentProvider = payment.provider || order.paymentMethod || 'COD';
 
   return (
     <div className="min-h-screen bg-white py-10 px-4 sm:px-6 lg:px-8 font-sans text-left">
@@ -171,7 +206,7 @@ export default function OrderDetailPage({ params }: { params: { orderid: string 
               </span>
             </div>
             <p className="text-xs text-[#EAE3D2]/80 flex items-center gap-1.5">
-              <Calendar className="h-3.5 w-3.5 text-[#C89B3C]" /> Registered: {order.createdAt}
+              <Calendar className="h-3.5 w-3.5 text-[#C89B3C]" /> Registered: {formattedDate}
             </p>
           </div>
 
@@ -196,79 +231,112 @@ export default function OrderDetailPage({ params }: { params: { orderid: string 
           <div className="lg:col-span-2 space-y-4">
             <h3 className="font-serif text-lg font-medium text-[#1B3B2B] border-b border-[#EAE3D2] pb-2">Items in this Order</h3>
             
-            {order.items.map((item) => (
-              <div 
-                key={item.id} 
-                className="bg-[#FCFAF7] border border-[#EAE3D2] rounded-xl p-5 shadow-sm transition-all hover:border-[#1B3B2B]/30 flex flex-col sm:flex-row justify-between gap-4"
-              >
-                <div className="flex items-start gap-4">
-                  <div className="w-16 h-16 bg-white border border-[#EAE3D2] rounded-lg flex items-center justify-center text-[#1B3B2B] flex-shrink-0">
-                    <Package className="h-6 w-6 stroke-[1.25] text-[#C89B3C]" />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <h4 className="font-serif font-medium text-sm text-[#1A1A1A] leading-snug">{item.name}</h4>
-                    <div className="space-y-1">
-                      {item.attributes.map((attr, idx) => (
-                        <p key={idx} className="text-xs text-[#7C7467]">
-                          <span className="font-medium text-[#A39785]">{attr.label}:</span> {attr.value}
-                        </p>
-                      ))}
+            {itemsList.map((item: any) => {
+              const variant = item.variant || {};
+              const product = variant.product || item.product || {};
+              const price = Number(item.price || variant.price || product.price || 0);
+              const quantity = Number(item.quantity || 1);
+              const imageUrl = product.images?.[0]?.url;
+
+              return (
+                <div 
+                  key={item.id} 
+                  className="bg-[#FCFAF7] border border-[#EAE3D2] rounded-xl p-5 shadow-sm transition-all hover:border-[#1B3B2B]/30 flex flex-col sm:flex-row justify-between gap-4"
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="relative w-16 h-16 bg-white border border-[#EAE3D2] rounded-lg overflow-hidden flex items-center justify-center text-[#1B3B2B] flex-shrink-0">
+                      {imageUrl ? (
+                        <Image 
+                          src={imageUrl} 
+                          alt={product.name || 'Product'} 
+                          fill 
+                          className="object-cover" 
+                        />
+                      ) : (
+                        <Package className="h-6 w-6 stroke-[1.25] text-[#C89B3C]" />
+                      )}
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <h4 className="font-serif font-medium text-sm text-[#1A1A1A] leading-snug">
+                        {product.name || 'Bespoke Item'}
+                      </h4>
+                      <div className="space-y-1 text-xs text-[#7C7467]">
+                        {variant.size && (
+                          <p>
+                            <span className="font-medium text-[#A39785]">Size:</span> {variant.size}
+                          </p>
+                        )}
+                        {variant.sku && (
+                          <p>
+                            <span className="font-medium text-[#A39785]">SKU:</span> {variant.sku}
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="flex sm:flex-col justify-between items-end sm:justify-start gap-2 pt-4 sm:pt-0 border-t sm:border-t-0 border-[#EAE3D2]/60">
-                  <span className="text-sm font-bold text-[#1A1A1A] font-mono">
-                    ₹{item.price.toFixed(2)} <span className="text-xs text-[#7C7467] font-normal font-sans">x {item.quantity}</span>
-                  </span>
-                  
-                  <Link
-                    href={`/products/${item.productId}`}
-                    className="inline-flex items-center gap-1 text-[11px] font-bold text-[#1B3B2B] hover:text-[#C89B3C] uppercase tracking-wider transition-colors mt-auto group"
-                  >
-                    View Product <ExternalLink className="h-3 w-3 opacity-60 group-hover:opacity-100" />
-                  </Link>
+                  <div className="flex sm:flex-col justify-between items-end sm:justify-start gap-2 pt-4 sm:pt-0 border-t sm:border-t-0 border-[#EAE3D2]/60">
+                    <span className="text-sm font-bold text-[#1A1A1A] font-mono">
+                      ₹{price.toFixed(2)} <span className="text-xs text-[#7C7467] font-normal font-sans">x {quantity}</span>
+                    </span>
+                    
+                    {(product.slug || item.productId) && (
+                      <Link
+                        href={`/products/${product.slug || item.productId}`}
+                        className="inline-flex items-center gap-1 text-[11px] font-bold text-[#1B3B2B] hover:text-[#C89B3C] uppercase tracking-wider transition-colors mt-auto group"
+                      >
+                        View Product <ExternalLink className="h-3 w-3 opacity-60 group-hover:opacity-100" />
+                      </Link>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Right Side Stack: Address & Summary Info */}
           <div className="space-y-6">
             
+            {/* Shipping Address */}
             <div className="bg-[#FCFAF7] border border-[#EAE3D2] rounded-xl p-6 shadow-sm space-y-4">
               <h4 className="text-xs font-bold text-[#1B3B2B] uppercase tracking-[0.1em] border-b border-[#EAE3D2] pb-2 flex items-center gap-1.5">
                 <MapPin className="h-3.5 w-3.5 text-[#C89B3C]" /> Shipping Address
               </h4>
               <div className="text-xs text-[#7C7467] space-y-1 font-light leading-relaxed">
-                <p className="font-semibold text-[#1A1A1A]">{order.shippingAddress.fullName}</p>
-                <p>{order.shippingAddress.line1}</p>
-                <p>{order.shippingAddress.city}, {order.shippingAddress.state}</p>
-                <p className="font-mono">{order.shippingAddress.postalCode}</p>
+                <p className="font-semibold text-[#1A1A1A]">{address.fullName || 'Valued Client'}</p>
+                <p>{address.line1}{address.line2 ? `, ${address.line2}` : ''}</p>
+                <p>{address.city}, {address.state}</p>
+                <p className="font-mono">{address.postalCode}</p>
+                {address.phone && (
+                  <p className="pt-1 font-mono text-[11px] flex items-center gap-1.5 text-[#1B3B2B]">
+                    <Phone className="w-3 h-3 text-[#C89B3C]" />
+                    {address.phone}
+                  </p>
+                )}
               </div>
             </div>
 
+            {/* Payment Summary */}
             <div className="bg-[#FCFAF7] border border-[#EAE3D2] rounded-xl p-6 shadow-sm space-y-4">
-              <h4 className="text-xs font-bold text-[#1B3B2B] uppercase tracking-[0.1em] border-b border-[#EAE3D2] pb-2">
-                Payment Summary
+              <h4 className="text-xs font-bold text-[#1B3B2B] uppercase tracking-[0.1em] border-b border-[#EAE3D2] pb-2 flex items-center justify-between">
+                <span>Payment Summary</span>
+                <span className="text-[10px] font-mono text-[#C89B3C]">{paymentProvider}</span>
               </h4>
               <div className="space-y-3 text-xs divide-y divide-[#EAE3D2]/60">
                 <div className="flex justify-between text-[#7C7467] pt-1">
                   <span>Subtotal:</span>
-                  <span className="font-mono">₹{order.subtotal.toFixed(2)}</span>
+                  <span className="font-mono">₹{subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-[#7C7467] pt-2">
                   <span>Shipping & Handling:</span>
-                  <span className="font-mono">₹{order.shippingFee.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-[#7C7467] pt-2">
-                  <span>Estimated Tax:</span>
-                  <span className="font-mono">₹{order.tax.toFixed(2)}</span>
+                  <span className="font-mono text-[#C89B3C] uppercase text-[10px] font-bold">
+                    {shippingFee === 0 ? 'Complimentary' : `₹${shippingFee.toFixed(2)}`}
+                  </span>
                 </div>
                 <div className="flex justify-between text-[#1B3B2B] font-bold text-sm pt-3">
                   <span>Total Amount Paid:</span>
-                  <span className="font-mono text-base">₹{order.totalAmount.toFixed(2)}</span>
+                  <span className="font-mono text-base">₹{totalAmount.toFixed(2)}</span>
                 </div>
               </div>
             </div>

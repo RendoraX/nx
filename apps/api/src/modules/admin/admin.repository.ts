@@ -17,7 +17,7 @@ export async function getAllCustomKits() {
 };
 
 export async function createCustomPoojaKit(payload : any) {
-    return await prisma.ritualTemplate.create({
+    return  await prisma.ritualTemplate.create({
         data : {
             name : payload.name,
             baseBoxPrice : payload.baseBoxPrice,

@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { Toaster } from "sonner";
 import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
+import { CartProvider } from "@/providers/CartProvider";
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
@@ -22,7 +23,9 @@ export default function RootLayout({
          <AuthProvider>
           <QueryProvider>
             <Header />
-            {children}
+            <CartProvider>
+              {children}
+            </CartProvider>
             <Footer />
             <Toaster/>
           </QueryProvider>

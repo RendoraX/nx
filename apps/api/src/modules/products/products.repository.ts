@@ -245,3 +245,14 @@ export async function getRelatedProductByCategory(categoryId : string) {
   })
 };
 
+
+export async function findProductByVarId(id : string) {
+  return await prisma.productVariant.findUnique({
+    where : {
+      id
+    },
+    include : {
+      product : true
+    }
+  })
+}

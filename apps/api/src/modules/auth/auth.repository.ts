@@ -25,7 +25,15 @@ export const findByEmail = async (
                 isDeleted : false
             }
         },
-        sessions : true,
+        sessions : {
+            omit : {
+                refreshTokenHash : true,
+                userId : true
+            },
+            where : {
+                revoked : false
+            }
+        },
       },
       omit : {
         passwordResetToken : true,
@@ -180,7 +188,7 @@ export const findSession = async (id : string) => {
 };
 
 //completed , tested = 0
-export const getAllSession = async (userId : string) => {
+export const getAllSessionByUserId = async (userId : string) => {
     const sessions = await prisma.session.findMany({
         where : {
             userId : userId as string
@@ -212,14 +220,14 @@ export const deleteSession = async (rToken : string) : Promise<any> => {
 };
 
 //completed , test = 1
-export const updatePassword = async (payload : updatePasswordDTO) => {
+export const updatePasswordById = async (payload : updatePasswordDTO) => {
      await prisma.user.update({
         where : {
-           email : payload.email as string
+           id : payload.id as string
         },
 
         data : {
-            password : payload.hashedPassword as string
+            password : payload.password as string
         }
     });
 };
@@ -261,3 +269,25 @@ export const findById = async (id : string) : Promise<UserResponse | null> => {
     return user as UserResponse;
 };
 
+export const revokeSessionById = async (userId : string, sessionId : string)=>{
+    return await prisma.session.update({
+        where : {
+            userId,
+            id : sessionId as string
+        },
+        data : {
+            revoked : true
+        }
+    })
+}
+
+export const revokeAllSessionById = async (userId : string, sessionId : string)=>{
+    return await prisma.session.deleteMany({
+        where : {
+            userId,
+            id : {
+                not : sessionId as string
+            }
+        }
+    })
+}

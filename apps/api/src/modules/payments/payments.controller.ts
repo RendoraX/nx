@@ -12,9 +12,10 @@ export const createPaymentOrderEndpoint = async (req: AuthRequest, res: Response
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
     const payment = await createPaymentOrder(userId, req.body);
-    return res.status(201).json({ payment });
+    return res.status(201).json({ payment  , success : true});
   } catch (error: any) {
-    return res.status(400).json({ message: error.message ?? "Failed to create payment order" });
+    console.log("Payment logger=========", error.message)
+    return res.status(400).json({ message: error.message ?? "Failed to create payment order"  , success : false});
   }
 };
 

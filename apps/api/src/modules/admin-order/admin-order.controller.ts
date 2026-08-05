@@ -8,29 +8,50 @@ interface AuthRequest extends Request {
 
 export const listAdminOrdersEndpoint = async (_req: AuthRequest, res: Response) => {
   try {
-    const orders = await prisma.order.findMany({ orderBy: { createdAt: "desc" } });
-    return res.status(200).json({ orders });
+    const orders = await prisma.order.findMany({ orderBy: { createdAt: "desc" } , include : { user : true, Address : true , delivery : true , statusHistory : true} });
+    return res.status(200).json({ orders ,success : true});
   } catch (error: any) {
-    return res.status(400).json({ message: error.message ?? "Failed to fetch orders" });
+    return res.status(400).json({ message: error.message ?? "Failed to fetch orders" , success : false});
   }
 };
 
 export const getAdminOrderEndpoint = async (req: Request, res: Response) => {
   try {
-    const order = await prisma.order.findUnique({ where: { id: req.params.id as string } });
-    return res.status(200).json({ order });
+    const order = await prisma.order.findUnique({ where: { id: req.params.id as string } , include : { Address : true , user : true , delivery : true , items : {include : {
+      variant : {
+        include : {
+          product : true
+        }
+      }
+    }} , payment : true }  });
+    return res.status(200).json({ order,success : true });
   } catch (error: any) {
-    return res.status(400).json({ message: error.message ?? "Failed to fetch order" });
+    return res.status(400).json({ message: error.message ?? "Failed to fetch order" ,success : false});
   }
 };
 
 export const updateAdminOrderStatusEndpoint = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user?.id;
-    if (!userId) return res.status(401).json({ message: "Unauthorized" });
-    const order = await updateAdminOrderStatus(userId, req.params.id as string, req.body.status);
-    return res.status(200).json({ order });
-  } catch (error: any) {
-    return res.status(400).json({ message: error.message ?? "Failed to update order status" });
+    const orderId = req.params.id as string;
+    const status = req.body?.status;
+
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized", success: false });
+    }
+
+    if (!orderId) {
+      return res.status(400).json({ message: "Order id is required", success: false });
+    }
+
+    if (!status) {
+      return res.status(400).json({ message: "Order status is required", success: false });
+    }
+
+    const order = await updateAdminOrderStatus(userId, orderId, status);
+    return res.status(200).json({ order, success: true });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Failed to update order status";
+    return res.status(400).json({ message, success: false });
   }
 };

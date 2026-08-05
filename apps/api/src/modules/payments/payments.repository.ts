@@ -13,10 +13,13 @@ export async function createPayment(data: any) {
 
 
 //completed
-export async function updatePaymentStatus(orderId: string, status: string, transactionId?: string | null) {
+export async function updatePayment(id: string, data: { status?: string; transactionId?: string | null }) {
   return prisma.payment.update({
-    where: { orderId },
-    data: { status: status as any, transactionId: transactionId ?? undefined },
+    where: { id },
+    data: {
+      ...(data.status && { status: data.status as any }),
+      ...(data.transactionId !== undefined && { transactionId: data.transactionId }),
+    },
   });
 }
 

@@ -87,7 +87,7 @@ export function Header() {
               <Heart className="h-3.5 w-3.5 stroke-[1.5]" />
             </Link>
 
-            <Link href="/cart" className="p-1.5 text-[#1A1A1A] hover:text-[#1B3B2B] relative transition-colors duration-300">
+            <Link href="/account/cart" className="p-1.5 text-[#1A1A1A] hover:text-[#1B3B2B] relative transition-colors duration-300">
               <ShoppingBag className="h-3.5 w-3.5 stroke-[1.5]" />
               <span className="absolute top-1.5 right-1.5 w-1 h-1 bg-[#1B3B2B] rounded-full"></span>
             </Link>

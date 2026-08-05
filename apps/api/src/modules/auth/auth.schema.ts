@@ -110,3 +110,15 @@ export const resetPasswordSchema = (): z.ZodType<resetPasswordDTO> =>
         message: "Password must be at least 8 characters",
       }),
   });
+
+  export const revokeSessionSchema = () : z.ZodType<{userId : string , sessionId : string}> => 
+    z.object({
+      userId : z.string().nonempty("Please make sure that user id is valid"),
+      sessionId : z.string().nonempty("Please provide session id to revoke")
+    });
+
+export const updatePasswordSchema = () : z.ZodType<{id : string , password : string}> => 
+  z.object({
+    id : z.string().nonoptional("Email is not available"),
+    password : z.string().nonempty("Please provide credentials")
+  });

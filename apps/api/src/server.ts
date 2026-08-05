@@ -23,6 +23,10 @@ import userAdminRouter from './modules/users/users.routes'
 import adminKitRouter from './modules/admin/admin.routes'
 const app = express();
 
+app.use((req, res, next) => {
+  console.log("Incoming request:", req.method, req.url);
+  next();
+});
 app.use(helmet());
 app.use(cookieParser())
 app.use(requestIdMiddleware);
@@ -57,6 +61,16 @@ app.use("/api", adminKitRouter);
 
 
 app.set("trust proxy" , true)
+
+
+///Health tester
+app.get('/api/health' , (_ , res) => {
+      return res.status(200).json({
+        message : "Server is working !"
+      })
+})
+
+
 app.listen(4000, () => {
-  console.log("API running on 4000");
+console.log("API running on 4000");
 });

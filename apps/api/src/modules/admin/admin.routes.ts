@@ -13,7 +13,6 @@ router.post(
     securityHeadersMiddleware,
     authMiddleware,
     adminMiddleware,
-    guestMiddleware,
     upload.any(),
     createCustomPoojaKitEndpoint
 );
@@ -22,7 +21,6 @@ router.get(
     '/custkits',
     securityHeadersMiddleware,
     authMiddleware,
-    guestMiddleware,
     upload.any(),
     getAllCustomkitEndpoint
 );

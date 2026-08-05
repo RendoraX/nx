@@ -26,6 +26,8 @@ export const createCustomPoojaKitEndpoint = async (req : Request , res : Respons
 export const getAllCustomkitEndpoint = async (req : Request , res : Response) => {
     try {
         const kits = await getAllKits();
+
+        console.log("===========================custom kits =========================\n",kits)
         return res.status(200).json({
             message : "All custom kits fetched successfully !",
             kits,

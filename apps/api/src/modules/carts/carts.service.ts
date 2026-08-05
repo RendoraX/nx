@@ -1,5 +1,5 @@
-import { findInventory } from "../inventory/inventory.repository";
-import { findById as findProductById } from "../products/products.repository";
+import { findInventory, findInventoryByVariantId } from "../inventory/inventory.repository";
+import { findById as findProductById, findProductByVarId } from "../products/products.repository";
 import {
   addItem,
   clearCart,
@@ -14,22 +14,65 @@ import { addToCartSchema, removeItemSchema, updateQuantitySchema } from "./carts
 import type { AddToCartDTO, RemoveCartItemDTO, UpdateCartItemDTO } from "./carts.types";
 
 function toCartResponse(cart: any) {
-  const items = (cart?.items ?? []).map((item: any) => ({
-    id: item.id,
-    productId: item.productId,
-    quantity: item.quantity,
-    product: item.product,
-    lineTotal: Number(item.product?.price ?? 0) * item.quantity,
-  }));
+  const items = (cart?.items ?? []).map((item: any) => {
+    const variant = item.variant;
+    const product = variant.product;
 
-  const subtotal = items.reduce((sum: number, item: any) => sum + item.lineTotal, 0);
+    const unitPrice = Number(variant.price);
+
+    return {
+      id: item.id,
+
+      quantity: item.quantity,
+
+      lineTotal: Number((unitPrice * item.quantity).toFixed(2)),
+
+      variant: {
+        id: variant.id,
+        title: variant.title,
+        sku: variant.sku,
+        price: unitPrice,
+      },
+
+      product: {
+        id: product.id,
+        name: product.name,
+        slug: product.slug,
+        description: product.description,
+        category: product.category?.name,
+
+        images: product.images.map((image: any) => ({
+          id: image.id,
+          url: image.url,
+          alt: image.alt,
+        })),
+      },
+
+      inventory: {
+        stock: variant.inventory?.stock ?? 0,
+      },
+    };
+  });
+
+  const subtotal = items.reduce(
+    (sum: number, item: any) => sum + item.lineTotal,
+    0
+  );
 
   return {
-    id: cart?.id ?? null,
-    userId: cart?.userId ?? null,
-    items,
-    itemCount: items.length,
+    id: cart?.id,
+    userId: cart?.userId,
+
+    itemCount: items.reduce(
+      (sum: number, item: any) => sum + item.quantity,
+      0
+    ),
+
+    totalUniqueItems: items.length,
+
     subtotal: Number(subtotal.toFixed(2)),
+
+    items,
   };
 }
 
@@ -40,13 +83,14 @@ export async function getCart(userId: string) {
 
 export async function addItemToCart(userId: string, payload: AddToCartDTO) {
   const data = addToCartSchema.parse(payload);
-  const product = await findProductById(data.productId);
+  const product = await findProductByVarId(data.variantId);
 
   if (!product) {
     throw new Error("Product not found");
   }
 
-  const inventory = await findInventory(data.productId);
+  
+  const inventory = await findInventory(product.product.inventoryId as string);
   if (!inventory || inventory.stock < data.quantity) {
     throw new Error("Insufficient stock");
   }
@@ -56,7 +100,7 @@ export async function addItemToCart(userId: string, payload: AddToCartDTO) {
     cart = await createCart(userId) as any;
   }
 
-  const existingItem = await findCartItem((cart as any).id, data.productId);
+  const existingItem = await findCartItem((cart as any).id, product.id);
   const requestedQuantity = existingItem ? existingItem.quantity + data.quantity : data.quantity;
 
   if (inventory.stock < requestedQuantity) {
@@ -66,7 +110,7 @@ export async function addItemToCart(userId: string, payload: AddToCartDTO) {
   if (existingItem) {
     await updateItem(existingItem.id, requestedQuantity);
   } else {
-    await addItem((cart as any).id, data.productId, data.quantity);
+    await addItem((cart as any).id, product.id, data.quantity);
   }
 
   return getCart(userId);
@@ -85,7 +129,8 @@ export async function updateCartItemQuantity(userId: string, itemId: string, pay
     throw new Error("Cart item does not belong to this user");
   }
 
-  const inventory = await findInventory(item.productId);
+
+  const inventory = await findInventoryByVariantId(item.variantId);
   if (!inventory || inventory.stock < data.quantity) {
     throw new Error("Insufficient stock");
   }

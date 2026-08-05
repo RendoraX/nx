@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const createPaymentOrderSchema = z.object({
   orderId: z.string().min(1, "Order ID is required"),
-  amount: z.string().min(1, "Amount is required"),
+  amount: z.number().min(1, "Amount is required"),
   provider: z.enum(["RAZORPAY", "COD"]).optional(),
 });
 

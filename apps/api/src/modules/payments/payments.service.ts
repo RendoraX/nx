@@ -1,44 +1,73 @@
 import crypto from "node:crypto";
 import { createAuditLog } from "../../lib/audit";
-import { updateStatus } from "../orders/orders.repository";
+import { deleteOrderCascade, updateStatus } from "../orders/orders.repository";
 import { releaseStock, reserveStock } from "../inventory/inventory.repository";
-import { createPayment, findPaymentByOrderId, updatePaymentStatus } from "./payments.repository";
+import { createPayment, findPaymentByOrderId, updatePayment } from "./payments.repository";
 import { createPaymentOrderSchema, verifyPaymentSchema, webhookSchema } from "./payments.schema";
 import type { CreatePaymentOrderDTO, PaymentWebhookDTO, VerifyPaymentDTO } from "./payments.types";
+import razorpay from "../../utils/payment/rzr";
 
-const PAYMENT_SECRET = process.env.PAYMENT_WEBHOOK_SECRET || "dev-secret";
+const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || "dev-secret";
 
-export function createPaymentSignature(payload: { paymentId: string; orderId: string; amount: string }) {
-  return crypto.createHmac("sha256", PAYMENT_SECRET).update(`${payload.paymentId}:${payload.orderId}:${payload.amount}`).digest("hex");
-}
-
+// Official Razorpay Signature Verification: HMAC SHA256 of (razorpay_order_id + "|" + razorpay_payment_id)
 export function verifyPaymentSignature(payload: VerifyPaymentDTO) {
-  const expected = createPaymentSignature({ paymentId: payload.paymentId, orderId: payload.orderId, amount: payload.amount });
-  return expected === payload.signature;
+  const generatedSignature = crypto
+    .createHmac("sha256", RAZORPAY_KEY_SECRET)
+    .update(`${payload.orderId}|${payload.paymentId}`)
+    .digest("hex");
+  return generatedSignature === payload.signature;
 }
 
-//completed
+// completed
 export async function createPaymentOrder(userId: string, payload: CreatePaymentOrderDTO) {
   const data = createPaymentOrderSchema.parse(payload);
   const existing = await findPaymentByOrderId(data.orderId);
-  if (existing) {
-    return existing;
+
+  // Return existing ONLY if it already has a valid Razorpay Order ID
+  if (existing && existing.transactionId) {
+    return {
+      ...existing,
+      razorpayOrderId: existing.transactionId,
+    };
   }
 
-  const payment = await createPayment({
-    orderId: data.orderId,
-    provider: data.provider ?? "RAZORPAY",
-    amount: data.amount,
-    status: "PENDING",
-    transactionId: `pay_${Date.now()}`,
+  // 1. Create actual Order via Razorpay SDK (Amount in paise)
+  const razorpayOrder = await razorpay.orders.create({
+    amount: Math.round((data.amount as number) * 100), 
+    currency: 'INR',
+    receipt: data.orderId,
   });
 
-  await createAuditLog(userId, "payment_order_created", "Payment", payment.id, { orderId: data.orderId });
-  return payment;
+  // 2. If record exists without transactionId, update it; otherwise create new
+  let payment;
+  console.log("==================verify payment===================\n" , payload)
+  if (existing) {
+    payment = await updatePayment(existing.id, {
+      transactionId: razorpayOrder.id,
+      status: "PENDING",
+    });
+  } else {
+    payment = await createPayment({
+      orderId: data.orderId,
+      provider: data.provider ?? "RAZORPAY",
+      amount: data.amount as number,
+      status: "PENDING",
+      transactionId: razorpayOrder.id,
+    });
+  }
+
+  await createAuditLog(userId, "payment_order_created", "Payment", payment.id, { 
+    orderId: data.orderId, 
+    razorpayOrderId: razorpayOrder.id 
+  });
+
+  return {
+    ...payment,
+    razorpayOrderId: razorpayOrder.id,
+  };
 }
 
-
-//completed
+// completed
 export async function verifyPayment(userId: string, payload: VerifyPaymentDTO) {
   const data = verifyPaymentSchema.parse(payload);
   if (!verifyPaymentSignature(data)) {
@@ -54,7 +83,7 @@ export async function verifyPayment(userId: string, payload: VerifyPaymentDTO) {
     return payment;
   }
 
-  await updatePaymentStatus(data.orderId, "SUCCESS", data.paymentId);
+  await updatePayment(payment.id, { status: "SUCCESS", transactionId: data.paymentId });
   await updateStatus(data.orderId, "CONFIRMED");
   await reserveStock("placeholder-product-id", 1);
 
@@ -62,23 +91,27 @@ export async function verifyPayment(userId: string, payload: VerifyPaymentDTO) {
   return { payment: await findPaymentByOrderId(data.orderId), orderStatus: "CONFIRMED" };
 }
 
-//completed
+// completed
 export async function failPayment(userId: string, orderId: string) {
   const payment = await findPaymentByOrderId(orderId);
   if (!payment) {
     throw new Error("Payment not found");
   }
 
-  await updatePaymentStatus(orderId, "FAILED");
-  await updateStatus(orderId, "PENDING");
-  await releaseStock("placeholder-product-id", 1);
+  await updatePayment(payment.id, { status: "FAILED" });
+  await updateStatus(orderId, "CANCELLED");
+
+  if (payment.provider === "RAZORPAY") {
+    await deleteOrderCascade(orderId);
+  } else {
+    await releaseStock("placeholder-product-id", 1);
+  }
 
   await createAuditLog(userId, "payment_failed", "Payment", payment.id, { orderId });
   return { payment: await findPaymentByOrderId(orderId) };
 }
 
-
-//completed
+// completed
 export async function handlePaymentWebhook(payload: PaymentWebhookDTO) {
   const data = webhookSchema.parse(payload);
   if (!data.orderId || !data.paymentId) {
@@ -91,15 +124,20 @@ export async function handlePaymentWebhook(payload: PaymentWebhookDTO) {
   }
 
   if (data.status === "SUCCESS" || data.status === "succeeded") {
-    await updatePaymentStatus(data.orderId, "SUCCESS", data.paymentId);
+    await updatePayment(payment.id, { status: "SUCCESS", transactionId: data.paymentId });
     await updateStatus(data.orderId, "CONFIRMED");
     await reserveStock("placeholder-product-id", 1);
   }
 
   if (data.status === "FAILED" || data.status === "failed") {
-    await updatePaymentStatus(data.orderId, "FAILED");
-    await updateStatus(data.orderId, "PENDING");
-    await releaseStock("placeholder-product-id", 1);
+    await updatePayment(payment.id, { status: "FAILED" });
+    await updateStatus(data.orderId, "CANCELLED");
+
+    if (payment.provider === "RAZORPAY") {
+      await deleteOrderCascade(data.orderId);
+    } else {
+      await releaseStock("placeholder-product-id", 1);
+    }
   }
 
   return { ok: true, status: data.status ?? "received" };
