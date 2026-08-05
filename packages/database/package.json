@@ -1,0 +1,15 @@
+{
+  "name": "@repo/database",
+  "private": true,
+  "type": "module",
+  "main": "./src/client.ts",
+  "exports": {
+    ".": "./src/client.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^7.8.0",
+    "@prisma/adapter-pg": "^7.8.0",
+    "pg": "^8.22.0",
+    "dotenv": "^17.4.2"
+  }
+}
