@@ -21,6 +21,7 @@ export const orderService = {
   },
 
   cancelOrder: async (id: string): Promise<OrderResponse> => {
+    console.log("order id ::: " , id)
     const response = await api.post<OrderResponse>(`${BASE_URL}/orders/${id}/cancel`);
     return response.data;
   },

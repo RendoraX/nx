@@ -136,7 +136,7 @@ const handlePlaceOrder = async () => {
       },
       onSuccess: (verifyResponse) => {
         console.log("🎉 [5/5] Payment Successful! Verification response:", verifyResponse);
-        router.push(`/checkout/success?orderId=${orderRef}`);
+        router.push(`/account/cart/checkout/success?orderId=${orderRef}`);
       },
       onFailure: (err: any) => {
         console.error("❌ Payment Failed or Cancelled:", err);

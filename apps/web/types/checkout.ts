@@ -52,6 +52,7 @@ export interface VerifyPaymentPayload {
   razorpay_payment_id: string;
   razorpay_order_id: string;
   razorpay_signature: string;
+  amount : string;
 }
 
 export interface VerifyPaymentResponse {

@@ -62,7 +62,7 @@ const openRazorpay = async ({
 
     handler: async (response: VerifyPaymentPayload) => {
       try {
-        const verifyRes = await paymentService.verifyPayment(response);
+        const verifyRes = await paymentService.verifyPayment({...response , amount  : String(amount)});
         if (onSuccess) onSuccess(verifyRes);
       } catch (err: any) {
         await paymentService.failPayment(orderId, { reason: "verification_failed", err });

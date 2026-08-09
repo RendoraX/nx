@@ -38,26 +38,8 @@ interface AccountOrdersTabProps {
 }
 
 export default function AccountOrdersTab({ orders, isLoading = false }: AccountOrdersTabProps) {
-  const displayedOrders = orders && orders.length > 0 ? orders : [];
-  
-  // Track open state IDs. First item open by default for a better user experience.
-  const [openOrderIds, setOpenOrderIds] = useState<string[]>(
-    displayedOrders.length > 0 ? [displayedOrders[0].id] : []
-  );
-
-  const toggleOrder = (orderId: string) => {
-    setOpenOrderIds((prev) =>
-      prev.includes(orderId) ? prev.filter((id) => id !== orderId) : [...prev, orderId]
-    );
-  };
-
-  // Format Status into readable string
-  const formatStatus = (status: string) => {
-    return status.replace(/_/g, ' ');
-  };
-
-  // Skeleton Loader for fetching state
-  if (isLoading) {
+  // Skeleton Loader when loading or waiting for orders data to arrive
+  if (isLoading || orders === undefined) {
     return (
       <div className="space-y-8 animate-fade-in text-left">
         {/* Banner Skeleton */}
@@ -104,6 +86,24 @@ export default function AccountOrdersTab({ orders, isLoading = false }: AccountO
       </div>
     );
   }
+
+  const displayedOrders = orders;
+
+  // Track open state IDs. First item open by default for a better user experience.
+  const [openOrderIds, setOpenOrderIds] = useState<string[]>(
+    displayedOrders.length > 0 ? [displayedOrders[0].id] : []
+  );
+
+  const toggleOrder = (orderId: string) => {
+    setOpenOrderIds((prev) =>
+      prev.includes(orderId) ? prev.filter((id) => id !== orderId) : [...prev, orderId]
+    );
+  };
+
+  // Format Status into readable string
+  const formatStatus = (status: string) => {
+    return status.replace(/_/g, ' ');
+  };
 
   return (
     <div className="space-y-8 animate-fade-in text-left">

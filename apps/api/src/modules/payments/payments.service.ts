@@ -2,20 +2,30 @@ import crypto from "node:crypto";
 import { createAuditLog } from "../../lib/audit";
 import { deleteOrderCascade, updateStatus } from "../orders/orders.repository";
 import { releaseStock, reserveStock } from "../inventory/inventory.repository";
-import { createPayment, findPaymentByOrderId, updatePayment } from "./payments.repository";
+import { createPayment, findPaymentByOrderId, findPaymentByTransactionId, updatePayment } from "./payments.repository";
 import { createPaymentOrderSchema, verifyPaymentSchema, webhookSchema } from "./payments.schema";
 import type { CreatePaymentOrderDTO, PaymentWebhookDTO, VerifyPaymentDTO } from "./payments.types";
-import razorpay from "../../utils/payment/rzr";
-
-const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || "dev-secret";
+import razorpay, { RAZORPAY_KEY_SECRET } from "../../utils/payment/rzr";
+import { getOrderById } from "../orders/orders.service";
 
 // Official Razorpay Signature Verification: HMAC SHA256 of (razorpay_order_id + "|" + razorpay_payment_id)
 export function verifyPaymentSignature(payload: VerifyPaymentDTO) {
+  if (!RAZORPAY_KEY_SECRET) {
+    throw new Error("Razorpay key secret is not configured");
+  }
+
   const generatedSignature = crypto
     .createHmac("sha256", RAZORPAY_KEY_SECRET)
-    .update(`${payload.orderId}|${payload.paymentId}`)
+    .update(`${payload.razorpay_order_id}|${payload.razorpay_payment_id}`)
     .digest("hex");
-  return generatedSignature === payload.signature;
+
+  const generatedBuffer = Buffer.from(generatedSignature, "utf8");
+  const incomingBuffer = Buffer.from(payload.razorpay_signature, "utf8");
+
+  return (
+    generatedBuffer.length === incomingBuffer.length &&
+    crypto.timingSafeEqual(generatedBuffer, incomingBuffer)
+  );
 }
 
 // completed
@@ -40,7 +50,6 @@ export async function createPaymentOrder(userId: string, payload: CreatePaymentO
 
   // 2. If record exists without transactionId, update it; otherwise create new
   let payment;
-  console.log("==================verify payment===================\n" , payload)
   if (existing) {
     payment = await updatePayment(existing.id, {
       transactionId: razorpayOrder.id,
@@ -74,7 +83,10 @@ export async function verifyPayment(userId: string, payload: VerifyPaymentDTO) {
     throw new Error("Invalid payment signature");
   }
 
-  const payment = await findPaymentByOrderId(data.orderId);
+  const payment =
+    (await findPaymentByTransactionId(data.razorpay_order_id)) ||
+    (await findPaymentByOrderId(data.razorpay_order_id));
+
   if (!payment) {
     throw new Error("Payment not found");
   }
@@ -83,12 +95,27 @@ export async function verifyPayment(userId: string, payload: VerifyPaymentDTO) {
     return payment;
   }
 
-  await updatePayment(payment.id, { status: "SUCCESS", transactionId: data.paymentId });
-  await updateStatus(data.orderId, "CONFIRMED");
-  await reserveStock("placeholder-product-id", 1);
+  const updatedPayment = await updatePayment(payment.id, {
+    status: "SUCCESS",
+    transactionId: data.razorpay_payment_id,
+  });
 
-  await createAuditLog(userId, "payment_verified", "Payment", payment.id, { orderId: data.orderId, paymentId: data.paymentId });
-  return { payment: await findPaymentByOrderId(data.orderId), orderStatus: "CONFIRMED" };
+  await updateStatus(payment.orderId, "CONFIRMED");
+
+  /// Hold the stock for that user
+  const order = await getOrderById(userId, payment.orderId);
+  await Promise.all(
+    order.items.map((item) =>
+      reserveStock(item.variant.inventory?.id as string, item.quantity)
+    )
+  );
+
+  await createAuditLog(userId, "payment_verified", "Payment", payment.id, {
+    orderId: payment.orderId,
+    paymentId: data.razorpay_payment_id,
+  });
+
+  return { payment: updatedPayment, orderStatus: "CONFIRMED" };
 }
 
 // completed
@@ -104,7 +131,11 @@ export async function failPayment(userId: string, orderId: string) {
   if (payment.provider === "RAZORPAY") {
     await deleteOrderCascade(orderId);
   } else {
-    await releaseStock("placeholder-product-id", 1);
+      const order = await getOrderById(userId , orderId);
+
+  order.items.map(async (i) => {
+      await releaseStock(i.variant.inventory?.id as string , i.quantity);
+  })
   }
 
   await createAuditLog(userId, "payment_failed", "Payment", payment.id, { orderId });

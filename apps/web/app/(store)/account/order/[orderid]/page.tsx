@@ -66,10 +66,6 @@ export default function OrderDetailPage({ params }: { params: Promise<{ orderid:
 
   // 2. Real Cancellation Handler
   const handleCancelOrder = async () => {
-    const confirmCancel = window.confirm(
-      "Are you sure you want to cancel your order? This action will restore stock and cannot be undone."
-    );
-    if (!confirmCancel) return;
 
     setIsCancelling(true);
     try {

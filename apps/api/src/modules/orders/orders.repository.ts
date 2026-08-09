@@ -58,7 +58,8 @@ export async function findById(id: string) {
         include : {
           variant : {
             include : {
-              product : true
+              product : true,
+              inventory : true
             }
           }
         }

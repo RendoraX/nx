@@ -24,10 +24,15 @@ export const verifyPaymentEndpoint = async (req: AuthRequest, res: Response) => 
   try {
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
+    console.log("Payment payload", req.body);
     const result = await verifyPayment(userId, req.body);
-    return res.status(200).json(result);
+    return res.status(200).json({
+      success: true,
+      result,
+    });
   } catch (error: any) {
-    return res.status(400).json({ message: error.message ?? "Failed to verify payment" });
+    console.log(error.message);
+    return res.status(400).json({ message: error.message ?? "Failed to verify payment", success: false });
   }
 };
 

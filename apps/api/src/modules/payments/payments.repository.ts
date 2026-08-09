@@ -5,6 +5,9 @@ export async function findPaymentByOrderId(orderId: string) {
   return prisma.payment.findUnique({ where: { orderId } });
 }
 
+export async function findPaymentByTransactionId(transactionId: string) {
+  return prisma.payment.findFirst({ where: { transactionId } });
+}
 
 //completed 
 export async function createPayment(data: any) {

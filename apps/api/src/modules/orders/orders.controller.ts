@@ -44,8 +44,8 @@ export const cancelOrderEndpoint = async (req: AuthRequest, res: Response) => {
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
     const order = await cancelUserOrder(userId, req.params.id as string);
-    return res.status(200).json({ message: "Order cancelled", order });
+    return res.status(200).json({ message: "Order cancelled", order , success : false});
   } catch (error: any) {
-    return res.status(400).json({ message: error.message ?? "Failed to cancel order" });
+    return res.status(400).json({ message: error.message ?? "Failed to cancel order" , success : false});
   }
 };

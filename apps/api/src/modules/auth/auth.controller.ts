@@ -87,6 +87,8 @@ export const verificationTokenEndpoint = async (req : Request ,res : Response) =
 //completed , tested = 1
 export const loginEndpoint = async (req : Request , res : Response) => {
     try {
+
+        console.log("Request is received from mobile")
         const payload = await req.body;
         const metadata = {
             ipAddress :  req.ip,

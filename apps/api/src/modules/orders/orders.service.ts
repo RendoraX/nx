@@ -152,6 +152,8 @@ export async function cancelUserOrder(userId: string, id: string) {
     throw new Error("Delivered orders cannot be cancelled");
   }
 
-  await releaseStock("placeholder-product-id", 1);
+  order.items.map(async (i) => {
+    await releaseStock(i?.variant?.inventory?.id as string ,i.quantity )
+  })
   return cancelOrder(id);
 }

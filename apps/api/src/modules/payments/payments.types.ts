@@ -5,10 +5,9 @@ export interface CreatePaymentOrderDTO {
 }
 
 export interface VerifyPaymentDTO {
-  paymentId: string;
-  orderId: string;
-  amount: string;
-  signature: string;
+  razorpay_payment_id: string;
+  razorpay_order_id: string;
+  razorpay_signature: string;
 }
 
 export interface PaymentWebhookDTO {

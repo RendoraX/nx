@@ -66,7 +66,8 @@ app.set("trust proxy" , true)
 ///Health tester
 app.get('/api/health' , (_ , res) => {
       return res.status(200).json({
-        message : "Server is working !"
+        message : "Server is working !0",
+        ip : _.socket.remoteAddress
       })
 })
 
