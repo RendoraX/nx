@@ -1,19 +1,22 @@
-import {PrismaClient} from "@prisma/client";
+
 import { PrismaPg } from "@prisma/adapter-pg";
 import pg from "pg";
 import dotenv from "dotenv";
 import path from "path";
-import { fileURLToPath } from "url";
+import { PrismaClient } from "@prisma/client";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const rootEnvPath = path.resolve(__dirname, "../../../.env.local");
 
 dotenv.config({
-  path: path.resolve(__dirname, "../../../.env.local"),
+  path: rootEnvPath,
 });
 
 const connectionString = process.env.DATABASE_URL;
+
 if (!connectionString) {
-  throw new Error("DATABASE_URL is not defined. Make sure .env.local is loaded before Prisma client initialization.");
+  throw new Error(
+    "DATABASE_URL is not defined. Make sure .env.local is loaded before Prisma client initialization."
+  );
 }
 
 const pool = new pg.Pool({
