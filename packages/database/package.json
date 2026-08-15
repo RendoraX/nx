@@ -1,7 +1,7 @@
 {
   "name": "@repo/database",
   "private": true,
-  "type": "module",
+  "type": "commonjs",
   "main": "./src/client.ts",
   "exports": {
     ".": "./src/client.ts"
