@@ -1,5 +1,5 @@
 import {Request , Response} from 'express'
-import { createPoojaKit, deletePoojaKit, getAllKits, updatePoojaKit } from './admin.service';
+import { createPoojaKit, deletePoojaKit, getAllKits, getKit, updatePoojaKit } from './admin.service';
 
 export const createCustomPoojaKitEndpoint = async (req : Request , res : Response) => {
     try {
@@ -21,6 +21,23 @@ export const createCustomPoojaKitEndpoint = async (req : Request , res : Respons
         })
     }
 };
+
+
+export const getCustomKitBySlug = async (req : Request , res : Response) => {
+    try {
+        const slug : string = req.params.slug as string;
+        const kit = await getKit(slug as string)
+        return res.status(200).json({
+            message : "Kit fetched successfully",
+            kit
+        })
+    } catch (error) {
+        return res.status(400).json({
+            message : (error as any).message || "Erro while getting cutom kit",
+            success : false
+        })
+    }
+}
 
 //admin use only
 export const getAllCustomkitEndpoint = async (req : Request , res : Response) => {

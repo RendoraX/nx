@@ -1,4 +1,5 @@
 import { prisma } from "../../../../../packages/database/src/client";
+import { CreateKitInput } from "./admin.schema";
 
 export async function getAllCustomKits() {
     return await prisma.ritualTemplate.findMany({
@@ -16,22 +17,28 @@ export async function getAllCustomKits() {
     });
 };
 
-export async function createCustomPoojaKit(payload : any) {
-    return  await prisma.ritualTemplate.create({
-        data : {
-            name : payload.name,
-            baseBoxPrice : payload.baseBoxPrice,
-            description : payload.description,
-            slug : payload.slug,
-            defaultItems : {
-                create : payload.defaultItems.map((item : any) => ({
-                    productId: item.productId,
-                    quantity: item.quantity
-                }))
-            },
-            curatedBy : "demo"
-        }
-    })
+export async function createCustomPoojaKit(payload: CreateKitInput) {
+  return await prisma.ritualTemplate.create({
+    data: {
+      name: payload.name,
+      slug: payload.slug,
+      description: payload.description,
+      baseBoxPrice: payload.baseBoxPrice,
+      isActive: payload.isActive,
+      curatedBy: payload.curatedBy,
+      defaultItems: {
+        create: payload.defaultItems.map((item) => ({
+          quantity: item.quantity,
+          product: {
+            connect: { id: item.productId }
+          },
+          variant: item.variantId
+            ? { connect: { id: item.variantId } }
+            : undefined
+        }))
+      }
+    }
+  });
 }
 
 export async function updatePoojaKitById(payload : any , id : string) {
@@ -76,4 +83,24 @@ export async function deleteKitById(id : string) {
             }
         });
     });
+}
+
+
+export async function getKitBySlug(slug : string){
+    return prisma.ritualTemplate.findUnique({
+        where : {
+            slug
+        },
+        include : {
+            defaultItems: {
+                include : {
+                    variant : {
+                      include : {
+                        product : true
+                      }
+                    }
+                }
+            }
+        }
+    })
 }

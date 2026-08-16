@@ -40,7 +40,6 @@ router.delete(
     securityHeadersMiddleware,
     authMiddleware,
     adminMiddleware,
-    guestMiddleware,
     upload.any(),
     deletePoojaKitEndpoint
 );

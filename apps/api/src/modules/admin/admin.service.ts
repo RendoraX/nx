@@ -1,4 +1,4 @@
-import { createCustomPoojaKit, deleteKitById, getAllCustomKits, updatePoojaKitById } from "./admin.repository";
+import { createCustomPoojaKit, deleteKitById, getAllCustomKits, getKitBySlug, updatePoojaKitById } from "./admin.repository";
 import {createCustomKitSchema, updateCustomKitSchema} from './admin.schema'
 
 export async function getAllKits() {
@@ -9,15 +9,15 @@ export async function getAllKits() {
     }
 };
 
-export async function createPoojaKit(payload : any) {
-    try {
-        const validData = createCustomKitSchema.parse(payload)
-        return await createCustomPoojaKit(validData)
-    } catch (error) {
-        console.log((error as any).message , "custom kit create message")
-        throw new Error((error as any).message || error || "Get all kits error")
-    }
-};
+export async function createPoojaKit(payload: any) {
+  try {
+    const validData = createCustomKitSchema.parse(payload);
+    return await createCustomPoojaKit(validData);
+  } catch (error) {
+    console.log((error as any).message, "custom kit create message");
+    throw new Error((error as any).message || error || "Get all kits error");
+  }
+}
 
 export async function updatePoojaKit(payload : any , templateId : string) {
     try {
@@ -33,5 +33,13 @@ export async function deletePoojaKit(id : string) {
         return await deleteKitById(id)
     } catch (error) {
         throw new Error((error as any).message || error || "Pooja kit delete error");
+    }
+}
+
+export async function getKit(slug:string) {
+        try {
+            return await getKitBySlug(slug as string)
+    } catch (error) {
+        throw new Error((error as any).message || error || "Pooja kit get error");
     }
 }

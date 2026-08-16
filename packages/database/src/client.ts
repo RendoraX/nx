@@ -3,7 +3,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import pg from "pg";
 import dotenv from "dotenv";
 import path from "path";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "../generated/client/client";
 
 const rootEnvPath = path.resolve(__dirname, "../../../.env.local");
 
