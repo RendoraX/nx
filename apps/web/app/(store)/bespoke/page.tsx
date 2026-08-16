@@ -1,8 +1,10 @@
+// page.tsx
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { ShoppingBag, Check, Info, Sparkles, Plus, Minus, RotateCcw } from 'lucide-react';
 import { useCustomerKit } from '@/hooks/useCustomerKit';
+import { useRouter } from 'next/navigation';
 
 export default function BespokeKitBuilder() {
   const {
@@ -11,118 +13,48 @@ export default function BespokeKitBuilder() {
     customizedItems,
     dynamicTotalPrice,
     isLoading,
+    isSubmitting: isHookSubmitting,
     error,
+    selectKit,
     updateItemQuantity,
-    updateItemVariant,
-    removeItemFromKit
+    resetToDefaults,
+    createOrder
   } = useCustomerKit();
 
-  const [selectedKitId, setSelectedKitId] = useState<string | null>(null);
-  const [localItemQuantities, setLocalItemQuantities] = useState<Record<string, number>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [orderSuccess, setOrderSuccess] = useState<string | null>(null);
 
-  // Initialize selected kit when catalog loads
-  useEffect(() => {
-    if (catalogKits.length > 0 && !selectedKitId) {
-      setSelectedKitId(catalogKits[0].id);
-    }
-  }, [catalogKits, selectedKitId]);
-
-  // Derive selected kit reference
-  const selectedKit = useMemo(() => {
-    return catalogKits.find((k) => k.id === selectedKitId) || catalogKits[0] || null;
-  }, [catalogKits, selectedKitId]);
-
-  // Sync local item quantities state when switching base kits
-  useEffect(() => {
-    if (!selectedKit) return;
-    const initialQuantities: Record<string, number> = {};
-    selectedKit.defaultItems?.forEach((item) => {
-      initialQuantities[item.productId] = item.quantity;
-    });
-    setLocalItemQuantities(initialQuantities);
-  }, [selectedKit]);
-
-  // Extract unique categories from items present across active catalog kits
-  const categories = useMemo(() => {
-    if (!selectedKit) return [];
-    const catSet = new Set<string>();
-    selectedKit.defaultItems?.forEach((item) => {
-      if (item.product?.description) {
-        catSet.add('Kit Essentials');
-      } else {
-        catSet.add('Essentials');
-      }
-    });
-    return Array.from(catSet);
-  }, [selectedKit]);
-
-  // Compute total item count dynamically
+  // Compute total item count dynamically directly from customizedItems
   const totalItemCount = useMemo(() => {
-    return Object.values(localItemQuantities).reduce((acc, qty) => acc + qty, 0);
-  }, [localItemQuantities]);
+    return customizedItems.reduce((acc, item) => acc + item.quantity, 0);
+  }, [customizedItems]);
 
-  // Compute live responsive pricing parameters
-  const calculatedTotalPrice = useMemo(() => {
-    if (!selectedKit) return 0;
-    const itemsCost = (selectedKit.defaultItems || []).reduce((acc, item) => {
-      const quantity = localItemQuantities[item.productId] ?? 0;
-      const unitPrice = item.selectedVariant
-        ? Number(item.selectedVariant.price)
-        : Number(item.product?.price || 0);
-      return acc + unitPrice * quantity;
-    }, 0);
-
-    return selectedKit.isManualPrice
-      ? Number(selectedKit.baseBoxPrice)
-      : Number(selectedKit.baseBoxPrice) + itemsCost;
-  }, [selectedKit, localItemQuantities]);
-
-  const handleUpdateQuantity = (productId: string, delta: number) => {
-    setLocalItemQuantities((prev) => {
-      const currentQty = prev[productId] || 0;
-      const nextQty = currentQty + delta;
-
-      if (nextQty <= 0) {
-        const copy = { ...prev };
-        delete copy[productId];
-        return copy;
-      }
-      return { ...prev, [productId]: nextQty };
-    });
+  const handleUpdateQuantity = (productId: string, variantId: string | null, delta: number) => {
+    const currentItem = customizedItems.find(
+      (i) => i.productId === productId && (i.variantId ?? null) === variantId
+    );
+    const currentQty = currentItem ? currentItem.quantity : 0;
+    const nextQty = Math.max(0, currentQty + delta);
+    updateItemQuantity(productId, variantId, nextQty);
   };
 
-  const handleResetToTemplateDefault = () => {
-    if (!selectedKit) return;
-    const resetQuantities: Record<string, number> = {};
-    selectedKit.defaultItems?.forEach((item) => {
-      resetQuantities[item.productId] = item.quantity;
-    });
-    setLocalItemQuantities(resetQuantities);
-  };
+  const router = useRouter()
+ const handleCreateorder  = () => {
+    if (!activeKit) return;
 
-  const handleCreateBespokeKit = async () => {
-    if (!selectedKit) return;
-    setIsSubmitting(true);
-    try {
-      const payload = {
-        templateId: selectedKit.id,
-        templateName: selectedKit.name,
-        baseBoxPrice: selectedKit.baseBoxPrice,
-        items: Object.entries(localItemQuantities).map(([productId, quantity]) => ({
-          productId,
-          quantity
+    const payload = {
+      templateId: activeKit.id,
+      items: customizedItems
+        .filter((item) => item.quantity > 0)
+        .map((item) => ({
+          productId: item.productId,
+          variantId: item.variantId ?? undefined,
+          quantity: item.quantity,
         })),
-        totalPrice: calculatedTotalPrice
-      };
+    };
 
-      console.log('Submitting custom adjusted blueprint payload to checkout stream:', payload);
-      alert(`Successfully deployed your modified ${selectedKit.name} kit config allocation to cart!`);
-    } catch (err) {
-      console.error('Cart system transaction fault:', err);
-    } finally {
-      setIsSubmitting(false);
-    }
+    localStorage.setItem('active_custom_kit', JSON.stringify(payload));
+    router.push('/account/kit/checkout');
   };
 
   if (isLoading && catalogKits.length === 0) {
@@ -141,9 +73,6 @@ export default function BespokeKitBuilder() {
     );
   }
 
-
-
-  console.log(catalogKits)
   return (
     <div className="max-w-7xl mx-auto px-4 py-12 text-left">
       {/* Structural Header Banner */}
@@ -160,6 +89,15 @@ export default function BespokeKitBuilder() {
         </div>
       </div>
 
+      {orderSuccess && (
+        <div className="mb-8 p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-sm font-medium flex items-center justify-between">
+          <span>{orderSuccess}</span>
+          <button onClick={() => setOrderSuccess(null)} className="text-emerald-600 hover:text-emerald-900 text-xs underline">
+            Dismiss
+          </button>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         {/* Step Customizer Engine */}
         <div className="lg:col-span-2 space-y-10">
@@ -172,12 +110,12 @@ export default function BespokeKitBuilder() {
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {catalogKits.map((tmpl) => {
-                const isCurrent = selectedKit?.id === tmpl.id;
+                const isCurrent = activeKit?.id === tmpl.id;
                 return (
                   <button
                     key={tmpl.id}
                     type="button"
-                    onClick={() => setSelectedKitId(tmpl.id)}
+                    onClick={() => selectKit(tmpl.id)}
                     className={`border rounded-xl p-5 text-left transition-all relative flex flex-col justify-between h-44 cursor-pointer ${
                       isCurrent ? 'border-[#C89B3C] bg-[#FCFAF7] shadow-sm' : 'border-[#EAE3D2] bg-white hover:border-[#1B3B2B]/20'
                     }`}
@@ -210,18 +148,22 @@ export default function BespokeKitBuilder() {
               </h3>
               <button
                 type="button"
-                onClick={handleResetToTemplateDefault}
+                onClick={resetToDefaults}
                 className="inline-flex items-center gap-1 text-[11px] font-medium text-[#7C7467] hover:text-[#1B3B2B] bg-white border border-[#EAE3D2] px-2.5 py-1 rounded-md transition-all self-start cursor-pointer"
               >
                 <RotateCcw className="h-3 w-3" /> Reset to Pandit Recommended
               </button>
             </div>
 
-            {selectedKit?.defaultItems?.map((defaultItem) => {
+            {activeKit?.defaultItems?.map((defaultItem) => {
               const item = defaultItem.product;
               if (!item) return null;
 
-              const quantity = localItemQuantities[item.id] || 0;
+              const variantId = defaultItem.variantId ?? null;
+              const activeItem = customizedItems.find(
+                (i) => i.productId === item.id && (i.variantId ?? null) === variantId
+              );
+              const quantity = activeItem ? activeItem.quantity : 0;
               const defaultQty = defaultItem.quantity;
 
               return (
@@ -248,7 +190,7 @@ export default function BespokeKitBuilder() {
                     <div className="flex items-center border border-[#EAE3D2] rounded-lg bg-[#FCFAF7] overflow-hidden">
                       <button 
                         type="button"
-                        onClick={() => handleUpdateQuantity(item.id, -1)}
+                        onClick={() => handleUpdateQuantity(item.id, variantId, -1)}
                         className="px-2 py-1 text-xs font-bold hover:bg-[#EAE3D2]/40 text-[#7C7467] cursor-pointer"
                       >
                         <Minus className="h-3 w-3" />
@@ -258,7 +200,7 @@ export default function BespokeKitBuilder() {
                       </span>
                       <button 
                         type="button"
-                        onClick={() => handleUpdateQuantity(item.id, 1)}
+                        onClick={() => handleUpdateQuantity(item.id, variantId, 1)}
                         className="px-2 py-1 text-xs font-bold hover:bg-[#EAE3D2]/40 text-[#7C7467] cursor-pointer"
                       >
                         <Plus className="h-3 w-3" />
@@ -291,24 +233,26 @@ export default function BespokeKitBuilder() {
           <div className="space-y-3 text-xs">
             <div className="flex justify-between items-center text-[#7C7467]">
               <span>Ritual Box Base Layout</span>
-              <span className="font-mono font-medium text-[#1A1A1A]">₹{selectedKit?.baseBoxPrice || 0}</span>
+              <span className="font-mono font-medium text-[#1A1A1A]">₹{activeKit?.baseBoxPrice || 0}</span>
             </div>
 
-            {totalItemCount > 0 ? (
+            {customizedItems.length > 0 ? (
               <div className="pt-3 border-t border-[#EAE3D2]/60 space-y-2 max-h-56 overflow-y-auto pr-1">
-                {selectedKit?.defaultItems?.filter(i => (localItemQuantities[i.productId] || 0) > 0).map(item => {
-                  const qty = localItemQuantities[item.productId];
-                  const isModified = item.quantity !== qty;
+                {customizedItems.map(item => {
+                  const defaultItem = activeKit?.defaultItems?.find(i => i.productId === item.productId);
+                  const defaultQty = defaultItem?.quantity || 0;
+                  const isModified = defaultQty !== item.quantity;
+                  const unitPrice = item.selectedVariant ? Number(item.selectedVariant.price) : Number(item.product?.price || 0);
 
                   return (
-                    <div key={item.productId} className="flex justify-between items-start text-[11px] text-[#7C7467]">
+                    <div key={`${item.productId}-${item.variantId}`} className="flex justify-between items-start text-[11px] text-[#7C7467]">
                       <div className="max-w-[70%]">
                         <p className="truncate text-[#1A1A1A] font-medium">{item.product?.name}</p>
                         <p className="text-[9px] font-mono">
-                          Qty: {qty} {isModified && <span className="text-[#C89B3C] ml-1">(Custom)</span>}
+                          Qty: {item.quantity} {isModified && <span className="text-[#C89B3C] ml-1">(Custom)</span>}
                         </p>
                       </div>
-                      <span className="font-mono pt-0.5">₹{(item.product?.price || 0) * qty}</span>
+                      <span className="font-mono pt-0.5">₹{unitPrice * item.quantity}</span>
                     </div>
                   );
                 })}
@@ -321,17 +265,17 @@ export default function BespokeKitBuilder() {
 
             <div className="pt-4 border-t border-[#EAE3D2] flex justify-between items-baseline">
               <span className="text-sm font-medium text-[#1B3B2B]">Estimated Total</span>
-              <span className="text-xl font-serif font-bold text-[#1B3B2B]">₹{calculatedTotalPrice}</span>
+              <span className="text-xl font-serif font-bold text-[#1B3B2B]">₹{dynamicTotalPrice}</span>
             </div>
           </div>
 
           <button
             type="button"
-            disabled={isSubmitting || totalItemCount === 0}
-            onClick={handleCreateBespokeKit}
+            disabled={isSubmitting || isHookSubmitting || totalItemCount === 0}
+            onClick={handleCreateorder}
             className="w-full py-3 bg-[#1B3B2B] hover:bg-[#132a1e] text-white disabled:bg-[#7C7467]/30 disabled:cursor-not-allowed text-xs font-bold uppercase tracking-widest rounded-lg shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
-            {isSubmitting ? 'Finalizing Manifest...' : 'Deploy Custom Box to Cart'}
+            {isSubmitting || isHookSubmitting ? 'Processing Order...' : 'Place Kit Order'}
           </button>
           
           <div className="text-[10px] text-[#A39785] font-light leading-snug space-y-1.5 bg-white p-3 rounded-lg border border-[#EAE3D2]/60">

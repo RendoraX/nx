@@ -39,20 +39,57 @@ export interface CustomerRitualKit {
   defaultItems: CustomerKitItem[];
 }
 
+export interface CustomerInfo {
+  name?: string;
+  email?: string;
+  phone?: string;
+  shippingAddress?: string;
+}
+
+export interface CreateKitOrderPayload {
+  kitId: string;
+  kitSlug: string;
+  items: {
+    productId: string;
+    variantId: string | null;
+    quantity: number;
+    unitPrice: number;
+  }[];
+  totalPrice: number;
+  customerInfo?: CustomerInfo;
+  paymentMethod?: string;
+}
+
+export interface OrderResponse {
+  id: string;
+  orderNumber: string;
+  status: string;
+  totalPrice: number;
+  createdAt: string;
+}
+
 export const CustomerKitService = {
   /**
    * Fetch all publicly active ritual kits for the customer catalog grid
    */
   async getActiveCatalogKits(): Promise<CustomerRitualKit[]> {
-    const response = (await api.get<Partial<{kits : CustomerRitualKit[]}>>("http://localhost:4000/api/custkits/"));
-    return response.data.kits as CustomerRitualKit[];
+    const response = await api.get<{ kits: CustomerRitualKit[] }>("/api/custkits");
+    return response.data.kits;
   },
 
   /**
    * Fetch details for a specific kit via its URL slug
    */
   async getKitBySlug(slug: string): Promise<CustomerRitualKit> {
-    const response = await api.get<CustomerRitualKit>(`/custkits/slug/${slug}`);
+    const response = await api.get<Partial<{kit : CustomerRitualKit}>>(`/api/custkits/slug/${slug}`);
+    return response.data.kit as CustomerRitualKit;
+  },
+
+  /**
+   * Create an order for a customized kit
+   */
+  async createOrder(payload: CreateKitOrderPayload): Promise<OrderResponse> {
+    const response = await api.post<OrderResponse>("/api/custkits/order", payload);
     return response.data;
   }
 };

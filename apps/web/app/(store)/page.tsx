@@ -33,6 +33,7 @@ import {
 
 // --- Custom Data Access Layer Hook ---
 import { useProducts } from "@/hooks/useProduct";
+import Link from "next/link";
 
 // --- Types & Interfaces ---
 interface Product {
@@ -96,7 +97,7 @@ export default function LuxuryLandingPage() {
 
   // Bind parameters dynamically to query state hooks to drive declarative remote caching layers
   const { data : productsData, isLoading, isError, error } = useProducts({
-    category: activeFilter === "all" ? undefined : activeFilter,
+    categoryId: activeFilter === "all" ? undefined : activeFilter,
     search: searchQuery || undefined
   });
 
@@ -151,12 +152,11 @@ export default function LuxuryLandingPage() {
 
               {/* Primary Architecture Action Anchors */}
               <div className="flex flex-wrap items-center gap-4 pt-2">
-                <a 
-                  href="#custom-kit"
+                <Link href={"/bespoke"}
                   className="bg-[#1F5E3B] text-[#FAF8F3] hover:bg-[#153F28] transition-all px-8 py-4 rounded-md text-xs font-bold uppercase tracking-widest shadow-sm focus:outline-none"
                 >
                   Build Custom Kit
-                </a>
+                </Link>
                 <a 
                   href="#categories"
                   className="bg-transparent border border-[#1F5E3B] text-[#1F5E3B] hover:bg-[#1F5E3B]/5 transition-all px-8 py-4 rounded-md text-xs font-bold uppercase tracking-widest"

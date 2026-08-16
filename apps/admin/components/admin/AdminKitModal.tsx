@@ -1,3 +1,4 @@
+// AdminKitModal.tsx
 'use client';
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
@@ -109,11 +110,10 @@ export default function AdminKitModal({
         const matchingProduct = productMap.get(i.productId);
         const hasVariants = Boolean(matchingProduct?.variants?.length);
         
-        let initialVariantId = '';
+        let initialVariantId = i.variantId || '';
         if (hasVariants && matchingProduct?.variants) {
-          // Check if variantId is explicitly passed or try matching by SKU
-          const matchedVar = i.variantId 
-            ? matchingProduct.variants.find(v => v.id === i.variantId)
+          const matchedVar = initialVariantId 
+            ? matchingProduct.variants.find(v => v.id === initialVariantId)
             : matchingProduct.variants.find(v => v.sku === i.product?.sku);
             
           initialVariantId = matchedVar ? matchedVar.id : matchingProduct.variants[0].id;
@@ -158,14 +158,13 @@ export default function AdminKitModal({
   };
 
   const handleAddItemRow = () => {
-  if (allAvailableProducts.length === 0) return;
+    if (allAvailableProducts.length === 0) return;
 
-  // Add an empty placeholder state rather than hardcoding product [0]
-  setItems(prev => [
-    ...prev,
-    { productId: '', variantId: '', quantity: 1 }
-  ]);
-};
+    setItems(prev => [
+      ...prev,
+      { productId: '', variantId: '', quantity: 1 }
+    ]);
+  };
 
   const handleUpdateItemRow = (index: number, field: keyof ModalItemLine, value: any) => {
     setItems(prev => {

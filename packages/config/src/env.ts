@@ -1,35 +1,33 @@
 import z from "zod";
-import dotenv from 'dotenv'
+import dotenv from "dotenv";
 import path from "path";
-import { fileURLToPath } from "url";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const rootEnvPath = path.resolve(__dirname, "../../../.env.local");
 
 dotenv.config({
-  path: path.resolve(__dirname, "../../../.env.local"),
+  path: rootEnvPath,
 });
 
 const envSchema = z.object({
-    //DB CONNECTION 
-    DATABASE_URL  : z.string(),
+  // DB CONNECTION
+  DATABASE_URL: z.string(),
 
-    //AUTH
-    JWT_SECRET : z.string(),
-    JWT_REFRESH_SECRET : z.string(),
+  // AUTH
+  JWT_SECRET: z.string(),
+  JWT_REFRESH_SECRET: z.string(),
 
+  RAZORPAY_KEY_ID: z.string().optional(),
+  RAZORPAY_KEY_SECRET: z.string().optional(),
 
-    RAZORPAY_KEY_ID: z.string().optional(),
-    RAZORPAY_KEY_SECRET: z.string().optional(),
+  NODEMAILER_USER: z.string(),
+  NODEMAILER_PASS: z.string(),
 
-    NODEMAILER_USER : z.string(),
-    NODEMAILER_PASS : z.string(),
+  CLOUDINARY_NAME: z.string(),
+  CLOUDINARY_API: z.string(),
+  CLOUDINARY_SECRET: z.string(),
 
-    CLOUDINARY_NAME : z.string(),
-    CLOUDINARY_API : z.string(),
-    CLOUDINARY_SECRET : z.string(),
-
-    BACKEND_URL : z.string()
+  BACKEND_URL: z.string(),
 });
 
-
-export const env = envSchema.parse(process.env)
+export const env = envSchema.parse(process.env);
+export const BACKEND_URL = env.BACKEND_URL;

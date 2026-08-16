@@ -1,5 +1,6 @@
+// useAdminRitual.ts
 import { useState, useEffect } from 'react';
-import { AdminRitualService, CreateTemplateInput, UpdateTemplateInput } from '@/services/adminRitual.service'; // <-- Adjust this path to your service file
+import { AdminRitualService, CreateTemplateInput, UpdateTemplateInput } from '@/services/adminRitual.service';
 
 export interface AdminProductSummary {
   id: string;
@@ -11,9 +12,9 @@ export interface AdminProductSummary {
 export interface AdminTemplateItem {
   id: string;
   productId: string;
+  variantId?: string | null;
   quantity: number;
   product: AdminProductSummary;
-  variantId : string;
 }
 
 export interface AdminRitualTemplate {
