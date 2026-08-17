@@ -16,9 +16,18 @@ const AUTH_ROUTES = [
 ];
 
 export function proxy(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+   const { pathname } = request.nextUrl;
 
   const sessionToken = request.cookies.get("accessToken")?.value;
+
+  console.log("========== PROXY AUTH ==========");
+  console.log("PATH:", pathname);
+  console.log("HAS ACCESS TOKEN:", !!sessionToken);
+  console.log(
+    "COOKIES:",
+    request.cookies.getAll().map((cookie) => cookie.name)
+  );
+  console.log("================================");
 
   const isProtectedRoute = PROTECTED_ROUTES.some(
     (route) => pathname === route || pathname.startsWith(`${route}/`)
