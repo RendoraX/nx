@@ -60,14 +60,14 @@ export const verificationTokenEndpoint = async (req : Request ,res : Response) =
         return  res.status(200)
                 .cookie("accessToken", cookies.accessToken, {
                     httpOnly: true,
-                    sameSite: "lax",
-                    secure: false,
+                    sameSite: "none",
+                    secure: true,
                     maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
                 })
                 .cookie("refreshToken", cookies.refreshToken, {
                 httpOnly: true,
-                sameSite: "lax",
-                secure: false,
+                sameSite: "none",
+                secure: true,
                 maxAge: 1000 * 60 * 60 * 24 * 30, // 30 days
                 })
         .json({
@@ -101,14 +101,14 @@ export const loginEndpoint = async (req : Request , res : Response) => {
         return  res.status(200)
                 .cookie("accessToken", cookies.accessToken, {
                     httpOnly: true,
-                    sameSite: "lax",
-                    secure: false,
+                    sameSite: "none",
+                    secure: true,
                     maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
                 })
                 .cookie("refreshToken", cookies.refreshToken, {
                 httpOnly: true,
-                sameSite: "lax",
-                secure: false,
+                sameSite: "none",
+                secure: true,
                 maxAge: 1000 * 60 * 60 * 24 * 30, // 30 days
                 })
         .json({
