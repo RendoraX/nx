@@ -45,7 +45,8 @@ app.use(
     origin: [
       "http://localhost:3000",
       "http://localhost:3001",
-      "https://nx-nku5t2ox3-swapnilnade07-5809s-projects.vercel.app"
+      "https://nx-nku5t2ox3-swapnilnade07-5809s-projects.vercel.app",
+      "https://nx-web-eight.vercel.app"
     ],
     credentials: true,
   })
