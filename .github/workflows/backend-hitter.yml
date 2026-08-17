@@ -1,0 +1,17 @@
+name : backend-hitter
+
+on: 
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Hit the backend api
+        run: |
+            curl --fail --silent --show-error \
+            --max-time 30 \
+            "https://nx-mou5.onrender.com/api/health"
