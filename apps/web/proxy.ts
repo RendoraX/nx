@@ -16,40 +16,46 @@ const AUTH_ROUTES = [
 ];
 
 export function proxy(request: NextRequest) {
-   const { pathname } = request.nextUrl;
+  const { pathname } = request.nextUrl;
 
-  const sessionToken = request.cookies.get("accessToken")?.value;
+  const accessToken = request.cookies.get("accessToken")?.value;
 
-  console.log("========== PROXY AUTH ==========");
+  console.log("========== PROXY ==========");
   console.log("PATH:", pathname);
-  console.log("HAS ACCESS TOKEN:", !!sessionToken);
+  console.log("HAS ACCESS TOKEN:", Boolean(accessToken));
   console.log(
     "COOKIES:",
     request.cookies.getAll().map((cookie) => cookie.name)
   );
-  console.log("================================");
+  console.log("============================");
 
   const isProtectedRoute = PROTECTED_ROUTES.some(
-    (route) => pathname === route || pathname.startsWith(`${route}/`)
+    (route) =>
+      pathname === route || pathname.startsWith(`${route}/`)
   );
 
   const isAuthRoute = AUTH_ROUTES.some(
-    (route) => pathname === route || pathname.startsWith(`${route}/`)
+    (route) =>
+      pathname === route || pathname.startsWith(`${route}/`)
   );
 
-  // 1. User is logged in: don't allow access to auth pages
-  if (sessionToken && isAuthRoute) {
-    return NextResponse.redirect(new URL("/account", request.url));
+  if (accessToken && isAuthRoute) {
+    return NextResponse.redirect(
+      new URL("/account", request.url)
+    );
   }
 
-  // 2. User is not logged in: redirect protected pages to login
-  if (!sessionToken && isProtectedRoute) {
+  if (!accessToken && isProtectedRoute) {
     const loginUrl = new URL("/login", request.url);
 
-    // Prevent storing /login as the redirect target
-    const currentPath = request.nextUrl.pathname + request.nextUrl.search;
+    const currentPath =
+      request.nextUrl.pathname + request.nextUrl.search;
+
     if (!currentPath.startsWith("/login")) {
-      loginUrl.searchParams.set("redirectTo", currentPath);
+      loginUrl.searchParams.set(
+        "redirectTo",
+        currentPath
+      );
     }
 
     return NextResponse.redirect(loginUrl);
@@ -57,22 +63,3 @@ export function proxy(request: NextRequest) {
 
   return NextResponse.next();
 }
-
-export const config = {
-  matcher: [
-    "/account/:path*",
-    "/orders/:path*",
-    "/cart/:path*",
-    "/checkout/:path*",
-    "/products/:path*",
-
-    "/login",
-    "/login/:path*",
-
-    "/signup",
-    "/signup/:path*",
-
-    "/register",
-    "/register/:path*",
-  ],
-};
