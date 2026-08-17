@@ -85,3 +85,25 @@ export interface CartItem {
   productId: string;
   quantity: number;
 }
+
+
+export interface AuthResponse {
+  success: boolean;
+  message?: string;
+  user?: User;
+  token?: string;
+  accessToken?: string;
+  refreshToken?: string;
+  data?: {
+    user: User;
+    token?: string;
+    [key: string]: any;
+  };
+}
+
+export interface GenericApiResponse {
+  success: boolean;
+  message: string;
+  data?: any;
+  error?: string;
+}

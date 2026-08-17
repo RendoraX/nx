@@ -16,7 +16,6 @@ import {
   Truck, 
   Receipt, 
   ShoppingBag, 
-  CheckCircle2, 
   AlertCircle,
   Phone,
   User as UserIcon,
@@ -191,7 +190,7 @@ export default function KitCheckoutPage() {
   const router = useRouter();
   
   const { catalogKits, isLoading: isCatalogLoading } = useCustomerKit();
-  const { addresses, isProcessing: isAddressProcessing, addAddress } = useAddressBook();
+  const { addresses, addAddress } = useAddressBook();
   const { createOrder, loading: isOrderLoading, error: orderHookError } = useOrders();
   const { startPayment, loading: isPaymentLoading, error: paymentHookError } = usePayment();
 
@@ -218,8 +217,8 @@ export default function KitCheckoutPage() {
   }, []);
 
   useEffect(() => {
-    if (addresses.length > 0 && !selectedAddressId) {
-      const defaultAddr = addresses.find((a: Address) => a.isDefault) || addresses[0];
+    if (addresses && addresses.length > 0 && !selectedAddressId) {
+      const defaultAddr = (addresses as any[]).find((a: any) => a.isDefault) || addresses[0];
       if (defaultAddr?.id) {
         setSelectedAddressId(defaultAddr.id);
       }
@@ -240,14 +239,14 @@ export default function KitCheckoutPage() {
     }
   };
 
-  const activeKitBlueprint = catalogKits.find(
-    (kit: RitualTemplate) => kit.id === kitPayload?.templateId
+  const activeKitBlueprint = (catalogKits as any[])?.find(
+    (kit: any) => kit.id === kitPayload?.templateId
   );
 
   const activeKitItems = (kitPayload?.items || [])
     .map((savedItem: CustomizedItem) => {
       const defaultTemplateItemMatch = activeKitBlueprint?.defaultItems?.find(
-        (item: TemplateItem) => item.productId === savedItem.productId
+        (item: any) => item.productId === savedItem.productId
       );
 
       return {
@@ -273,7 +272,7 @@ export default function KitCheckoutPage() {
   const shipping = subtotal >= SHIPPING_THRESHOLD || activeKitItems.length === 0 ? 0 : 40;
   const grandTotal = subtotal + shipping;
 
-  const selectedAddress = addresses.find((a: Address) => a.id === selectedAddressId);
+  const selectedAddress = (addresses as any[])?.find((a: any) => a.id === selectedAddressId);
 
   const handlePlaceOrder = async () => {
     if (!selectedAddressId) {
@@ -294,7 +293,7 @@ export default function KitCheckoutPage() {
         paymentMethod: paymentMethod === 'cod' ? 'COD' : 'ONLINE',
         isKitOrder: true,
         kitDetails: kitPayload
-      });
+      } as any);
 
       const orderRef = createdOrder?.order?.id || (createdOrder as any)?.id;
 
@@ -418,7 +417,7 @@ export default function KitCheckoutPage() {
                 </button>
               </div>
 
-              {addresses.length === 0 ? (
+              {(!addresses || addresses.length === 0) ? (
                 <div className="text-center py-6 border border-dashed border-[#EAE3D2] rounded-xl p-4 bg-white">
                   <MapPin className="w-8 h-8 text-[#C89B3C] mx-auto mb-2 opacity-80" />
                   <p className="text-xs text-[#7C7467] font-serif italic mb-3">No physical delivery addresses found in your ledger.</p>
@@ -431,7 +430,7 @@ export default function KitCheckoutPage() {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {addresses.map((address: Address) => {
+                  {(addresses as any[]).map((address: any) => {
                     const isSelected = selectedAddressId === address.id;
                     return (
                       <div
@@ -575,50 +574,44 @@ export default function KitCheckoutPage() {
                         </span>
                       )}
                     </div>
-                    {activeKitBlueprint?.description && (
-                      <p className="text-[11px] text-[#7C7467] line-clamp-1">{activeKitBlueprint.description}</p>
-                    )}
+                    <p className="text-[11px] text-[#7C7467]">Base box configuration & assembly</p>
                   </div>
                 </div>
-                <div className="text-right font-mono text-xs font-bold text-[#1B3B2B]">
-                  ₹{kitBasePrice} <span className="text-[9px] font-normal text-[#7C7467] block">Base Price</span>
-                </div>
+                <span className="font-mono text-xs font-semibold text-[#1B3B2B]">₹{kitBasePrice}</span>
               </div>
 
-              <div className="divide-y divide-[#EAE3D2]/60 pt-2">
-                {activeKitItems.map((item) => {
-                  const unitPrice = item.selectedVariant 
-                    ? item.selectedVariant.price 
-                    : item.product?.price || 0;
-                  
-                  return (
-                    <div key={`${item.productId}-${item.variantId}`} className="py-3 flex items-center gap-3">
-                      <div className="relative w-12 h-14 bg-white border border-[#EAE3D2] rounded-lg overflow-hidden flex-shrink-0">
-                        {item.product?.images?.[0]?.url ? (
-                          <Image 
-                            src={item.product.images[0].url} 
-                            alt={item.product.images[0].alt || item.product.name} 
-                            fill 
-                            sizes="(max-width: 640px) 48px, 48px"
-                            className="object-cover" 
-                          />
-                        ) : (
-                          <ShoppingBag className="w-4 h-4 text-[#7C7467] m-auto" />
-                        )}
-                      </div>
-                      
-                      <div className="flex-1 min-w-0 space-y-0.5">
-                        <h4 className="text-xs font-serif text-[#1B3B2B] truncate">
-                          {item.product?.name || 'Ritual Element'}
-                        </h4>
-                        <p className="text-[10px] font-mono text-[#7C7467]">
-                          Qty: <span className="font-bold text-[#1B3B2B]">{item.quantity}</span>
-                        </p>
-                      </div>
+              <div className="space-y-2.5">
+                {activeKitItems.map((item, index) => {
+                  const itemPrice = item.selectedVariant ? item.selectedVariant.price : item.product?.price || 0;
+                  const itemImg = (item.product as any)?.images?.[0]?.url || (item.product as any)?.imageUrl || '/placeholder.png';
 
-                      <div className="text-right font-mono text-xs font-medium text-[#1B3B2B]">
-                        ₹{(unitPrice * item.quantity).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                  return (
+                    <div key={index} className="bg-white border border-[#EAE3D2] rounded-xl p-3 flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="relative w-12 h-12 bg-[#F5F2EB] rounded-lg overflow-hidden flex-shrink-0 border border-[#EAE3D2]/60">
+                          {itemImg ? (
+                            <Image src={itemImg} alt={item.product?.name || 'Product'} fill className="object-cover" />
+                          ) : (
+                            <ShoppingBag className="w-5 h-5 text-[#C89B3C] absolute inset-0 m-auto" />
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <h4 className="font-serif text-xs font-medium text-[#1B3B2B] truncate">
+                            {item.product?.name || 'Custom Herb/Item'}
+                          </h4>
+                          {item.selectedVariant && (
+                            <p className="text-[10px] font-mono text-[#7C7467]">
+                              Variant: {item.selectedVariant.size}
+                            </p>
+                          )}
+                          <p className="text-[10px] font-mono text-[#7C7467]">
+                            Qty: {item.quantity} × ₹{itemPrice}
+                          </p>
+                        </div>
                       </div>
+                      <span className="font-mono text-xs font-semibold text-[#1B3B2B] flex-shrink-0">
+                        ₹{itemPrice * item.quantity}
+                      </span>
                     </div>
                   );
                 })}
@@ -627,77 +620,50 @@ export default function KitCheckoutPage() {
           </div>
 
           <div className="lg:col-span-5">
-            <div className="bg-[#1B3B2B] text-[#FCFAF7] border border-[#1B3B2B] rounded-2xl p-4 sm:p-6 space-y-5 shadow-xl sticky top-20">
-              <div className="border-b border-[#FCFAF7]/15 pb-3 flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <div className="flex items-center gap-1.5">
-                    <Receipt className="w-3.5 h-3.5 text-[#C89B3C]" />
-                    <span className="text-[8.5px] font-mono uppercase tracking-[0.2em] text-[#C89B3C] font-bold">
-                      Ritual Kit Valuation
-                    </span>
-                  </div>
-                  <h3 className="font-serif text-lg font-normal text-[#FCFAF7]">Total Package Valuation</h3>
-                </div>
-                <PackageCheck className="w-4 h-4 text-[#C89B3C]" />
-              </div>
+            <div className="bg-[#FCFAF7] border border-[#EAE3D2] rounded-2xl p-5 sm:p-6 shadow-xs sticky top-20 space-y-5">
+              <h2 className="font-serif text-lg text-[#1B3B2B] font-medium border-b border-[#EAE3D2]/80 pb-3 flex items-center gap-2">
+                <Receipt className="w-5 h-5 text-[#C89B3C]" />
+                Order Summary
+              </h2>
 
-              {selectedAddress && (
-                <div className="bg-[#FCFAF7]/5 border border-[#FCFAF7]/10 p-3 rounded-xl text-xs space-y-1">
-                  <span className="text-[9px] font-mono uppercase text-[#C89B3C] tracking-wider block">Dispatching To</span>
-                  <p className="font-serif text-[#FCFAF7] truncate">{selectedAddress.fullName}</p>
-                  <p className="text-[10.5px] text-[#FCFAF7]/70 truncate">{selectedAddress.line1}, {selectedAddress.city}</p>
+              <div className="space-y-3 text-xs font-mono">
+                <div className="flex justify-between text-[#7C7467]">
+                  <span>Base Box Fee</span>
+                  <span>₹{kitBasePrice}</span>
                 </div>
-              )}
-
-              <div className="space-y-2.5 text-xs">
-                <div className="flex justify-between items-center text-[#FCFAF7]/80">
-                  <span className="font-serif italic">Kit Base Blueprint</span>
-                  <span className="font-mono">₹{kitBasePrice.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                <div className="flex justify-between text-[#7C7467]">
+                  <span>Items Total ({activeKitItems.length})</span>
+                  <span>₹{itemsSubtotal}</span>
+                </div>
+                <div className="flex justify-between text-[#7C7467]">
+                  <span>Subtotal</span>
+                  <span className="text-[#1B3B2B] font-semibold">₹{subtotal}</span>
+                </div>
+                <div className="flex justify-between text-[#7C7467]">
+                  <span>Estimated Shipping</span>
+                  <span>{shipping === 0 ? <span className="text-emerald-700 font-bold uppercase text-[10px]">Free</span> : `₹${shipping}`}</span>
                 </div>
 
-                <div className="flex justify-between items-center text-[#FCFAF7]/80">
-                  <span className="font-serif italic">Custom Items Subtotal</span>
-                  <span className="font-mono">₹{itemsSubtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-                </div>
-
-                <div className="flex justify-between items-center text-[#FCFAF7]/80">
-                  <span className="font-serif italic">Shipping</span>
-                  <span className="font-mono">
-                    {shipping === 0 ? (
-                      <span className="text-[#C89B3C] font-mono text-[9px] font-bold uppercase tracking-wider bg-[#C89B3C]/15 px-2 py-0.5 rounded border border-[#C89B3C]/30">
-                        Complimentary
-                      </span>
-                    ) : (
-                      `₹${shipping.toFixed(2)}`
-                    )}
-                  </span>
-                </div>
-
-                <div className="border-t border-[#FCFAF7]/15 pt-3 flex justify-between items-end">
-                  <div>
-                    <span className="font-serif text-base font-normal text-[#FCFAF7] block">Total Payable</span>
-                    <span className="text-[8.5px] text-[#FCFAF7]/50 font-mono tracking-wider uppercase block">Taxes included</span>
-                  </div>
-                  <span className="font-mono text-xl font-bold text-[#C89B3C]">
-                    ₹{grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                  </span>
+                <div className="border-t border-[#EAE3D2] pt-3 flex justify-between items-baseline text-sm">
+                  <span className="font-serif font-medium text-[#1B3B2B]">Grand Total</span>
+                  <span className="font-mono font-bold text-base text-[#1B3B2B]">₹{grandTotal}</span>
                 </div>
               </div>
 
               <CheckoutButton
                 onPlaceOrder={handlePlaceOrder}
                 isSubmitting={isSubmittingOrder}
-                isDisabled={isAddressProcessing || !selectedAddressId}
+                isDisabled={isSubmittingOrder || !selectedAddressId}
               />
 
-              <div className="pt-2 border-t border-[#FCFAF7]/15 space-y-2 text-[10.5px] text-[#FCFAF7]/70">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-[#C89B3C]" />
-                  <span className="font-serif italic">Brahman-Verified Ritual Components</span>
-                </div>
+              <div className="pt-2 text-[10.5px] text-[#7C7467] space-y-2 border-t border-[#EAE3D2]/60 font-mono">
                 <div className="flex items-center gap-2">
                   <Truck className="w-3.5 h-3.5 text-[#C89B3C]" />
-                  <span className="font-serif italic">Express Priority Dispatch Guaranteed</span>
+                  <span>Standard Delivery (3-5 Business Days)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <PackageCheck className="w-3.5 h-3.5 text-[#C89B3C]" />
+                  <span>Custom packaged in authentic Shri Vishwanath Box</span>
                 </div>
               </div>
             </div>
@@ -710,22 +676,6 @@ export default function KitCheckoutPage() {
         onClose={() => setIsDialogOpen(false)}
         onSubmit={handleCreateAddress}
       />
-
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-[#1B3B2B]/95 backdrop-blur-md border-t border-[#C89B3C]/30 px-3 py-2.5 sm:hidden shadow-2xl flex items-center justify-between gap-3">
-        <div className="flex flex-col">
-          <span className="text-[8px] font-mono uppercase tracking-widest text-[#FCFAF7]/60">Total</span>
-          <span className="font-mono font-bold text-base text-[#C89B3C]">
-            ₹{grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-          </span>
-        </div>
-        <CheckoutButton
-          isMobile
-          onPlaceOrder={handlePlaceOrder}
-          isSubmitting={isSubmittingOrder}
-          isDisabled={isAddressProcessing || !selectedAddressId}
-          label="Confirm Kit Order"
-        />
-      </div>
     </div>
   );
 }
