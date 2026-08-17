@@ -1,5 +1,5 @@
 import {v2 }  from "cloudinary"
-import { env } from "../../config/src"
+import { env } from "../../config/src/env"
 
 export const configCLD = () => {
     v2.config({

@@ -1,5 +1,6 @@
 // services/address.service.ts
 import api from "@/lib/axios";
+import {BACKEND_URL} from '../../../packages/config/src/public'
 
 export interface AddressPayload {
   id?: string;
@@ -13,6 +14,7 @@ export interface AddressPayload {
   postalCode: string;
   isDefault?: boolean;
 }
+
 
 export const addressService = {
   async getAll(): Promise<AddressPayload[]> {

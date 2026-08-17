@@ -1,10 +1,11 @@
 import { Router } from "express";
-import { getHealthStatus } from "../../../../packages/monitoring/src";
 
 const router = Router();
 
 router.get("/health", async (_req, res) => {
-  res.json(await getHealthStatus());
+  res.json({
+    message : "Dummy monitor"
+  });
 });
 
 router.get("/health/database", (_req, res) => {

@@ -2,7 +2,7 @@ import z from "zod";
 import dotenv from "dotenv";
 import path from "path";
 
-const rootEnvPath = path.resolve(__dirname, "../../../.env.local");
+const rootEnvPath = path.resolve(process.cwd(), "../../../.env.local");
 
 dotenv.config({
   path: rootEnvPath,
@@ -30,4 +30,3 @@ const envSchema = z.object({
 });
 
 export const env = envSchema.parse(process.env);
-export const BACKEND_URL = env.BACKEND_URL;

@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 import path from "path";
 import { PrismaClient } from "../generated/client/client";
 
-const rootEnvPath = path.resolve(__dirname, "../../../.env.local");
+const rootEnvPath = path.resolve(process.cwd(), "../../.env.local");
 
 dotenv.config({
   path: rootEnvPath,

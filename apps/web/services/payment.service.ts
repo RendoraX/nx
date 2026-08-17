@@ -8,7 +8,7 @@ import {
 } from "@/types/checkout";
 
 const API = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000/api",
+  baseURL: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api` || "http://localhost:4000/api",
   withCredentials: true,
 });
 

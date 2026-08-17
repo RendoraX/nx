@@ -160,7 +160,7 @@ export const ProductService = {
    */
   async getProduct(slug: string): Promise<Product> {
     try {
-      const response = await api.get<Product>(`/products/${slug}`);
+      const response = await api.get<Product>(`/api/products/${slug}`);
       return response.data;
     } catch (error: any) {
       if (error?.response?.status === 404) {

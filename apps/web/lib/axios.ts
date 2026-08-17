@@ -4,7 +4,7 @@ import { setupCache } from "axios-cache-interceptor";
 
 const api = setupCache(
   axios.create({
-    baseURL: "http://localhost:4000",
+    baseURL: process.env.NEXT_PUBLIC_BACKEND_URL as string,
     withCredentials: true,
   })
 );

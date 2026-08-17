@@ -3,7 +3,14 @@ import helmet from "helmet";
 import cors from "cors";
 import cookieParser from 'cookie-parser'
 
-import { requestLogger } from  '../../../packages/logger/src/index';
+import dotenv from "dotenv";
+import path from "path";
+
+dotenv.config({
+  path: path.resolve(process.cwd(), "../../.env.local"),
+});
+
+import { requestLogger} from  '../../../packages/logger/src/index';
 import { requestIdMiddleware } from './middleware/request-id.middleware';
 import { securityHeadersMiddleware } from './middleware/security.middleware';
 import healthRoutes from './health/health.routes';

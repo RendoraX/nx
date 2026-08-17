@@ -1,6 +1,7 @@
 // apps/web/services/auth.service.ts
 import api from '@/lib/axios';
 import { User, AuthResponse, GenericApiResponse } from '../types/auth';
+import { BACKEND_URL } from '../../../packages/config/src/public';
 
 export const AuthService = {
   /**
@@ -9,7 +10,7 @@ export const AuthService = {
    */
   async register(data: Record<string, any>): Promise<GenericApiResponse> {
     try {
-      const response = await api.post('http://localhost:4000/api/auth/register', data);
+      const response = await api.post('/api/auth/register', data);
       return response.data;
     } catch (error: any) {
       console.error('AuthService register error:', error);
@@ -22,7 +23,7 @@ export const AuthService = {
    */
   async resendVerificationOtp(email : string){
     try {
-        await api.post("http://localhost:4000/api/auth/resend-verification" , {email})
+        await api.post("/api/auth/resend-verification" , {email})
     } catch (error : any) {
         console.error('AuthService resend verification mail error' , error);
         throw error?.response?.data?.error || new Error("Otp resend logic failed in backend")
@@ -46,7 +47,7 @@ export const AuthService = {
    */
   async logout(): Promise<GenericApiResponse> {
     try {
-      const response = await api.post('http://localhost:4000/api/auth/logout');
+      const response = await api.post('/api/auth/logout');
       return response.data;
     } catch (error: any) {
       console.error('AuthService logout error:', error);
@@ -58,7 +59,7 @@ export const AuthService = {
    */
   async logoutAll(): Promise<GenericApiResponse> {
     try {
-      const response = await api.post('http://localhost:4000/api/auth/logout-all');
+      const response = await api.post('/api/auth/logout-all');
       return response.data;
     } catch (error: any) {
       console.error('AuthService logout error:', error);
@@ -98,7 +99,7 @@ export const AuthService = {
    */
   async verifyEmail(token: string): Promise<GenericApiResponse> {
     try {
-      const response = await api.post('http://localhost:4000/api/auth/verify-email', { token });
+      const response = await api.post('/api/auth/verify-email', { token });
       return response.data;
     } catch (error: any) {
       console.error('AuthService verifyEmail error:', error);
@@ -112,6 +113,7 @@ export const AuthService = {
   async me(): Promise<AuthResponse> {
     try {
       const response = await api.get('/api/auth/me');
+      console.log(" Backend URL :::: " , BACKEND_URL);
       return response.data;
     } catch (error: any) {
       throw error?.response?.data || new Error('Active authorization trace unverified.');
@@ -120,7 +122,7 @@ export const AuthService = {
   
   async updatePassword(payload : {password : string}){
     try {
-      const response = await api.put("http://localhost:4000/api/auth/account/cred/update" , {password : payload.password as string})
+      const response = await api.put("/api/auth/account/cred/update" , {password : payload.password as string})
 
       return response
     } catch (error : any) {

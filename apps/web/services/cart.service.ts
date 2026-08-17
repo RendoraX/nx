@@ -54,7 +54,7 @@ export interface UpdateCartItemDTO {
   quantity: number;
 }
 
-const API_BASE = 'http://localhost:4000/api/cart';
+const API_BASE = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/cart`;
 
 export const CartService = {
   getCart: async (): Promise<CartResponse> => {

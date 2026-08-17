@@ -17,7 +17,7 @@ export interface SessionPayload {
 export const sessionService = {
   // Fetch all sessions for the authenticated user
   async getAll(): Promise<SessionPayload[]> {
-    const res = await api.get('http://localhost:4000/api/auth/account/sessions', {
+    const res = await api.get('/api/auth/account/sessions', {
       cache: false,
     });
     return res.data.sessions || res.data;
@@ -25,13 +25,13 @@ export const sessionService = {
 
   // Revoke a single active device session
   async revoke(sessionId: string) {
-    const res = await api.post(`http://localhost:4000/api/auth/account/sessions/${sessionId}/revoke`);
+    const res = await api.post(`/api/auth/account/sessions/${sessionId}/revoke`);
     return res.data;
   },
 
   // Revoke all active sessions except the current one
   async revokeAllOthers() {
-    const res = await api.post('http://localhost:4000/api/auth/account/sessions/revoke-others');
+    const res = await api.post('/api/auth/account/sessions/revoke-others');
     return res.data;
   }
 };
