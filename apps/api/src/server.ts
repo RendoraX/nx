@@ -45,7 +45,7 @@ app.use(
     origin: [
       "http://localhost:3000",
       "http://localhost:3001",
-      "https://app.apidog.com"
+      "https://nx-nku5t2ox3-swapnilnade07-5809s-projects.vercel.app"
     ],
     credentials: true,
   })
