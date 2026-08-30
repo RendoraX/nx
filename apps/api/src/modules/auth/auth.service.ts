@@ -48,6 +48,8 @@ export const register = async (payload : registerDTO) => {
         return createdUser;
         
     } catch (error : any) {
+
+        console.log(error.message)
         throw new error
     }
 };
