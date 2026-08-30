@@ -37,7 +37,8 @@ app.use((req, res, next) => {
   next();
 });
 app.use(helmet());
-app.use(cookieParser())
+app.use(cookieParser());
+app.use(express.json());
 app.use(requestIdMiddleware);
 app.use(requestLogger);
 app.use(securityHeadersMiddleware);

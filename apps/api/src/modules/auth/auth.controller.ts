@@ -9,7 +9,7 @@ import { json, string, success } from "zod";
 //completed , tested = 1
 export const registerEndpoint = async ( req : Request, res : Response) => {
     try {
-        const payload = await req.body;
+        const payload =  req.body;
         const registerSchemaValid = registerSchema().parse(payload);
 
          await register(registerSchemaValid as registerDTO);        
@@ -21,7 +21,7 @@ export const registerEndpoint = async ( req : Request, res : Response) => {
     } catch (error : any) {
         return res.status(500).json({
             message : "Internal server error",
-            error  :  error.message || "Error",
+            error  :  error.message || "Err",
             success : false
         })
     }
@@ -31,7 +31,7 @@ export const registerEndpoint = async ( req : Request, res : Response) => {
 //compledted . tested = 1
 export const resendVerificationEndpoint = async (req: Request , res : Response )=> {
     try {
-        const payload = await req.body;
+        const payload =  req.body;
         await resendVerification(payload);
         return res.status(200).json({
             message : "Otp send successfully !",
@@ -40,7 +40,7 @@ export const resendVerificationEndpoint = async (req: Request , res : Response )
     } catch (error : any) {
         return res.status(500).json({
             message : "Internal server error",
-            error : error.message | error,
+            error : error.message || error,
             success : false
         })  
     }
@@ -52,23 +52,20 @@ export const verificationTokenEndpoint = async (
   res: Response
 ) => {
   try {
-    console.log("1. Verification request received");
+    console.log("VERIFY ENDPOINT HIT");
+    console.log("BODY:", req.body);
 
     const payload = {
-      token: req.body.token as string,
-      ipAddress:
-        req.ip ||
-        req.socket.remoteAddress ||
-        "",
-      userAgent:
-        req.headers["user-agent"] || "",
+      token: req.body?.token as string,
+      ipAddress: req.ip || req.socket.remoteAddress || "",
+      userAgent: req.headers["user-agent"] || "",
     };
 
-    console.log("2. Payload:", payload);
+    console.log("VERIFYING TOKEN:", payload.token);
 
     const cookies = await verificationToken(payload);
 
-    console.log("3. verificationToken completed");
+    console.log("TOKEN VERIFIED SUCCESSFULLY");
 
     return res
       .status(200)
@@ -90,26 +87,22 @@ export const verificationTokenEndpoint = async (
       });
 
   } catch (error: any) {
-    console.error(
-      "VERIFICATION ERROR:",
-      error
-    );
+    console.error("VERIFY ERROR:", error);
 
     return res.status(500).json({
-      message: "Verification failed",
+      message: "Internal server error",
       error: error?.message || "Unknown error",
       success: false,
     });
   }
 };
 
-
 //completed , tested = 1
 export const loginEndpoint = async (req : Request , res : Response) => {
     try {
 
         console.log("Request is received from mobile")
-        const payload = await req.body;
+        const payload =  req.body;
         const metadata = {
             ipAddress :  req.ip,
             userAgent :  req.headers["user-agent"]      
@@ -138,7 +131,7 @@ export const loginEndpoint = async (req : Request , res : Response) => {
     } catch (error : any) {
         return res.status(500).json({
             message : error.message || "Internal server error.",
-            error :  error.message | error,
+            error :  error.message || error,
             success : false
         })
     }
@@ -160,7 +153,7 @@ export const logoutEndpoint = async (req : Request , res : Response) =>{
     } catch (error : any) {
         return res.status(500).json({
             message : "Internal server error.",
-            error :  error.message | error
+            error :  error.message || error
         })
     }
 }
@@ -204,7 +197,7 @@ export const forgotPasswordInitEndpoint  = async (req : Request ,res : Response)
     } catch (error : any) {
         return res.status(500).json({
             message : "Internal server error.",
-            error : error | error.message
+            error : error || error.message
         })
     }
 }
@@ -225,7 +218,7 @@ export const resetPasswordEndpoint = async (req : Request , res : Response) => {
         } catch (error : any) {
             return res.status(500).json({
                 message : "Internal server error",
-                error : error | (error as any).message ,
+                error : error || (error as any).message ,
                 sucess : false
         })
     }
