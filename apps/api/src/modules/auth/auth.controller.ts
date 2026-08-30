@@ -47,40 +47,60 @@ export const resendVerificationEndpoint = async (req: Request , res : Response )
 }
 
 //completed , tested = 1
-export const verificationTokenEndpoint = async (req : Request ,res : Response) => {
-    try {
-        const payload = {
-            token : await req.body.token as string,
-            ipAddress :  req.ip || req.socket.remoteAddress as string,
-            userAgent : req.headers["user-agent"] as string
-        };
+export const verificationTokenEndpoint = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    console.log("1. Verification request received");
 
-        const cookies = await verificationToken(payload);
+    const payload = {
+      token: req.body.token as string,
+      ipAddress:
+        req.ip ||
+        req.socket.remoteAddress ||
+        "",
+      userAgent:
+        req.headers["user-agent"] || "",
+    };
 
-        return  res.status(200)
-                .cookie("accessToken", cookies.accessToken, {
-                    httpOnly: true,
-                    sameSite: "none",
-                    secure: true,
-                    maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
-                })
-                .cookie("refreshToken", cookies.refreshToken, {
-                httpOnly: true,
-                sameSite: "none",
-                secure: true,
-                maxAge: 1000 * 60 * 60 * 24 * 30, // 30 days
-                })
-        .json({
-            message : "User verified successfully.",
-            success : true
-        })
-    } catch (error : any) {
-        console.log(error.message)
-        return res.status(500).json({
-            message : "Internal server error",
-            error  : error | error.message
-        })
-    }
+    console.log("2. Payload:", payload);
+
+    const cookies = await verificationToken(payload);
+
+    console.log("3. verificationToken completed");
+
+    return res
+      .status(200)
+      .cookie("accessToken", cookies.accessToken, {
+        httpOnly: true,
+        sameSite: "none",
+        secure: true,
+        maxAge: 1000 * 60 * 60 * 24 * 7,
+      })
+      .cookie("refreshToken", cookies.refreshToken, {
+        httpOnly: true,
+        sameSite: "none",
+        secure: true,
+        maxAge: 1000 * 60 * 60 * 24 * 30,
+      })
+      .json({
+        message: "User verified successfully.",
+        success: true,
+      });
+
+  } catch (error: any) {
+    console.error(
+      "VERIFICATION ERROR:",
+      error
+    );
+
+    return res.status(500).json({
+      message: "Verification failed",
+      error: error?.message || "Unknown error",
+      success: false,
+    });
+  }
 };
 
 

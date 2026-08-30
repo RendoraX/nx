@@ -29,31 +29,39 @@ export const createResetToken = () => {
 
 
 //COMPLETED , tsting = 1
-export const register = async (payload : registerDTO) => {
-    try {
+export const register = async (payload: registerDTO) => {
+  try {
+    const existing = await findByEmail(payload.email as string);
 
-        const existing = await findByEmail(payload.email as string);
-
-        if(existing) throw new Error("User already exits.");
-        const hashshedPass = await hashPassword(payload.password as string);
-
-        const createdUser = await createUser({
-            ...payload,
-            password : hashshedPass
-        });
-
-        const token = await createVerificationToken(payload.email as string);
-        await veirfyEmail(token , payload.email as string);
-
-        return createdUser;
-        
-    } catch (error : any) {
-
-        console.log(error.message)
-        throw new error
+    if (existing) {
+      throw new Error("User already exists.");
     }
-};
 
+    const hashedPass = await hashPassword(
+      payload.password as string
+    );
+
+    const createdUser = await createUser({
+      ...payload,
+      password: hashedPass,
+    });
+
+    const token = await createVerificationToken(
+      payload.email as string
+    );
+
+    await veirfyEmail(
+      token,
+      payload.email as string
+    );
+
+    return createdUser;
+
+  } catch (error: any) {
+    console.log(error.message);
+    throw error;
+  }
+};
 
 //completed , testing = 1
 export const resendVerification = async (payload : {
