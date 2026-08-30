@@ -29,11 +29,15 @@ export const createResetToken = () => {
 
 
 //COMPLETED , tsting = 1
-export const register = async (payload: registerDTO) => {
+export const register = async (
+  payload: registerDTO
+) => {
   try {
     console.log("1. Checking existing user");
 
-    const existing = await findByEmail(payload.email as string);
+    const existing = await findByEmail(
+      payload.email as string
+    );
 
     if (existing) {
       throw new Error("User already exists.");
@@ -41,7 +45,9 @@ export const register = async (payload: registerDTO) => {
 
     console.log("2. Hashing password");
 
-    const hashedPass = await hashPassword(payload.password);
+    const hashedPass = await hashPassword(
+      payload.password
+    );
 
     console.log("3. Creating user");
 
@@ -50,23 +56,44 @@ export const register = async (payload: registerDTO) => {
       password: hashedPass,
     });
 
-    console.log("4. Creating verification token");
+    console.log(
+      "4. User created successfully:",
+      createdUser.id
+    );
 
-    const token = await createVerificationToken(payload.email as string);
+    console.log("5. Creating verification token");
 
-    console.log("5. Token created:", token);
+    const token = await createVerificationToken(
+      payload.email as string
+    );
 
-    console.log("6. Sending verification email");
+    console.log(
+      "6. Token created successfully"
+    );
 
-    await veirfyEmail(token, payload.email as string);
+    console.log(
+      "7. Sending verification email"
+    );
 
-    console.log("7. Verification email sent");
+    await veirfyEmail(
+      token,
+      payload.email as string
+    );
+
+    console.log(
+      "8. Verification email sent successfully"
+    );
 
     return createdUser;
 
   } catch (error: any) {
-    console.error("REGISTER ERROR:", error);
-    throw error; // IMPORTANT
+
+    console.error(
+      "REGISTER SERVICE ERROR:",
+      error
+    );
+
+    throw error;
   }
 };
 

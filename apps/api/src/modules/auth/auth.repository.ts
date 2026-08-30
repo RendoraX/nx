@@ -55,15 +55,15 @@ export const findByEmail = async (
 
 
 //TESTES
-export const createUser = async (userPayload : registerDTO) : Promise<UserResponse | null> => {
-    try {
-        const user = await prisma.user.create({
-            data : userPayload as Prisma.UserCreateInput
-        });
-        return user as UserResponse;
-    } catch (error : any) {
-        return error;
-    }
+export const createUser = async (
+  userPayload: registerDTO
+): Promise<UserResponse> => {
+
+  const user = await prisma.user.create({
+    data: userPayload as Prisma.UserCreateInput,
+  });
+
+  return user as UserResponse;
 };
 
 //TESTED
