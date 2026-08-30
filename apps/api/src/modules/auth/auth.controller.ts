@@ -21,7 +21,7 @@ export const registerEndpoint = async ( req : Request, res : Response) => {
     } catch (error : any) {
         return res.status(500).json({
             message : "Internal server error",
-            error  :  JSON.stringify(error),
+            error  :  error.message || "Error",
             success : false
         })
     }
