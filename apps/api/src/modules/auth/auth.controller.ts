@@ -20,8 +20,8 @@ export const registerEndpoint = async ( req : Request, res : Response) => {
         });
     } catch (error : any) {
         return res.status(500).json({
-            message : error.message ||  "Internal server error",
-            error  : error | error.message,
+            message : "Internal server error",
+            error  :  JSON.stringify(error),
             success : false
         })
     }
@@ -199,12 +199,14 @@ export const resetPasswordEndpoint = async (req : Request , res : Response) => {
             .clearCookie("accessToken")
             .clearCookie("refreshToken")
             .json({
-                message : "Password changed Successfully !"
+                message : "Password changed Successfully !",
+                sucess : true
             });
-    } catch (error : any) {
-        return res.status(500).json({
-            message : "Internal server error",
-            error : error | (error as any).message 
+        } catch (error : any) {
+            return res.status(500).json({
+                message : "Internal server error",
+                error : error | (error as any).message ,
+                sucess : false
         })
     }
 }

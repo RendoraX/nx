@@ -127,3 +127,13 @@ export type RitualTemplate = Prisma.RitualTemplateModel
  * 
  */
 export type TemplateItem = Prisma.TemplateItemModel
+/**
+ * Model Wishlist
+ * 
+ */
+export type Wishlist = Prisma.WishlistModel
+/**
+ * Model WishlistItem
+ * 
+ */
+export type WishlistItem = Prisma.WishlistItemModel

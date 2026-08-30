@@ -17,10 +17,11 @@ export function useRegister() {
       if (data.success) {
         router.push(`/verify-email?email=${formData.email}`);
       }
+      
     } catch (err: any) {
-            toast(err.message)
-      setError(err?.message || 'Account creation encountered unexpected complications.');
-    } finally {
+            toast(err.message || JSON.parse(err.message)[0].message as string)
+            setError(err.message || (JSON.parse(err.message))[0].message || 'User is not registered.');
+          } finally {
       setLoading(false);
     }
   };

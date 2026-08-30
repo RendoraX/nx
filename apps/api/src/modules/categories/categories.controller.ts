@@ -77,3 +77,25 @@ export const categoryUpdateEndpoint = async (req : Request , res : Response) => 
     }
 };
 
+
+
+
+
+
+///============================== WISHLIST CONTROLLER AND SERVICES ===============================
+
+export const addToWishList = async (req : Request , res : Response) => {
+    try {
+        const productId = await req.body;
+        console.log("Product ID " , productId)
+        return res.status(209).json({
+            message : "Product added to wish list ",
+            success : true
+        })
+    } catch (error) {
+        return res.status(400).json({
+            message : "Erroe while adding in wish list",
+            status : false
+        })
+    }
+};

@@ -1,9 +1,9 @@
 
-import { Prisma } from "@prisma/client";
+import { Prisma } from "../../../../../packages/database/generated/client/client";
 import { prisma } from "../../../../../packages/database/src/client";
 import { addressResponse, updateAddressDTO, UserResponse  } from "../users/users.types";
 import { registerDTO, updatePasswordDTO } from "./auth.types";
-import crypto from "crypto";
+import crypto, { hash } from "crypto";
 
 
 //TESTED
@@ -34,6 +34,7 @@ export const findByEmail = async (
                 revoked : false
             }
         },
+        wishlist : true
       },
       omit : {
         passwordResetToken : true,
@@ -50,6 +51,8 @@ export const findByEmail = async (
   throw err;
   }
 };
+
+
 
 //TESTES
 export const createUser = async (userPayload : registerDTO) : Promise<UserResponse | null> => {
@@ -221,13 +224,14 @@ export const deleteSession = async (rToken : string) : Promise<any> => {
 
 //completed , test = 1
 export const updatePasswordById = async (payload : updatePasswordDTO) => {
-     await prisma.user.update({
+     return await prisma.user.update({
         where : {
            id : payload.id as string
         },
 
         data : {
-            password : payload.password as string
+            password : payload.password as string,
+            passwordResetToken : "" as string
         }
     });
 };
@@ -290,4 +294,30 @@ export const revokeAllSessionById = async (userId : string, sessionId : string)=
             }
         }
     })
+}
+
+
+export const updatePasswordResetToken = async ( email : string , hashedToken : string) => {
+    return await prisma.user.update({
+        where : {
+            email
+        },
+        data : {
+            passwordResetToken : hashedToken as string
+        }
+    })
+};
+
+export const verifyPasswordResetToken = async (resetToken : string) => {
+
+    const hashedToken = crypto
+  .createHash("sha256")
+  .update(resetToken)
+  .digest("hex");
+
+    return await prisma.user.findFirst({
+        where : {
+            passwordResetToken : hashedToken as string
+        },
+    });
 }

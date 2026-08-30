@@ -1,4 +1,4 @@
-import { createSession, createUser, createVerificationToken, deleteAllSessions, deleteSession, findByEmail, findById, findSession, getAllSessionByUserId, revokeSessionById, updatePasswordById, updateSesson, updateVerificationToken, verifyVerificationToken } from "./auth.repository";
+import { createSession, createUser, createVerificationToken, deleteAllSessions, deleteSession, findByEmail, findById, findSession, getAllSessionByUserId, revokeSessionById, updatePasswordById, updatePasswordResetToken, updateSesson, updateVerificationToken, verifyPasswordResetToken, verifyVerificationToken } from "./auth.repository";
 import { forgotPasswordDTO, JWTPayload, loginDTO, refreshTokenDTO, registerDTO, resetPasswordDTO, updatePasswordDTO } from "./auth.types";
 import { hashPassword, verifyPassword } from "../../../../../packages/auth/src/password";
 import { generateAccessToken, generateRefreshToken, verifyAccessToken, verifyRefreshToken } from "../../../../../packages/auth/src/jwt";
@@ -8,6 +8,23 @@ import { resetPasswordSuccessEmail } from "../../../../../packages/email/src/tem
 import { revokeSessionSchema, updatePasswordSchema } from "./auth.schema";
 
 
+import crypto from "crypto";
+
+// Generate token to send to user
+export const createResetToken = () => {
+  const resetToken = crypto.randomBytes(32).toString("hex");
+
+  // Hash token before storing in database
+  const hashedToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+
+  return {
+    resetToken,    // Send this in email
+    hashedToken,   // Save this in database
+  };
+};
 
 
 
@@ -111,6 +128,7 @@ export const login = async (payload : loginDTO) : Promise<{
             const isValidPassword = await verifyPassword(payload.password as string , existing.password as string);
         
         if(!isValidPassword) throw new Error("Invalid credentials.");
+        if(!existing.isVerified) throw new Error("User is not verified")
         
         const createdSession = await createSession({
             userId : existing.id,
@@ -204,9 +222,10 @@ export const forgotPassword = async (payload : forgotPasswordDTO) => {
         const exiting = await findByEmail(payload.email as string);
         if(!exiting) throw new Error("User not found !");
         
-        const tkn = await createVerificationToken(payload.email as string);
+        const tkn = createResetToken()
         
-        const URL = `https://localhost:4000/auth/forgot-pass?token=${tkn}`;
+        const URL = `http://localhost:3000/reset-password?token=${tkn.resetToken}`;
+        await updatePasswordResetToken(payload.email as string , tkn.hashedToken as string )
         await resetPasswordEmail(URL , exiting.name as string , payload.email as string);
     } catch (error) {
         throw new Error("Init forgot pass !")   
@@ -216,18 +235,17 @@ export const forgotPassword = async (payload : forgotPasswordDTO) => {
 //completed , test = 1
 export const resetPassword = async (payload : resetPasswordDTO) => {
     try {
-        const verifiedToken = await verifyVerificationToken(payload.token as string);
+        const verifiedToken = await verifyPasswordResetToken(payload.token as string);
         if(!verifiedToken) throw new Error("Token is invalid");
 
         const hashedPassword = await hashPassword(payload.password as string);
-        await updatePasswordById({
+        const user = await updatePasswordById({
             password : hashedPassword as string,
-            id : verifiedToken.identifier as string
+            id : verifiedToken.id as string
         });
 
-        const user = await findByEmail(verifiedToken.identifier as string);
         await deleteAllSessions(user?.id as string);
-        await resetPasswordSuccessEmail(user?.name as string , verifiedToken.identifier as string);
+        await resetPasswordSuccessEmail(user?.name as string , verifiedToken.email as string);
 
     } catch (error) {
         throw new Error("Reset error !");

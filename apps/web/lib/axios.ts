@@ -1,5 +1,7 @@
-// lib/api.ts
-import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
+import axios, {
+  AxiosError,
+  InternalAxiosRequestConfig,
+} from "axios";
 import { setupCache } from "axios-cache-interceptor";
 
 const api = setupCache(
@@ -14,6 +16,7 @@ interface RetryRequestConfig extends InternalAxiosRequestConfig {
 }
 
 let isRefreshing = false;
+
 let failedQueue: {
   resolve: () => void;
   reject: (error: unknown) => void;
@@ -31,12 +34,6 @@ const processQueue = (error?: unknown) => {
   failedQueue = [];
 };
 
-const safeRedirectToLogin = () => {
-  if (typeof window !== "undefined" && window.location.pathname !== "/login") {
-    window.location.href = "/login";
-  }
-};
-
 api.interceptors.response.use(
   (response) => response,
 
@@ -47,30 +44,30 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    // Only handle 401 Unauthorized errors
+    // Not a 401 → don't touch it
     if (error.response?.status !== 401) {
       return Promise.reject(error);
     }
 
-    // Bypass redirect loop if fetching initial user profile
+    // Don't refresh /me.
+    // The AuthProvider will simply understand that the user is not logged in.
     if (originalRequest.url?.includes("/api/auth/me")) {
       return Promise.reject(error);
     }
 
-    // Don't refresh if the refresh endpoint itself failed
+    // Refresh endpoint itself failed → authentication is genuinely expired
     if (originalRequest.url?.includes("/api/auth/rt-token")) {
-      safeRedirectToLogin();
       return Promise.reject(error);
     }
 
-    // Prevent infinite retry loop
+    // Already retried once
     if (originalRequest._retry) {
-      safeRedirectToLogin();
       return Promise.reject(error);
     }
 
     originalRequest._retry = true;
 
+    // Another request is already refreshing
     if (isRefreshing) {
       return new Promise((resolve, reject) => {
         failedQueue.push({
@@ -83,7 +80,6 @@ api.interceptors.response.use(
     isRefreshing = true;
 
     try {
-      // Hit your actual Express refresh endpoint
       await api.post("/api/auth/rt-token");
 
       processQueue();
@@ -91,7 +87,6 @@ api.interceptors.response.use(
       return api(originalRequest);
     } catch (refreshError) {
       processQueue(refreshError);
-      safeRedirectToLogin();
 
       return Promise.reject(refreshError);
     } finally {

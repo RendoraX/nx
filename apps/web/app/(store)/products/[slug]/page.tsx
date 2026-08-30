@@ -13,6 +13,8 @@ import {
 import { useProductDetails } from "@/hooks/useProductDetails";
 import { useCart } from "@/providers/CartProvider";
 import { Product } from "@/types/product";
+import { useWishlist } from "@/hooks/useWishlist";
+import { toast } from "sonner";
 
 interface Variant {
   id: string;
@@ -50,6 +52,7 @@ export default function ProductPage({ params }: ProductPageProps) {
   const [loadingRelated, setLoadingRelated] = useState(false);
   const [selectedVariant, setSelectedVariant] = useState<Variant | null>(null);
   const [addedSuccess, setAddedSuccess] = useState(false);
+  const {} = useWishlist();
 
   const variants: Variant[] = product?.variants || [];
 
@@ -81,6 +84,7 @@ export default function ProductPage({ params }: ProductPageProps) {
   };
   
   const availableStock = getAvailableStock();
+  const wishApi = useWishlist();
 
   const stockConfig = (() => {
     if (availableStock === 0) {
@@ -120,6 +124,31 @@ export default function ProductPage({ params }: ProductPageProps) {
     }
   };
 
+// Updated Wishlist Handler inside ProductPage component
+const handleAddToWishlist = async () => {
+  if (!product?.id) return;
+
+  const currentProductId = product.id;
+  const currentVariantId = selectedVariant?.id;
+
+  try {
+    if (wishApi.isInWishlist(currentProductId, currentVariantId)) {
+      await wishApi.removeItemAsync({
+        productId: currentProductId,
+        variantId: currentVariantId || "",
+      });
+      toast.success("Removed from your wishlist.");
+    } else {
+      await wishApi.addItemAsync({
+        productId: currentProductId,
+        variantId: currentVariantId || "",
+      });
+      toast.success("Saved to your wishlist.");
+    }
+  } catch (error: any) {
+    toast.error(error.message || "Failed to update wishlist.");
+  }
+};
   if (loading) {
     return (
       <div className="min-h-screen bg-white flex flex-col items-center justify-center space-y-5 px-4">
@@ -143,7 +172,7 @@ export default function ProductPage({ params }: ProductPageProps) {
           <h2 className="font-serif text-[#2B2B2B] text-2xl tracking-tight">Product Not Found</h2>
           <p className="text-[#7C7467] text-xs font-mono leading-relaxed">{error || "The requested item could not be retrieved."}</p>
           <Link href="/products" className="inline-flex items-center space-x-2 text-white border border-[#1F5E3B] px-6 py-3 rounded-none text-xs bg-[#1F5E3B] hover:bg-[#154128] transition-all font-mono uppercase tracking-[0.2em] shadow-sm active:scale-95">
-            <span>Back to Products</span>
+            <span>Back to Products </span>
           </Link>
         </div>
       </div>
@@ -239,7 +268,7 @@ export default function ProductPage({ params }: ProductPageProps) {
               {/* Category & Status Node */}
               <div className="flex items-center justify-between gap-2">
                 <span className="text-[9px] sm:text-[10px] font-mono uppercase tracking-[0.2em] text-[#1F5E3B] bg-[#FCFAF7] border border-[#EAE3D2] px-3 py-1 rounded-none font-bold shadow-2xs">
-                  {product.category?.name || "Premium Collection"}
+                  {product.category?.name || "Premium Collection"} || ${wishApi.isInWishlist(product?.id as string , selectedVariant?.id as string) ? "TRUE" : "FALSE"}
                 </span>
                 <span className={`text-[9px] sm:text-[10px] font-mono uppercase border px-3 py-1 rounded-none tracking-[0.15em] font-semibold transition-all ${stockConfig.className}`}>
                   {stockConfig.label}
@@ -389,12 +418,27 @@ export default function ProductPage({ params }: ProductPageProps) {
               </button>
 
               <div className="flex gap-2.5 shrink-0">
-                <button 
-                  className="p-4 rounded-none bg-[#FCFAF7] border border-[#EAE3D2] hover:border-[#1F5E3B] hover:bg-white text-[#7C7467] hover:text-[#2B2B2B] transition-all duration-200 cursor-pointer shadow-2xs active:scale-95"
-                  aria-label="Add to Wishlist"
-                >
-                  <Heart className="w-4 h-4 text-[#C89B3C] transition-all" />
-                </button>
+              {/* Wishlist Button */}
+<button
+  className={`p-4 rounded-none border transition-all duration-200 cursor-pointer shadow-2xs active:scale-95
+    ${
+      wishApi.isInWishlist(product.id, selectedVariant?.id)
+        ? "bg-[#1F5E3B] border-[#1F5E3B] text-white"
+        : "bg-[#FCFAF7] border-[#EAE3D2] hover:border-[#1F5E3B] hover:bg-white text-[#7C7467] hover:text-[#2B2B2B]"
+    }
+  `}
+  aria-label="Toggle Wishlist"
+  disabled={wishApi.isAdding || wishApi.isRemoving}
+  onClick={handleAddToWishlist}
+>
+  <Heart
+    className={`w-4 h-4 transition-all ${
+      wishApi.isInWishlist(product.id, selectedVariant?.id)
+        ? "fill-[#C89B3C] text-[#C89B3C]"
+        : "text-[#C89B3C]"
+    }`}
+  />
+</button>
                 <button 
                   className="p-4 rounded-none bg-[#FCFAF7] border border-[#EAE3D2] hover:border-[#1F5E3B] hover:bg-white text-[#7C7467] hover:text-[#2B2B2B] transition-all duration-200 cursor-pointer shadow-2xs active:scale-95"
                   aria-label="Share Product"

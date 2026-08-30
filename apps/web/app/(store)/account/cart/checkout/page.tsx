@@ -36,7 +36,7 @@ const SHIPPING_THRESHOLD = 500;
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { cart, loading: cartLoading, error: cartError } = useCart();
+  const { cart, loading: cartLoading, error: cartError , clearCart } = useCart();
   const { addresses, isProcessing: isAddressProcessing, addAddress } = useAddressBook();
   const { createOrder, loading: isOrderLoading, error: orderHookError } = useOrders();
   const { startPayment, loading: isPaymentLoading, error: paymentHookError } = usePayment();
@@ -116,6 +116,7 @@ const handlePlaceOrder = async () => {
     // COD FLOW
     if (paymentMethod === 'cod') {
       console.log("✅ COD selected. Redirecting to success page with orderRef:", orderRef);
+      await clearCart();
       router.push(`/account/cart/checkout/success?orderId=${orderRef}`);
       return;
     }

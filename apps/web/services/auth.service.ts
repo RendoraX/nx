@@ -73,7 +73,7 @@ export const AuthService = {
    */
   async forgotPassword(email: string): Promise<GenericApiResponse> {
     try {
-      const response = await api.post('/api/auth/forgot-password', { email });
+      const response = await api.post('/api/auth/forgot-pass', { email });
       return response.data;
     } catch (error: any) {
       // Return a generic success indicator even if email does not exist to block exploitation
@@ -86,7 +86,7 @@ export const AuthService = {
    */
   async resetPassword(data: Record<string, any>): Promise<GenericApiResponse> {
     try {
-      const response = await api.post('/api/auth/reset-password', data);
+      const response = await api.post('/api/auth/reset-pass', data);
       return response.data;
     } catch (error: any) {
       console.error('AuthService resetPassword error:', error);

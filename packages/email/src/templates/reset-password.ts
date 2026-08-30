@@ -1,123 +1,139 @@
-import { email } from "zod"
-import sender from "../config/service"
+import sender from "../config/service";
 
+export const resetPasswordEmail = async (
+  URL: string,
+  name: string,
+  email: string
+) => {
+  // Brand Configuration Links
+  const facebookUrl = "https://facebook.com"; // Replace with your official Facebook link
+  const indiamartUrl = "https://indiamart.com"; // Replace with your official IndiaMART link
 
-export const resetPasswordEmail  = async (URL : string , name : string , email : string) => {
-    try {
-        await sender.sendMail({
-            html : `
+  try {
+    await sender.sendMail({
+      to: email,
+      subject: "Password Reset Request • Shri Vishwanath Ayurved",
+      html: `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reset Your Password</title>
+</head>
 <body style="
     margin:0;
-    background:#061412;
-    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-    color:#fff;
+    padding:0;
+    background-color:#0D110F;
+    font-family:-apple-system, BlinkMacSystemFont, 'Georgia', 'Segoe UI', serif;
+    color:#2B2B2B;
+    -webkit-font-smoothing:antialiased;
 ">
 
 <div style="
-    padding:70px 20px;
-    background:
-      radial-gradient(circle at center,
-      rgba(19,160,113,.18) 0%,
-      rgba(42,119,255,.10) 35%,
-      rgba(6,20,18,0) 70%);
+    padding:50px 15px;
+    background:#0D110F;
 ">
 
     <table
-        width="620"
+        width="100%"
         cellpadding="0"
         cellspacing="0"
         align="center"
         style="
-            background:rgba(8,22,20,.78);
-            border:1px solid rgba(255,255,255,.08);
-            border-radius:24px;
+            max-width:600px;
+            margin:0 auto;
+            background:#FCFAF7;
+            border:1px solid #EAE3D2;
+            border-radius:4px;
             overflow:hidden;
+            box-shadow:0 20px 40px rgba(0,0,0,0.3);
         "
     >
+
+        <!-- Accent Top Bar -->
+        <tr>
+            <td style="background:#1F5E3B; height:6px;"></td>
+        </tr>
 
         <!-- Header -->
         <tr>
             <td style="
-                padding:35px 40px;
-                border-bottom:1px solid rgba(255,255,255,.08);
+                padding:40px 40px 30px 40px;
+                text-align:center;
+                border-bottom:1px solid #EAE3D2;
             ">
-
                 <div style="
-                    font-size:34px;
-                    font-weight:800;
-                    background:
-                        linear-gradient(
-                        90deg,
-                        #25d88a,
-                        #4ab8ff,
-                        #25d88a
-                    );
-                    -webkit-background-clip:text;
-                    -webkit-text-fill-color:transparent;
+                    font-family:'Georgia', serif;
+                    font-size:28px;
+                    font-weight:600;
+                    color:#1F5E3B;
+                    letter-spacing:0.5px;
                 ">
                     Shri Vishwanath Ayurved
                 </div>
 
                 <div style="
-                    color:#8fa8a1;
-                    margin-top:8px;
-                    font-size:13px;
-                    letter-spacing:.5px;
+                    color:#C89B3C;
+                    margin-top:6px;
+                    font-size:11px;
+                    font-family:'Courier New', monospace, sans-serif;
+                    letter-spacing:3px;
+                    text-transform:uppercase;
+                    font-weight:600;
                 ">
                     Pure Herbs • Sacred Traditions
                 </div>
-
             </td>
         </tr>
 
-        <!-- Body -->
+        <!-- Main Content -->
         <tr>
-            <td style="padding:45px 40px;">
+            <td style="padding:40px 40px;">
 
                 <h1 style="
                     margin:0;
-                    font-size:38px;
-                    font-weight:700;
-                    color:#fff;
+                    font-family:'Georgia', serif;
+                    font-size:26px;
+                    font-weight:400;
+                    color:#111111;
+                    letter-spacing:-0.5px;
                 ">
-                    Reset your password
+                    Reset Your Password
                 </h1>
 
                 <p style="
-                    color:#b3c0bc;
-                    margin-top:25px;
-                    font-size:18px;
-                    line-height:32px;
+                    color:#555555;
+                    margin-top:20px;
+                    font-size:15px;
+                    line-height:26px;
                 ">
-                    Hi ${name},
+                    Hello <strong style="color:#111111;">${name}</strong>,
                     <br><br>
-                    We received a request to reset the password for your account.
-                    Click the button below to create a new password.
+                    We received a request to access your Shri Vishwanath Ayurved account. To set a new password, click the button below.
                 </p>
 
-                <!-- Button -->
+                <!-- Action Button -->
                 <div style="
                     text-align:center;
-                    margin:45px 0;
+                    margin:35px 0;
                 ">
                     <a
                         href="${URL}"
+                        target="_blank"
                         style="
                             display:inline-block;
-                            padding:18px 42px;
-                            border-radius:16px;
-                            background:
-                                linear-gradient(
-                                135deg,
-                                #1ac07c,
-                                #2c9dff
-                            );
-                            color:#ffffff;
+                            padding:16px 36px;
+                            border-radius:0px;
+                            background:#1F5E3B;
+                            border:1px solid #1F5E3B;
+                            color:#FFFFFF;
                             text-decoration:none;
-                            font-size:17px;
+                            font-size:12px;
+                            font-family:'Courier New', monospace, sans-serif;
                             font-weight:700;
-                            box-shadow:
-                                0 10px 30px rgba(26,192,124,.18);
+                            letter-spacing:2px;
+                            text-transform:uppercase;
                         "
                     >
                         Reset Password
@@ -125,38 +141,39 @@ export const resetPasswordEmail  = async (URL : string , name : string , email :
                 </div>
 
                 <p style="
-                    color:#8fa8a1;
-                    font-size:15px;
-                    line-height:28px;
+                    color:#7C7467;
+                    font-size:13px;
+                    line-height:22px;
                     margin-bottom:0;
                 ">
-                    This link will expire in <strong style="color:#fff;">30 minutes</strong>.
-                    If you didn't request a password reset, you can safely ignore this email.
+                    This single-use link will expire in <strong style="color:#1F5E3B;">30 minutes</strong>. If you did not initiate this request, you can safely ignore this email.
                 </p>
 
-                <!-- Fallback URL -->
+                <!-- Alternative Link Block -->
                 <div style="
-                    margin-top:35px;
-                    padding:18px;
-                    border-radius:16px;
-                    background:rgba(255,255,255,.03);
-                    border:1px solid rgba(255,255,255,.08);
+                    margin-top:30px;
+                    padding:20px;
+                    background:#F5F0E6;
+                    border:1px solid #EAE3D2;
                 ">
                     <div style="
-                        color:#7f9690;
-                        font-size:12px;
+                        color:#7C7467;
+                        font-family:'Courier New', monospace, sans-serif;
+                        font-size:10px;
+                        letter-spacing:1px;
+                        text-transform:uppercase;
                         margin-bottom:8px;
                     ">
-                        If the button doesn't work, copy and paste this link:
+                        Alternative Direct Link:
                     </div>
 
                     <div style="
-                        color:#b5c8c2;
+                        color:#1F5E3B;
                         word-break:break-all;
-                        font-size:13px;
-                        line-height:24px;
+                        font-size:12px;
+                        line-height:18px;
                     ">
-                        {{RESET_URL}}
+                        <a href="${URL}" style="color:#1F5E3B; text-decoration:underline;">${URL}</a>
                     </div>
                 </div>
 
@@ -166,50 +183,50 @@ export const resetPasswordEmail  = async (URL : string , name : string , email :
         <!-- Footer -->
         <tr>
             <td style="
-                border-top:1px solid rgba(255,255,255,.08);
-                padding:24px 40px;
+                border-top:1px solid #EAE3D2;
+                background:#F9F6F0;
+                padding:25px 40px;
             ">
-
-                <table width="100%">
+                <table width="100%" cellpadding="0" cellspacing="0">
                     <tr>
-
                         <td style="
-                            color:#7f9690;
-                            font-size:14px;
+                            color:#7C7467;
+                            font-size:12px;
+                            font-family:'Georgia', serif;
                         ">
                             © 2026 Shri Ayu
                         </td>
 
                         <td align="right">
-
                             <a
-                                href="{{FACEBOOK_URL}}"
+                                href="${facebookUrl}"
+                                target="_blank"
                                 style="
-                                    color:#9ab7b0;
+                                    color:#1F5E3B;
                                     text-decoration:none;
-                                    margin-right:20px;
-                                    font-size:14px;
+                                    margin-right:15px;
+                                    font-size:12px;
+                                    font-weight:600;
                                 "
                             >
                                 Facebook
                             </a>
 
                             <a
-                                href="{{INDIAMART_URL}}"
+                                href="${indiamartUrl}"
+                                target="_blank"
                                 style="
-                                    color:#9ab7b0;
+                                    color:#1F5E3B;
                                     text-decoration:none;
-                                    font-size:14px;
+                                    font-size:12px;
+                                    font-weight:600;
                                 "
                             >
-                                IndiaMART
+                                IndiaMART dmeo
                             </a>
-
                         </td>
-
                     </tr>
                 </table>
-
             </td>
         </tr>
 
@@ -218,12 +235,10 @@ export const resetPasswordEmail  = async (URL : string , name : string , email :
 </div>
 
 </body>
-
+</html>
             `,
-            to : email,
-            subject : "Password Recover"
-        })
-    } catch (error) {
-        throw new Error("Mail INIT Error")
-    }
-}
+    });
+  } catch (error) {
+    throw new Error("Mail INIT Error");
+  }
+};

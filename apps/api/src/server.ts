@@ -29,6 +29,7 @@ import inventoryRoutes from './modules/inventory/inventory.routes'
 import userAdminRouter from './modules/users/users.routes'
 import adminKitRouter from './modules/admin/admin.routes'
 import customKitRouter from './modules/customKit/cust.routes'
+import wishlistRouter from './modules/wishlist/wishlist.routes'
 const app = express();
 
 app.use((req, res, next) => {
@@ -67,6 +68,7 @@ app.use("/api", inventoryRoutes);
 app.use("/api", userAdminRouter);
 app.use("/api", adminKitRouter);
 app.use("/api", customKitRouter);
+app.use("/api" , wishlistRouter)
 
 
 

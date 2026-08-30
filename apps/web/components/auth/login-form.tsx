@@ -28,7 +28,7 @@ export function LoginForm() {
 
     // Safely extract redirect parameter and ensure it isn't pointing back to /login
     const rawRedirect = searchParams.get('redirectTo');
-    const redirectTo = rawRedirect && rawRedirect !== '/login' ? rawRedirect : '/account';
+    const redirectTo = rawRedirect && rawRedirect !== '/login' ? rawRedirect : '/products';
 
     await login(
       {

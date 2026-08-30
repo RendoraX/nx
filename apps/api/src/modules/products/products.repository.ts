@@ -1,4 +1,4 @@
-import type { Prisma } from "@prisma/client";
+
 import { prisma } from "../../../../../packages/database/src/client";
 import type { CreateProductDTO, ProductFiltersDTO, UpdateProductDTO, ProductVariantInputDTO } from "./products.types";
 

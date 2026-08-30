@@ -72,7 +72,9 @@ export const ModelName = {
   verificationToken: 'verificationToken',
   OrderStatusHistory: 'OrderStatusHistory',
   RitualTemplate: 'RitualTemplate',
-  TemplateItem: 'TemplateItem'
+  TemplateItem: 'TemplateItem',
+  Wishlist: 'Wishlist',
+  WishlistItem: 'WishlistItem'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -375,6 +377,27 @@ export const TemplateItemScalarFieldEnum = {
 } as const
 
 export type TemplateItemScalarFieldEnum = (typeof TemplateItemScalarFieldEnum)[keyof typeof TemplateItemScalarFieldEnum]
+
+
+export const WishlistScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type WishlistScalarFieldEnum = (typeof WishlistScalarFieldEnum)[keyof typeof WishlistScalarFieldEnum]
+
+
+export const WishlistItemScalarFieldEnum = {
+  id: 'id',
+  wishlistId: 'wishlistId',
+  productId: 'productId',
+  variantId: 'variantId',
+  createdAt: 'createdAt'
+} as const
+
+export type WishlistItemScalarFieldEnum = (typeof WishlistItemScalarFieldEnum)[keyof typeof WishlistItemScalarFieldEnum]
 
 
 export const SortOrder = {
