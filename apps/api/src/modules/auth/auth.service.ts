@@ -2,7 +2,7 @@ import { createSession, createUser, createVerificationToken, deleteAllSessions, 
 import { forgotPasswordDTO, JWTPayload, loginDTO, refreshTokenDTO, registerDTO, resetPasswordDTO, updatePasswordDTO } from "./auth.types";
 import { hashPassword, verifyPassword } from "../../../../../packages/auth/src/password";
 import { generateAccessToken, generateRefreshToken, verifyAccessToken, verifyRefreshToken } from "../../../../../packages/auth/src/jwt";
-import { veirfyEmail } from "../../../../../packages/email/src/templates/verify-email";
+import { verifyEmail } from "../../../../../packages/email/src/templates/verify-email";
 import { resetPasswordEmail } from "../../../../../packages/email/src/templates/reset-password";
 import { resetPasswordSuccessEmail } from "../../../../../packages/email/src/templates/reset-password-success";
 import { revokeSessionSchema, updatePasswordSchema } from "./auth.schema";
@@ -52,7 +52,8 @@ export const register = async (
     const token = await createVerificationToken(
       payload.email as string
     );
-    await veirfyEmail(
+    await verifyEmail
+    (
       token,
       payload.email as string
     );
@@ -77,7 +78,7 @@ export const resendVerification = async (payload : {
 }) => {
     try {
         const token = await updateVerificationToken(payload.email as string);
-        await veirfyEmail(token , payload.email as string);
+        await verifyEmail(token , payload.email as string);
     } catch (error) {
         throw new Error("Error while sending new verification email")
     }
