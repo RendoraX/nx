@@ -101,58 +101,48 @@ export const updateVerificationToken = async (email : string)=> {
     return token
 }
 //TESTED
-export const verifyVerificationToken = async (token : string) => {
-    const tokenExist = await prisma.$transaction(async tx => {
-        const existingToken = await tx.verificationToken.findFirst({
-            where : {
-                token : token
-            }
-        });
-
-        if(!existingToken) throw new Error("Token is not valid")
-
-        const user = await tx.user.findUnique({
-            where : {
-                email : existingToken.userEmail as string
-            }
-        });
-
-
-        return {
-            id : user?.id,
-            userEmail : user?.email,
-            existingTokenId : existingToken.id
-        }
-    })
-
-    if(!tokenExist) throw new Error("Token is invalid.")
-
-    await prisma.verificationToken.delete({
-        where : {
-            id : tokenExist.existingTokenId
-        }
+export const verifyVerificationToken = async (token: string) => {
+  const existingToken =
+    await prisma.verificationToken.findFirst({
+      where: {
+        token,
+      },
     });
 
-    await prisma.user.update({
-        where : {
-            email : tokenExist.userEmail as string
-        },
+  if (!existingToken) {
+    throw new Error("Token is not valid");
+  }
 
-        data : {
-            isVerified : true
-        }
-    });
+  const user = await prisma.user.findUnique({
+    where: {
+      email: existingToken.userEmail,
+    },
+  });
 
-    return {
-        id : tokenExist.id,
-        identifier : tokenExist.userEmail
-    } as {
-        id : string;
-        identifier : string;
-        sid ?: string
-    };
-}
+  if (!user) {
+    throw new Error("User not found");
+  }
 
+  await prisma.verificationToken.delete({
+    where: {
+      id: existingToken.id,
+    },
+  });
+
+  await prisma.user.update({
+    where: {
+      id: user.id,
+    },
+    data: {
+      isVerified: true,
+    },
+  });
+
+  return {
+    id: user.id,
+    identifier: user.email,
+  };
+};
 //completed tested = 1
 export const createSession = async (sessiondata : any) : Promise<any> => {
     try {

@@ -1,15 +1,12 @@
-import nodemailer from "nodemailer";
+// config/service.ts
+
+import { BrevoClient } from "@getbrevo/brevo";
 import { env } from "../../../config/src";
 
-const sender = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
-
-  auth: {
-    user: env.NODEMAILER_USER,
-    pass: env.NODEMAILER_PASS,
-  },
+const sender = new BrevoClient({
+  apiKey: env.BREVO_API_KEY as string,
+  timeoutInSeconds: 30,
+  maxRetries: 2,
 });
 
 export default sender;
