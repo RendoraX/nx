@@ -1,9 +1,13 @@
+import resend from "../config/resend_server"
 import sender from "../config/service"
 
 
 export const resetPasswordSuccessEmail  = async (name : string , email : string) => {
     try {
-        await sender.sendMail({
+        await resend.emails.send({
+                              from: "Shri Vishwanath Ayurved <onboarding@resend.dev>",
+      to: [email],
+      subject: "Password changed - Action required",
             html : `
 <body style="
     margin:0;
@@ -199,8 +203,6 @@ export const resetPasswordSuccessEmail  = async (name : string , email : string)
 </body>
 
             `,
-            to : email,
-            subject : "Password Changed - ACTION REQUIRED"
         })
     } catch (error) {
         throw new Error("Mail INIT Error")

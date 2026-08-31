@@ -1,9 +1,13 @@
+import resend from "../config/resend_server";
 import sender from "../config/service"
 
 
 export const veirfyEmail = async (otp : string , email : string) => {
     try {
-        await sender.sendMail({
+        await resend.emails.send({
+                  from: "Shri Vishwanath Ayurved <onboarding@resend.dev>",
+      to: [email],
+      subject: "Account Verification",
             html : `
                 <body style="
     margin:0;
@@ -185,8 +189,6 @@ export const veirfyEmail = async (otp : string , email : string) => {
 
 </body>
             `,
-            to : email,
-            subject : "Account Verification"
         })
     } catch (error) {
 

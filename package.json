@@ -45,6 +45,7 @@
     "prisma": "^7.8.0",
     "razorpay": "^2.9.8",
     "react-select": "^5.10.2",
+    "resend": "^6.25.0",
     "streamifier": "^0.1.1",
     "turbo": "^2.9.18",
     "typescript": "^5.9.3",

@@ -25,6 +25,8 @@ const envSchema = z.object({
   CLOUDINARY_NAME: z.string(),
   CLOUDINARY_API: z.string(),
   CLOUDINARY_SECRET: z.string(),
+
+  RESEND_API_KEY : z.string().nonoptional("Email ecosys key needed !!!")
 });
 
 export const env = envSchema.parse(process.env);

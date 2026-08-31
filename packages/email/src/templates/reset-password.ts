@@ -1,3 +1,4 @@
+import resend from "../config/resend_server";
 import sender from "../config/service";
 
 export const resetPasswordEmail = async (
@@ -10,9 +11,10 @@ export const resetPasswordEmail = async (
   const indiamartUrl = "https://indiamart.com"; // Replace with your official IndiaMART link
 
   try {
-    await sender.sendMail({
-      to: email,
-      subject: "Password Reset Request • Shri Vishwanath Ayurved",
+    await resend.emails.send({
+                  from: "Shri Vishwanath Ayurved <onboarding@resend.dev>",
+      to: [email],
+      subject: "Password Reset - Action Required",
       html: `
 <!DOCTYPE html>
 <html lang="en">
