@@ -11,7 +11,7 @@ export const resetPasswordEmail = async (
   const indiamartUrl = "https://indiamart.com"; // Replace with your official IndiaMART link
 
   try {
-    await resend.emails.send({
+    await sender.sendMail({
                   from: "Shri Vishwanath Ayurved <onboarding@resend.dev>",
       to: [email],
       subject: "Password Reset - Action Required",

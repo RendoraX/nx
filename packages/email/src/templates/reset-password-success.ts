@@ -4,7 +4,7 @@ import sender from "../config/service"
 
 export const resetPasswordSuccessEmail  = async (name : string , email : string) => {
     try {
-        await resend.emails.send({
+        await sender.sendMail({
                               from: "Shri Vishwanath Ayurved <onboarding@resend.dev>",
       to: [email],
       subject: "Password changed - Action required",
