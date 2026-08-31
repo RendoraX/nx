@@ -189,6 +189,13 @@ export const veirfyEmail = async (otp : string , email : string) => {
             subject : "Account Verification"
         })
     } catch (error) {
-        throw new Error("Mail INIT Error")
+
+        console.error(
+            "Email send error",
+            error
+        )
+
+
+        throw error;
     }
 }

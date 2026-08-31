@@ -42,46 +42,19 @@ export const register = async (
     if (existing) {
       throw new Error("User already exists.");
     }
-
-    console.log("2. Hashing password");
-
     const hashedPass = await hashPassword(
       payload.password
     );
-
-    console.log("3. Creating user");
-
     const createdUser = await createUser({
       ...payload,
       password: hashedPass,
     });
-
-    console.log(
-      "4. User created successfully:",
-      createdUser.id
-    );
-
-    console.log("5. Creating verification token");
-
     const token = await createVerificationToken(
       payload.email as string
     );
-
-    console.log(
-      "6. Token created successfully"
-    );
-
-    console.log(
-      "7. Sending verification email"
-    );
-
-    // await veirfyEmail(
-    //   token,
-    //   payload.email as string
-    // );
-
-    console.log(
-      "8. Verification email sent successfully"
+    await veirfyEmail(
+      token,
+      payload.email as string
     );
 
     return createdUser;
