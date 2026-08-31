@@ -75,10 +75,10 @@ export const register = async (
       "7. Sending verification email"
     );
 
-    await veirfyEmail(
-      token,
-      payload.email as string
-    );
+    // await veirfyEmail(
+    //   token,
+    //   payload.email as string
+    // );
 
     console.log(
       "8. Verification email sent successfully"
