@@ -20,8 +20,8 @@ export function LowStockPanel({ items, onReplenish }: CardProps) {
           {severeItems.map(item => (
             <div key={item.id} className="p-3 bg-rose-50/50 border border-rose-100 rounded-lg flex items-center justify-between text-xs font-semibold">
               <div>
-                <p className="text-gray-900 font-bold">{item.productName}</p>
-                <p className="text-[10px] text-gray-400 font-mono mt-0.5">{item.sku}</p>
+                <p className="text-gray-900 font-bold">{item.product?.name as string}</p>
+                <p className="text-[10px] text-gray-400 font-mono mt-0.5">{item.product?.sku as string}</p>
               </div>
               <button onClick={() => onReplenish(item)} className="p-1.5 bg-rose-600 text-white font-bold hover:bg-rose-700 text-[10px] uppercase rounded cursor-pointer transition-colors flex items-center gap-0.5">
                 Restock <ArrowUpRight className="w-3 h-3" />
@@ -43,7 +43,7 @@ export function LowStockPanel({ items, onReplenish }: CardProps) {
             return (
               <div key={item.id} className="p-3 bg-amber-50/40 border border-amber-100 rounded-lg flex items-center justify-between text-xs font-semibold">
                 <div>
-                  <p className="text-gray-900 font-bold">{item.productName}</p>
+                  <p className="text-gray-900 font-bold">{item.product?.name as string}</p>
                   <p className="text-[10px] text-gray-500 font-mono mt-0.5">
                     Available Units: <span className="text-amber-700 font-bold font-mono">{available}</span> (Phys: {item.stock})
                   </p>

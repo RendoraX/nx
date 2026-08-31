@@ -34,7 +34,7 @@ class InventoryService {
   }
 
   async getInventorySummary(): Promise<InventorySummary> {
-    const res = await api.get(`${this.baseUrl}/summary`, { withCredentials : true});
+    const res = await api.get(`/api/admin/inventory/summary`, { withCredentials : true});
     if (!res.data) throw new Error('Failed to compute metrics summary data.');
     return res.data.summary;
   }
@@ -48,7 +48,7 @@ class InventoryService {
 
   async adjustStock(payload: StockAdjustmentPayload): Promise<InventoryItem> {
 
-    const res = await api.patch(`${this.baseUrl}/adjust` , payload , {
+    const res = await api.patch(`/api/admin/inventory/adjust` , payload , {
       withCredentials : true
     })
     if (!res.data) {
@@ -59,7 +59,7 @@ class InventoryService {
   }
 
   async bulkUpdateStock(payload: BulkAdjustmentPayload): Promise<{ adjustedCount: number }> {
-    const res = await fetch(`${this.baseUrl}/bulk-adjust`, {
+    const res = await fetch(`/api/admin/inventory/bulk-adjust`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),

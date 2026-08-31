@@ -1,14 +1,17 @@
 // lib/api.ts
 
+import { setupCache } from "axios-cache-interceptor";
 import axios, {
   AxiosError,
   InternalAxiosRequestConfig,
 } from "axios";
 
-const api = axios.create({
-  baseURL: "http://localhost:4000/",
-  withCredentials: true,
-});
+const api = setupCache(
+  axios.create({
+    baseURL: process.env.NEXT_PUBLIC_BACKEND_URL as string,
+    withCredentials: true,
+  })
+);
 
 // Extend Axios config
 interface RetryRequestConfig extends InternalAxiosRequestConfig {
