@@ -48,7 +48,8 @@ app.use(
       "http://localhost:3000",
       "http://localhost:3001",
       "https://nx-nku5t2ox3-swapnilnade07-5809s-projects.vercel.app",
-      "https://nx-web-eight.vercel.app"
+      "https://nx-web-eight.vercel.app",
+      "https://nx-admin-three.vercel.app"
     ],
     credentials: true,
   })
