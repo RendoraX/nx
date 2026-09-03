@@ -1,65 +1,171 @@
-import Image from "next/image";
+// apps/web/app/admin/page.tsx
+"use client";
 
-export default function Home() {
+import React, { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { 
+  LayoutDashboard, 
+  ShoppingBag, 
+  Package, 
+  Users, 
+  Tag, 
+  BarChart3, 
+  Settings, 
+  ArrowRight, 
+  Sparkles,
+  ShieldCheck,
+  Loader2
+} from "lucide-react";
+
+const ADMIN_NAVIGATION_NODES = [
+  {
+    title: "Main Dashboard",
+    description: "Overview metrics, real-time store performance, and analytics summaries.",
+    href: "/dashboard",
+    icon: LayoutDashboard,
+    badge: "Primary",
+    highlight: true,
+  },
+  {
+    title: "Orders Management",
+    description: "Track processing status, manage shipments, and update order fulfillments.",
+    href: "/admin/orders",
+    icon: ShoppingBag,
+    badge: "Live Streams",
+    highlight: false,
+  },
+  {
+    title: "Products Catalog",
+    description: "Add new inventory, configure price tiers, manage variants, and track stock.",
+    href: "/admin/products",
+    icon: Package,
+    badge: "Inventory",
+    highlight: false,
+  },
+  {
+    title: "Categories & Tags",
+    description: "Organize store navigation hierarchy, purity attributes, and collection tags.",
+    href: "/admin/categories",
+    icon: Tag,
+    badge: "Structure",
+    highlight: false,
+  },
+  {
+    title: "Customer Directory",
+    description: "View registered users, inspect wishlists, and manage account privileges.",
+    href: "/admin/users",
+    icon: Users,
+    badge: "Accounts",
+    highlight: false,
+  },
+  {
+    title: "Sales & Analytics",
+    description: "Comprehensive financial reporting, dynamic export controls, and sales charts.",
+    href: "/admin/analytics",
+    icon: BarChart3,
+    badge: "Reports",
+    highlight: false,
+  },
+  {
+    title: "System Settings",
+    description: "Configure store parameters, operational rules, and API connection keys.",
+    href: "/admin/settings",
+    icon: Settings,
+    badge: "Config",
+    highlight: false,
+  },
+];
+
+export default function AdminHomePage() {
+  const router = useRouter();
+
+  // Redirect to Dashboard by default upon mounting
+  useEffect(() => {
+    const redirectTimer = setTimeout(() => {
+      router.push("/dashboard");
+    }, 1500);
+
+    return () => clearTimeout(redirectTimer);
+  }, [router]);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main className="min-h-screen bg-[#FCFAF7] text-[#2B2B2B] antialiased selection:bg-[#C89B3C]/30 p-6 sm:p-10">
+      <div className="max-w-7xl mx-auto space-y-8">
+        
+        {/* Top Operational Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#EAE3D2] pb-6 gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="bg-[#1F5E3B] text-white text-[9px] font-mono font-bold tracking-[0.2em] px-2.5 py-1 uppercase rounded-none">
+                Atelier System
+              </span>
+              <span className="text-[10px] font-mono uppercase tracking-widest text-[#7C7467] flex items-center gap-1">
+                <ShieldCheck className="w-3.5 h-3.5 text-[#C89B3C]" /> Authenticated Admin Node
+              </span>
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-serif text-[#2B2B2B] font-normal tracking-tight">
+              Shri Vishwanath Management Console
+            </h1>
+          </div>
+
+          <div className="flex items-center space-x-3 bg-white border border-[#EAE3D2] p-3 rounded-none shadow-2xs">
+            <Loader2 className="w-4 h-4 text-[#1F5E3B] animate-spin" />
+            <span className="text-xs font-mono text-[#7C7467] uppercase tracking-wider">
+              Redirecting to Dashboard...
+            </span>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        {/* Navigation Grid Nodes */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {ADMIN_NAVIGATION_NODES.map((node) => {
+            const Icon = node.icon;
+            return (
+              <Link
+                key={node.href}
+                href={node.href}
+                className={`group p-6 rounded-none border transition-all duration-300 flex flex-col justify-between shadow-2xs hover:shadow-md cursor-pointer ${
+                  node.highlight
+                    ? "bg-gradient-to-br from-[#1F5E3B]/5 to-white border-[#1F5E3B] ring-1 ring-[#1F5E3B]/20"
+                    : "bg-white border-[#EAE3D2] hover:border-[#1F5E3B]"
+                }`}
+              >
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className={`p-3 rounded-none border ${
+                      node.highlight 
+                        ? "bg-[#1F5E3B] text-white border-[#1F5E3B]" 
+                        : "bg-[#FCFAF7] text-[#1F5E3B] border-[#EAE3D2] group-hover:border-[#1F5E3B]"
+                    }`}>
+                      <Icon className="w-5 h-5" />
+                    </div>
+                    <span className="text-[9px] font-mono uppercase tracking-[0.15em] px-2.5 py-1 border border-[#EAE3D2] bg-[#FCFAF7] text-[#7C7467]">
+                      {node.badge}
+                    </span>
+                  </div>
+
+                  <div className="space-y-1">
+                    <h2 className="text-lg font-serif text-[#2B2B2B] group-hover:text-[#1F5E3B] transition-colors flex items-center gap-2">
+                      {node.title}
+                      {node.highlight && <Sparkles className="w-3.5 h-3.5 text-[#C89B3C]" />}
+                    </h2>
+                    <p className="text-xs text-[#7C7467] font-light leading-relaxed">
+                      {node.description}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="pt-6 mt-4 border-t border-[#EAE3D2]/60 flex items-center justify-between text-xs font-mono uppercase tracking-[0.15em] text-[#1F5E3B] font-bold">
+                  <span>Access Module</span>
+                  <ArrowRight className="w-3.5 h-3.5 transform group-hover:translate-x-1 transition-transform" />
+                </div>
+              </Link>
+            );
+          })}
         </div>
-      </main>
-    </div>
+
+      </div>
+    </main>
   );
 }
