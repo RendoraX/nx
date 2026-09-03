@@ -7,12 +7,12 @@ interface ProductFilters {
 }
 
 class ProductService {
-  private baseUrl = 'http://localhost:4000/api/products';
 
   /**
    * Fetch all catalog products with integrated text filters & status criteria pipelines
    */
   async getProducts(filters?: ProductFilters): Promise<Product[]> {
+    console.log("backend url" , process.env.BACKEND_URL)
     const params = new URLSearchParams();
     if (filters?.searchQuery) params.append('search', filters.searchQuery);
     if (filters?.statusFilter && filters.statusFilter !== 'all') {

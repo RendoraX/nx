@@ -11,8 +11,6 @@ export interface OrderFilters {
 }
 
 
-const BASE_URL = "http://localhost:4000"
-
 class OrderService {
   async getOrdersList(filters: OrderFilters = {}): Promise<{ data: OrderDetails[]; total: number }> {
     const params = new URLSearchParams(filters as any);
