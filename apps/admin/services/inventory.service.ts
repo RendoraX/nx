@@ -9,11 +9,11 @@ import {
 import axios from 'axios';
 
 class InventoryService {
-  private baseUrl = 'http://localhost:4000/api/admin/inventory';
+
 
   async getInventoryList(filters?: Record<string, string>): Promise<InventoryItem[]> {
     const params = new URLSearchParams(filters);
-    const res = await api.get(`${this.baseUrl}${params.toString() ? `?${params.toString()}` : ''}`, { withCredentials : true});
+    const res = await api.get(`/api/admin/inventory${params.toString() ? `?${params.toString()}` : ''}`, { withCredentials : true});
     if (!res.data) throw new Error('Failed to retrieve inventory master ledger.');
     return res.data.inventory.map((item: any) => ({
       ...item,
@@ -41,7 +41,7 @@ class InventoryService {
 
   async getHistoryLog(filters?: Record<string, string>): Promise<InventoryHistoryLog[]> {
     const params = new URLSearchParams(filters);
-    const res = await api.get(`${this.baseUrl}/history` , {withCredentials : true});
+    const res = await api.get(`/api/admin/inventory/history` , {withCredentials : true});
     if (!res.data) throw new Error('Failed to fetch ledger audit history trails.');
     return res.data.invHistory;
   }

@@ -19,7 +19,7 @@ class ProductService {
       params.append('status', filters.statusFilter);
     }
 
-    const response = await api.get(`${this.baseUrl}` , {withCredentials : true});
+    const response = await api.get(`/api/products` , {withCredentials : true});
 
     return response.data.products;
   }
@@ -28,7 +28,7 @@ class ProductService {
    * Extract a complete singular product blueprint matrix by database identifier
    */
   async getProductById(id: string): Promise<Product> {
-    const response = await fetch(`${this.baseUrl}/${id}`, {
+    const response = await fetch(`/api/products/${id}`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
     });
@@ -75,7 +75,7 @@ class ProductService {
     }));
     
     
-    const response = await api.post("http://localhost:4000/api/products" , formData , {
+    const response = await api.post("/api/products" , formData , {
       withCredentials : true
     })
     
@@ -114,7 +114,7 @@ class ProductService {
       });
     }
     
-    const response = await api.put(`${this.baseUrl}/${id}` , {data})
+    const response = await api.put(`/api/products/${id}` , {data})
 
     return response.data;
   }
@@ -123,7 +123,7 @@ class ProductService {
    * Delete or soft-archive target database product node instance context
    */
   async deleteProduct(id: string): Promise<{ success: boolean }> {
-    const response = await api.delete(`${this.baseUrl}/${id}`, {
+    const response = await api.delete(`/api/products/${id}`, {
       withCredentials : true
     });
 
