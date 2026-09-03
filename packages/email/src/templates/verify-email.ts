@@ -11,7 +11,7 @@ export const verifyEmail = async (
       await sender.transactionalEmails.sendTransacEmail({
         sender: {
           name: "Shri Vishwanath Ayurved",
-          email: "shrivishwanathayurved708@gmail.com",
+          email: "swapnilnade07@gmail.com",
         },
 
         to: [
