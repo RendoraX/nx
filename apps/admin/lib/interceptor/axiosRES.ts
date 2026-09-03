@@ -8,7 +8,7 @@ import axios, {
 
 const api = setupCache(
   axios.create({
-    baseURL: process.env.BACKEND_URL as string,
+    baseURL: process.env.NEXT_PUBLIC_BACKEND_URL as string,
     withCredentials: true,
   })
 );
