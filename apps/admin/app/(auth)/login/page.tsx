@@ -6,12 +6,14 @@ import { Mail, Lock, Eye, EyeOff, ArrowRight, LoaderCircle } from 'lucide-react'
 import { toast } from 'sonner';
 import axios from 'axios';
 import api from '@/lib/interceptor/axiosRES';
+import { useRouter } from 'next/navigation';
 
 export default function AdminLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
+  const router = useRouter();
   const [isLoading , setIsLoading] = useState(false);
 
   const handleSubmit = async (e: any) => {
@@ -25,6 +27,7 @@ export default function AdminLoginPage() {
       const result = await api.post(`/api/auth/login` , loginData , {
         withCredentials: true,
       })
+      router.push("/dashboard");
       toast.success('Login successful!');
     } catch (error:any) {
       console.error('Login Error:', error.message | error);
