@@ -5,6 +5,7 @@ import image from './hero.png';
 import { Mail, Lock, Eye, EyeOff, ArrowRight, LoaderCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
+import api from '@/lib/interceptor/axiosRES';
 
 export default function AdminLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -21,7 +22,7 @@ export default function AdminLoginPage() {
         email,
         password,
       };
-      const result = await axios.post(`http://localhost:4000/api/auth/login` , loginData , {
+      const result = await api.post(`/api/auth/login` , loginData , {
         withCredentials: true,
       })
       toast.success('Login successful!');
