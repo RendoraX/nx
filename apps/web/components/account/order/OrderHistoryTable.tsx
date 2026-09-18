@@ -1,7 +1,7 @@
 // apps/web/app/account/components/AccountOrdersTab.tsx
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Package, Calendar, Tag, CreditCard, ChevronDown, ChevronRight, ShoppingBag, ArrowUpRight } from 'lucide-react';
 
@@ -35,9 +35,17 @@ interface Order {
 interface AccountOrdersTabProps {
   orders?: Order[];
   isLoading?: boolean;
+  error?: string | null;
 }
 
-export default function AccountOrdersTab({ orders, isLoading = false }: AccountOrdersTabProps) {
+export default function AccountOrdersTab({ orders, isLoading = false, error }: AccountOrdersTabProps) {
+  const displayedOrders = Array.isArray(orders) ? orders : [];
+  const [openOrderIds, setOpenOrderIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    setOpenOrderIds(displayedOrders.length > 0 ? [displayedOrders[0].id] : []);
+  }, [orders]);
+
   // Skeleton Loader when loading or waiting for orders data to arrive
   if (isLoading || orders === undefined) {
     return (
@@ -87,12 +95,13 @@ export default function AccountOrdersTab({ orders, isLoading = false }: AccountO
     );
   }
 
-  const displayedOrders = orders;
-
-  // Track open state IDs. First item open by default for a better user experience.
-  const [openOrderIds, setOpenOrderIds] = useState<string[]>(
-    displayedOrders.length > 0 ? [displayedOrders[0].id] : []
-  );
+  if (error) {
+    return (
+      <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-sm text-red-800">
+        {error}
+      </div>
+    );
+  }
 
   const toggleOrder = (orderId: string) => {
     setOpenOrderIds((prev) =>

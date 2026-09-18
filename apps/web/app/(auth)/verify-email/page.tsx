@@ -120,7 +120,7 @@ function VerifyEmailInner() {
   };
 
   return (
-    <AuthCard title="Verify Account" subtitle={`Enter the 6-digit ritual signature sent to ${email || 'your email'}.`}>
+    <AuthCard title="Verify Account" subtitle={`Enter the 6-digit code sent to ${email || 'your email'}.`}>
       <form onSubmit={handleSubmit} className="space-y-6">
         
         {(status === 'error' || message) && (

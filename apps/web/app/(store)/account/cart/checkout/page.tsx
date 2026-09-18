@@ -161,7 +161,7 @@ const handlePlaceOrder = async () => {
       <div className="min-h-screen bg-[#FDFCFB] flex items-center justify-center p-4">
         <div className="space-y-4 text-center">
           <div className="w-10 h-10 border-2 border-[#C89B3C] border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-xs font-mono tracking-widest text-[#1B3B2B] uppercase">Preparing Bespoke Checkout...</p>
+          <p className="text-xs font-mono tracking-widest text-[#1B3B2B] uppercase">Preparing checkout...</p>
         </div>
       </div>
     );
@@ -175,7 +175,7 @@ const handlePlaceOrder = async () => {
           <div className="w-16 h-16 bg-[#1B3B2B]/5 rounded-full flex items-center justify-center mx-auto text-[#C89B3C]">
             <ShoppingBag className="w-8 h-8" />
           </div>
-          <h2 className="font-serif text-2xl text-[#1B3B2B]">Your Vault is Empty</h2>
+          <h2 className="font-serif text-2xl text-[#1B3B2B]">Your cart is empty</h2>
           <p className="text-xs text-[#7C7467]">Add items to your selection before proceeding to checkout.</p>
           <Link href="/products" className="inline-block px-6 py-2.5 bg-[#1B3B2B] text-[#FCFAF7] text-xs font-bold uppercase tracking-wider rounded-lg">
             Return to Collection
@@ -190,20 +190,20 @@ const handlePlaceOrder = async () => {
       
       {/* Header Bar */}
       <header className="border-b border-[#EAE3D2] bg-[#FCFAF7]/80 backdrop-blur-md sticky top-0 z-30">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-3 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-2">
           <Link href="/cart" className="flex items-center gap-1.5 text-xs font-mono text-[#7C7467] hover:text-[#1B3B2B] transition-colors">
             <ArrowLeft className="w-4 h-4" />
             <span className="hidden xs:inline uppercase tracking-wider">Back to Cart</span>
           </Link>
           
-          <div className="flex items-center gap-2">
+          <div className="min-w-0 flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 text-[#C89B3C]" />
-            <span className="font-serif text-sm sm:text-base font-medium tracking-tight text-[#1B3B2B]">
+            <span className="truncate font-serif text-sm sm:text-base font-medium tracking-tight text-[#1B3B2B]">
               Encrypted Checkout
             </span>
           </div>
 
-          <div className="flex items-center gap-1 text-[11px] font-mono text-[#C89B3C] bg-[#C89B3C]/10 px-2.5 py-1 rounded-full border border-[#C89B3C]/20">
+          <div className="hidden sm:flex shrink-0 items-center gap-1 text-[11px] font-mono text-[#C89B3C] bg-[#C89B3C]/10 px-2.5 py-1 rounded-full border border-[#C89B3C]/20">
             <Lock className="w-3 h-3" />
             <span>256-BIT SSL</span>
           </div>
@@ -250,12 +250,12 @@ const handlePlaceOrder = async () => {
               {addresses.length === 0 ? (
                 <div className="text-center py-6 border border-dashed border-[#EAE3D2] rounded-xl p-4 bg-white">
                   <MapPin className="w-8 h-8 text-[#C89B3C] mx-auto mb-2 opacity-80" />
-                  <p className="text-xs text-[#7C7467] font-serif italic mb-3">No physical delivery addresses found in your ledger.</p>
+                  <p className="text-xs text-[#7C7467] font-serif italic mb-3">No delivery addresses found. Add one to continue.</p>
                   <button
                     onClick={() => setIsDialogOpen(true)}
                     className="px-4 py-2 bg-[#1B3B2B] text-[#FCFAF7] text-xs font-bold uppercase tracking-wider rounded-lg cursor-pointer"
                   >
-                    Add Delivery Target
+                    Add delivery address
                   </button>
                 </div>
               ) : (
@@ -299,7 +299,7 @@ const handlePlaceOrder = async () => {
                         {/* Selection Radio Circle */}
                         <div className="mt-3 pt-2 border-t border-[#EAE3D2]/40 flex items-center justify-between">
                           <span className="text-[9.5px] font-mono uppercase tracking-wider text-[#7C7467]">
-                            {isSelected ? 'Selected Target' : 'Select Target'}
+                            {isSelected ? 'Selected address' : 'Select address'}
                           </span>
                           <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${
                             isSelected ? 'bg-[#1B3B2B] border-[#1B3B2B] text-white' : 'border-[#EAE3D2]'
@@ -439,7 +439,7 @@ const handlePlaceOrder = async () => {
                   <div className="flex items-center gap-1.5">
                     <Receipt className="w-3.5 h-3.5 text-[#C89B3C]" />
                     <span className="text-[8.5px] font-mono uppercase tracking-[0.2em] text-[#C89B3C] font-bold">
-                      Order Overview
+                      Order Summary
                     </span>
                   </div>
                   <h3 className="font-serif text-lg font-normal text-[#FCFAF7]">Final Valuation</h3>
@@ -450,7 +450,7 @@ const handlePlaceOrder = async () => {
               {/* Selected Target Summary */}
               {selectedAddress && (
                 <div className="bg-[#FCFAF7]/5 border border-[#FCFAF7]/10 p-3 rounded-xl text-xs space-y-1">
-                  <span className="text-[9px] font-mono uppercase text-[#C89B3C] tracking-wider block">Dispatching To</span>
+                  <span className="text-[9px] font-mono uppercase text-[#C89B3C] tracking-wider block">Delivering to</span>
                   <p className="font-serif text-[#FCFAF7] truncate">{selectedAddress.fullName}</p>
                   <p className="text-[10.5px] text-[#FCFAF7]/70 truncate">{selectedAddress.line1}, {selectedAddress.city}</p>
                 </div>
@@ -494,6 +494,16 @@ const handlePlaceOrder = async () => {
                 isDisabled={isAddressProcessing || !selectedAddressId}
               />
 
+              <div className="sm:hidden pt-1">
+                <CheckoutButton
+                  isMobile
+                  onPlaceOrder={handlePlaceOrder}
+                  isSubmitting={isSubmittingOrder}
+                  isDisabled={isAddressProcessing || !selectedAddressId}
+                  label="Confirm Order"
+                />
+              </div>
+
               {/* Trust Badges */}
               <div className="pt-2 border-t border-[#FCFAF7]/15 space-y-2 text-[10.5px] text-[#FCFAF7]/70">
                 <div className="flex items-center gap-2">
@@ -518,23 +528,6 @@ const handlePlaceOrder = async () => {
         onClose={() => setIsDialogOpen(false)}
         onSubmit={handleCreateAddress}
       />
-
-      {/* Mobile Floating Action Bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-[#1B3B2B]/95 backdrop-blur-md border-t border-[#C89B3C]/30 px-3 py-2.5 sm:hidden shadow-2xl flex items-center justify-between gap-3">
-        <div className="flex flex-col">
-          <span className="text-[8px] font-mono uppercase tracking-widest text-[#FCFAF7]/60">Total</span>
-          <span className="font-mono font-bold text-base text-[#C89B3C]">
-            ₹{grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-          </span>
-        </div>
-        <CheckoutButton
-          isMobile
-          onPlaceOrder={handlePlaceOrder}
-          isSubmitting={isSubmittingOrder}
-          isDisabled={isAddressProcessing || !selectedAddressId}
-          label="Confirm Order"
-        />
-      </div>
 
     </div>
   );

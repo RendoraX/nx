@@ -23,13 +23,13 @@ export default function CheckoutButton({
       <button
         disabled={isDisabled || isSubmitting}
         onClick={onPlaceOrder}
-        className="flex-1 h-9 bg-[#C89B3C] active:bg-[#D4A747] text-[#1B3B2B] font-bold text-[10px] tracking-[0.16em] uppercase rounded-lg flex items-center justify-center gap-1.5 shadow-md disabled:opacity-50 cursor-pointer transition-all"
+        className="relative flex h-11 min-w-[150px] flex-1 items-center justify-center gap-1.5 rounded-lg bg-[#C89B3C] px-4 text-[10px] font-bold uppercase tracking-[0.16em] text-[#1B3B2B] shadow-md transition-all active:bg-[#D4A747] disabled:cursor-not-allowed disabled:opacity-50"
       >
         {isSubmitting ? (
-          <div className="w-3.5 h-3.5 border-2 border-[#1B3B2B] border-t-transparent rounded-full animate-spin" />
+          <div className="h-4 w-4 animate-spin rounded-full border-2 border-[#1B3B2B] border-t-transparent" />
         ) : (
           <>
-            <span>{label}</span>
+            <span className="whitespace-nowrap">{label}</span>
             <ChevronRight className="w-3 h-3" />
           </>
         )}
@@ -41,13 +41,13 @@ export default function CheckoutButton({
     <button
       disabled={isDisabled || isSubmitting}
       onClick={onPlaceOrder}
-      className="hidden sm:flex w-full h-11 bg-[#C89B3C] hover:bg-[#D4A747] text-[#1B3B2B] font-bold text-[11px] tracking-[0.18em] uppercase rounded-lg transition-all duration-300 shadow-md items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+      className="relative hidden h-11 w-full items-center justify-center gap-2 rounded-lg bg-[#C89B3C] text-[11px] font-bold uppercase tracking-[0.18em] text-[#1B3B2B] shadow-md transition-all duration-300 hover:bg-[#D4A747] disabled:cursor-not-allowed disabled:opacity-50 sm:flex"
     >
       {isSubmitting ? (
         <div className="w-4 h-4 border-2 border-[#1B3B2B] border-t-transparent rounded-full animate-spin" />
       ) : (
         <>
-          <span>{label}</span>
+          <span className="whitespace-nowrap">{label}</span>
           <ChevronRight className="w-4 h-4" />
         </>
       )}

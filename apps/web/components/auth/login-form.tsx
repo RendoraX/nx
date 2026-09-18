@@ -42,7 +42,7 @@ export function LoginForm() {
   return (
     <AuthCard 
       title="Welcome Back" 
-      subtitle="Sign in to access your bespoke rituals and premium wellness collection."
+      subtitle="Sign in to manage your orders, saved items, and account details."
     >
       <form onSubmit={handleSubmit} className="space-y-6 text-left">
         

@@ -18,12 +18,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={cn("font-sans", geist.variable)}>
-      <body className="bg-[#FAF8F3] text-[#2B2B2B]">
-        <main>
+      <body className="bg-[#FAF8F3] text-[#2B2B2B] overflow-x-hidden">
+        <main className="pb-[calc(6.25rem+env(safe-area-inset-bottom))] lg:pb-0">
          <AuthProvider>
           <QueryProvider>
-            <Header />
             <CartProvider>
+              <Header />
               {children}
             </CartProvider>
             <Footer />

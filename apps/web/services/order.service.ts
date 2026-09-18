@@ -16,8 +16,8 @@ export const orderService = {
   },
 
   listOrders: async (): Promise<OrderResponse[]> => {
-    const response = await api.get<OrderResponse[]>(`${BASE_URL}/api/orders`);
-    return response.data;
+    const response = await api.get<{ orders?: OrderResponse[] }>(`${BASE_URL}/api/orders`);
+    return Array.isArray(response.data?.orders) ? response.data.orders : [];
   },
 
   cancelOrder: async (id: string): Promise<OrderResponse> => {

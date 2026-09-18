@@ -158,7 +158,7 @@ const handleAddToWishlist = async () => {
           <Sparkles className="w-5 h-5 text-[#C89B3C] animate-pulse" />
         </div>
         <p className="text-[#7C7467] font-mono tracking-[0.25em] text-[11px] uppercase animate-pulse text-center">
-          Retrieving Atelier Selection...
+          Loading product...
         </p>
       </div>
     );
@@ -230,7 +230,7 @@ const handleAddToWishlist = async () => {
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 40vw"
                 />
               ) : (
-                <div className="text-[#7C7467] font-mono text-xs uppercase tracking-widest">No Asset Image Loaded</div>
+                <div className="text-[#7C7467] font-mono text-xs uppercase tracking-widest">Image unavailable</div>
               )}
               
               <div className="absolute inset-0 border border-[#EAE3D2] rounded-none pointer-events-none transition-colors duration-500 group-hover:border-[#1F5E3B]/30" />
@@ -265,12 +265,12 @@ const handleAddToWishlist = async () => {
           {/* Right Block: Controls & Purchasing HUD */}
           <div className="lg:col-span-5 space-y-6 lg:sticky lg:top-8">
             <div className="space-y-3 sm:space-y-4">
-              {/* Category & Status Node */}
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-[9px] sm:text-[10px] font-mono uppercase tracking-[0.2em] text-[#1F5E3B] bg-[#FCFAF7] border border-[#EAE3D2] px-3 py-1 rounded-none font-bold shadow-2xs">
-                  {product.category?.name || "Premium Collection"} || ${wishApi.isInWishlist(product?.id as string , selectedVariant?.id as string) ? "TRUE" : "FALSE"}
+              {/* Category and availability */}
+              <div className="flex flex-wrap items-start gap-2">
+                <span className="min-w-0 max-w-full truncate text-[9px] sm:text-[10px] font-mono uppercase tracking-[0.2em] text-[#1F5E3B] bg-[#FCFAF7] border border-[#EAE3D2] px-3 py-1 rounded-none font-bold shadow-2xs">
+                  {product.category?.name || "Premium Collection"}
                 </span>
-                <span className={`text-[9px] sm:text-[10px] font-mono uppercase border px-3 py-1 rounded-none tracking-[0.15em] font-semibold transition-all ${stockConfig.className}`}>
+                <span className={`shrink-0 text-[9px] sm:text-[10px] font-mono uppercase border px-3 py-1 rounded-none tracking-[0.15em] font-semibold transition-all ${stockConfig.className}`}>
                   {stockConfig.label}
                 </span>
               </div>
@@ -281,7 +281,7 @@ const handleAddToWishlist = async () => {
               </h1>
 
               {/* Engine Metrics Bar */}
-              <div className="flex items-center space-x-3 sm:space-x-4 pt-0.5 text-xs text-[#7C7467] font-mono">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 sm:gap-x-4 pt-0.5 text-xs text-[#7C7467] font-mono">
                 <div className="flex items-center text-[#C89B3C]">
                   {[...Array(5)].map((_, i) => (
                     <Star
@@ -315,7 +315,7 @@ const handleAddToWishlist = async () => {
                 )}
               </div>
               <p className="text-[10px] text-[#7C7467] font-mono mt-2 uppercase tracking-[0.15em] flex items-center gap-1.5">
-                <span className="inline-block w-1.5 h-1.5 bg-[#1F5E3B] rounded-none" /> Premium Quality Guaranteed
+                <span className="inline-block w-1.5 h-1.5 bg-[#1F5E3B] rounded-none" /> Quality checked
               </p>
             </div>
 
@@ -323,9 +323,9 @@ const handleAddToWishlist = async () => {
             {variants.length > 0 && (
               <div className="space-y-3">
                 <label className="text-[10px] font-mono uppercase tracking-[0.2em] text-[#7C7467] flex items-center justify-between">
-                  <span>Select Option</span>
+                  <span>Choose size</span>
                   <span className="text-[#1F5E3B] text-xs font-bold uppercase tracking-wider">
-                    {selectedVariant?.size || "Choose Size"}
+                    {selectedVariant?.size || "Select a size"}
                   </span>
                 </label>
                 <div className="grid grid-cols-2 gap-2.5">
@@ -518,7 +518,7 @@ const handleAddToWishlist = async () => {
                   <span className="text-[#2B2B2B] font-bold">{selectedVariant ? selectedVariant.sku : (product.sku || "N/A")}</span>
                 </div>
                 <div className="flex justify-between py-1.5 border-b border-[#EAE3D2]/60">
-                  <span className="text-[#7C7467]">Framework</span>
+                  <span className="text-[#7C7467]">Product details</span>
                   <span className="text-[#2B2B2B]">Verified Sourcing</span>
                 </div>
                 <div className="flex justify-between py-1.5 border-b border-[#EAE3D2]/60">

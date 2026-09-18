@@ -54,46 +54,61 @@ export interface UpdateCartItemDTO {
   quantity: number;
 }
 
-const API_BASE = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/cart`;
+// Fallback cart object to prevent UI crashes if backend returns null/undefined cart
+const DEFAULT_EMPTY_CART: CartResponse = {
+  id: "",
+  userId: "",
+  itemCount: 0,
+  totalUniqueItems: 0,
+  subtotal: 0,
+  items: [],
+};
 
 export const CartService = {
   getCart: async (): Promise<CartResponse> => {
-    const res = await api.get(`${API_BASE}`);
-    console.log("cart ", res.data.cart)
-    if (!res.data.success) {
-      throw new Error(res.data.message || 'An error occurred while retrieving the cart.');
+    try {
+      const res = await api.get("/api/cart");
+      
+      if (!res.data || !res.data.success) {
+        return DEFAULT_EMPTY_CART;
+      }
+      
+      return res.data.cart ?? DEFAULT_EMPTY_CART;
+    } catch (error: any) {
+      console.error("Cart retrieval error:", error);
+      // Return empty cart fallback instead of throwing uncaught 500 server errors to the page
+      return DEFAULT_EMPTY_CART;
     }
-    return res.data.cart;
   },
 
   addToCart: async (payload: AddToCartDTO): Promise<CartResponse> => {
-    const res = await api.post(`${API_BASE}/items`, payload);
-    if (!res.data.success) {
-      throw new Error(res.data.message || 'An error occurred while adding item to cart.');
+    const res = await api.post("/api/cart/items", payload);
+    if (!res.data?.success) {
+      throw new Error(res.data?.message || 'An error occurred while adding item to cart.');
     }
     return res.data.cart;
   },
 
   updateQuantity: async ({ itemId, quantity }: UpdateCartItemDTO): Promise<CartResponse> => {
-    const res = await api.patch(`${API_BASE}/items/${itemId}`, { quantity });
-    if (!res.data.success) {
-      throw new Error(res.data.message || 'An error occurred while updating cart item quantity.');
+    const res = await api.patch(`/api/cart/items/${itemId}`, { quantity });
+    if (!res.data?.success) {
+      throw new Error(res.data?.message || 'An error occurred while updating cart item quantity.');
     }
     return res.data.cart;
   },
 
   removeFromCart: async (itemId: string): Promise<CartResponse> => {
-    const res = await api.delete(`${API_BASE}/items/${itemId}`);
-    if (!res.data.success) {
-      throw new Error(res.data.message || 'An error occurred while removing item from cart.');
+    const res = await api.delete(`/api/cart/items/${itemId}`);
+    if (!res.data?.success) {
+      throw new Error(res.data?.message || 'An error occurred while removing item from cart.');
     }
     return res.data.cart;
   },
 
   clearCart: async (): Promise<{ success: boolean }> => {
-    const res = await api.delete(`${API_BASE}`);
-    if (!res.data.success) {
-      throw new Error(res.data.message || 'An error occurred while clearing cart.');
+    const res = await api.delete("/api/cart");
+    if (!res.data?.success) {
+      throw new Error(res.data?.message || 'An error occurred while clearing cart.');
     }
     return res.data;
   },

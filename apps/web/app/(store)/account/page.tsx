@@ -23,6 +23,8 @@ import {
 
 import { useAuthContext } from '@/providers/AuthProviders';
 import { AuthService } from '@/services/auth.service';
+import { useOrders } from '@/hooks/secure_hook/useOrder';
+import { Order } from '@/types/auth';
 import { PasswordInput } from '@/components/auth/password-input';
 import AccountOrdersTab from '@/components/account/order/OrderHistoryTable';
 import AccountAddressesTab from '@/components/account/address/AccountIndex';
@@ -83,6 +85,7 @@ export default function AccountPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { user, logout, loading: authLoading } = useAuthContext();
+  const { listOrders } = useOrders();
   
   const getInitialTab = (): ActiveTab => {
     const tabParam = searchParams.get('tab') as ActiveTab;
@@ -93,6 +96,10 @@ export default function AccountPage() {
   };
 
   const [activeTab, setActiveTab] = useState<ActiveTab>(getInitialTab);
+  const [freshOrders, setFreshOrders] = useState<Order[] | undefined>(undefined);
+  const [ordersRefreshKey, setOrdersRefreshKey] = useState(0);
+  const [ordersLoading, setOrdersLoading] = useState(false);
+  const [ordersError, setOrdersError] = useState<string | null>(null);
 
   // Password Reset Modal State
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
@@ -111,8 +118,42 @@ export default function AccountPage() {
     }
   }, [searchParams]);
 
+  useEffect(() => {
+    if (activeTab !== 'orders') {
+      return;
+    }
+
+    let isCurrent = true;
+    setOrdersLoading(true);
+    setOrdersError(null);
+
+    listOrders()
+      .then((orders) => {
+        if (isCurrent) {
+          setFreshOrders(orders as unknown as Order[]);
+        }
+      })
+      .catch((error: Error) => {
+        if (isCurrent) {
+          setOrdersError(error.message || 'Unable to load your latest orders.');
+        }
+      })
+      .finally(() => {
+        if (isCurrent) {
+          setOrdersLoading(false);
+        }
+      });
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [activeTab, listOrders, ordersRefreshKey]);
+
   const handleTabChange = (tabId: ActiveTab) => {
     setActiveTab(tabId);
+    if (tabId === 'orders') {
+      setOrdersRefreshKey((currentKey) => currentKey + 1);
+    }
     const params = new URLSearchParams(window.location.search);
     params.set('tab', tabId);
     router.push(`/account?${params.toString()}`);
@@ -152,26 +193,27 @@ export default function AccountPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FDFCFB] antialiased flex flex-col text-gray-900 selection:bg-[#C89B3C]/20">
-      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-16">
+    <div className="relative min-h-screen overflow-hidden bg-[#FDFCFB] text-gray-900 antialiased selection:bg-[#C89B3C]/20">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-96 bg-[radial-gradient(circle_at_top_right,rgba(200,155,60,0.12),transparent_42%),radial-gradient(circle_at_top_left,rgba(31,94,59,0.08),transparent_38%)]" />
+      <main className="relative mx-auto w-full max-w-7xl px-3 py-6 sm:px-6 sm:py-10 lg:px-8 lg:py-14">
         
         {/* Header Banner */}
-        <div className="border-b border-[#EAE3D2] pb-8 mb-10">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
+        <div className="mb-6 rounded-2xl border border-[#EAE3D2] bg-[#FCFAF7]/85 p-5 shadow-[0_12px_40px_rgba(27,59,43,0.06)] backdrop-blur-sm sm:mb-8 sm:p-7 lg:p-8">
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <span className="text-[11px] font-bold tracking-[0.2em] text-[#C89B3C] uppercase mb-2 block font-mono">
-                Client Portal
+              <span className="mb-2 block text-[10px] font-bold uppercase tracking-[0.24em] text-[#C89B3C] font-mono">
+                Account Overview
               </span>
-              <h1 className="text-3xl lg:text-4xl font-serif font-semibold text-[#1B3B2B] tracking-tight">
+              <h1 className="font-serif text-3xl font-semibold tracking-tight text-[#1B3B2B] sm:text-4xl lg:text-5xl">
                 My Account
               </h1>
-              <p className="text-sm text-[#7C7467] mt-1 font-light">
+              <p className="mt-2 max-w-2xl text-xs leading-relaxed text-[#7C7467] font-light sm:text-sm">
                 Manage your personal details, order reservations, and security preferences.
               </p>
             </div>
             <button 
               onClick={logout}
-              className="self-start sm:self-auto px-5 py-2.5 border border-[#1B3B2B]/20 text-[#1B3B2B] hover:bg-[#1B3B2B] hover:text-[#FCFAF7] text-xs font-semibold tracking-wider uppercase rounded-lg transition-all duration-300 flex items-center gap-2 cursor-pointer shadow-sm group"
+              className="group flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-[#1B3B2B]/20 bg-white/60 px-5 py-2.5 text-xs font-semibold uppercase tracking-wider text-[#1B3B2B] shadow-sm transition-all duration-300 hover:bg-[#1B3B2B] hover:text-[#FCFAF7] sm:w-auto"
             >
               <LogOut className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5" />
               <span>Log Out</span>
@@ -179,10 +221,11 @@ export default function AccountPage() {
           </div>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-10 items-start">
+        <div className="flex flex-col items-stretch gap-5 lg:flex-row lg:items-start lg:gap-7">
           
           {/* Navigation Sidebar */}
-          <nav className="w-full lg:w-72 flex-shrink-0 flex flex-row lg:flex-col border-b lg:border-b-0 lg:border-r border-[#EAE3D2] pb-4 lg:pb-0 lg:pr-8 gap-2 overflow-x-auto scrollbar-none">
+          <nav className="w-full flex-shrink-0 rounded-2xl border border-[#EAE3D2] bg-[#FCFAF7]/80 p-2 shadow-[0_8px_24px_rgba(27,59,43,0.04)] backdrop-blur-sm lg:sticky lg:top-24 lg:w-72 lg:p-3">
+            <div className="flex gap-1.5 overflow-x-auto scrollbar-none lg:flex-col lg:gap-1">
             {[
               { id: 'profile', label: 'Profile & Security', icon: UserIcon },
               { id: 'orders', label: 'Order History', icon: Package },
@@ -197,10 +240,10 @@ export default function AccountPage() {
                 <button
                   key={tab.id}
                   onClick={() => handleTabChange(tab.id as ActiveTab)}
-                  className={`flex items-center justify-between px-4 py-3.5 text-xs font-semibold tracking-wider uppercase rounded-xl transition-all duration-300 whitespace-nowrap cursor-pointer ${
+                    className={`flex min-w-max items-center justify-between rounded-xl px-3 py-3 text-[10px] font-semibold uppercase tracking-wider whitespace-nowrap transition-all duration-300 cursor-pointer lg:px-4 lg:py-3.5 lg:text-xs ${
                     isSelected 
-                      ? "bg-[#1B3B2B] text-[#FCFAF7] shadow-md translate-x-1" 
-                      : "bg-transparent text-[#7C7467] hover:text-[#1B3B2B] hover:bg-[#1B3B2B]/5"
+                      ? "bg-[#1B3B2B] text-[#FCFAF7] shadow-[0_8px_18px_rgba(27,59,43,0.18)] lg:translate-x-1"
+                      : "bg-transparent text-[#7C7467] hover:bg-[#1B3B2B]/5 hover:text-[#1B3B2B]"
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -211,28 +254,29 @@ export default function AccountPage() {
                 </button>
               );
             })}
+            </div>
           </nav>
 
           {/* Tab Content Canvas */}
-          <div className="flex-1 w-full">
+          <div className="min-w-0 flex-1 rounded-2xl border border-[#EAE3D2]/80 bg-white/45 p-3 shadow-[0_12px_40px_rgba(27,59,43,0.04)] sm:p-5 lg:p-7">
             
             {/* PROFILE TAB */}
             {activeTab === 'profile' && (
               authLoading || !user ? (
                 <ProfileSkeleton />
               ) : (
-                <div className="space-y-8 animate-fade-in text-left">
+                <div className="space-y-5 text-left animate-fade-in sm:space-y-7">
                   
                   {/* Hero Profile Card */}
-                  <div className="bg-[#1B3B2B] rounded-2xl p-8 lg:p-10 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden shadow-xl border border-[#C89B3C]/30">
+                  <div className="relative flex flex-col items-center justify-between gap-5 overflow-hidden rounded-2xl border border-[#C89B3C]/30 bg-gradient-to-br from-[#11291D] via-[#1B3B2B] to-[#254F3A] p-5 shadow-[0_16px_35px_rgba(27,59,43,0.2)] sm:p-8 lg:flex-row lg:p-10">
                     <div className="absolute inset-0 opacity-5 bg-[linear-gradient(to_right,#FCFAF7_1px,transparent_1px),linear-gradient(to_bottom,#FCFAF7_1px,transparent_1px)] bg-[size:3rem_3rem]"></div>
                     
-                    <div className="relative z-10 flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
+                    <div className="relative z-10 flex flex-col items-center gap-5 text-center sm:flex-row sm:text-left">
                       <div className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-[#C89B3C] shadow-lg bg-[#FCFAF7] flex items-center justify-center flex-shrink-0">
                         <UserIcon className="w-12 h-12 text-[#1B3B2B]" />
                       </div>
-                      <div>
-                        <div className="flex items-center justify-center md:justify-start gap-2.5">
+                      <div className="min-w-0">
+                        <div className="flex items-center justify-center gap-2.5 sm:justify-start">
                           <h2 className="font-serif text-2xl lg:text-3xl font-semibold text-[#FCFAF7] tracking-tight">
                             {user.name}
                           </h2>
@@ -242,23 +286,23 @@ export default function AccountPage() {
                             </span>
                           )}
                         </div>
-                        <p className="text-xs text-[#EAE3D2]/80 tracking-widest uppercase mt-1 font-mono">{user.email}</p>
+                        <p className="mt-1 max-w-full truncate text-[10px] uppercase tracking-widest text-[#EAE3D2]/80 font-mono sm:text-xs">{user.email}</p>
                       </div>
                     </div>
 
-                    <div className="relative z-10 flex items-center gap-2 bg-[#FCFAF7]/10 backdrop-blur-md px-4 py-2 rounded-full border border-[#FCFAF7]/15">
+                    <div className="relative z-10 flex items-center gap-2 rounded-full border border-[#FCFAF7]/15 bg-[#FCFAF7]/10 px-4 py-2 text-center backdrop-blur-md">
                       <ShieldCheck className="h-4 w-4 text-[#C89B3C]" />
                       <span className="text-xs font-semibold tracking-wider text-[#FCFAF7] uppercase">
-                        {user.isVerified ? 'Verified Client' : 'Pending Verification'}
+                        {user.isVerified ? 'Verified Account' : 'Verification Needed'}
                       </span>
                     </div>
                   </div>
 
                   {/* Details Section */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 sm:gap-5">
                     
                     {/* Personal Overview */}
-                    <div className="bg-[#FCFAF7] border border-[#EAE3D2] rounded-2xl shadow-sm hover:shadow-md transition-shadow p-6 lg:p-8 flex flex-col justify-between">
+                    <div className="flex flex-col justify-between rounded-2xl border border-[#EAE3D2] bg-[#FCFAF7] p-5 shadow-sm transition-shadow hover:shadow-md sm:p-7">
                       <div>
                         <div className="flex items-center gap-3 border-b border-[#EAE3D2] pb-4 mb-6">
                           <div className="p-2 bg-[#1B3B2B]/5 rounded-lg text-[#1B3B2B]">
@@ -267,18 +311,18 @@ export default function AccountPage() {
                           <h3 className="font-serif text-lg font-semibold text-[#1B3B2B]">Personal Overview</h3>
                         </div>
                         
-                        <div className="space-y-4 text-sm">
-                          <div className="flex items-center justify-between py-2 border-b border-[#EAE3D2]/40">
+                        <div className="space-y-2 text-sm">
+                          <div className="flex flex-col items-start justify-between gap-1 border-b border-[#EAE3D2]/40 py-3 sm:flex-row sm:items-center">
                             <span className="text-[#7C7467] font-medium">Full Name</span>
                             <span className="text-[#1A1A1A] font-semibold">{user.name}</span>
                           </div>
-                          <div className="flex items-center justify-between py-2 border-b border-[#EAE3D2]/40">
+                          <div className="flex flex-col items-start justify-between gap-1 border-b border-[#EAE3D2]/40 py-3 sm:flex-row sm:items-center">
                             <span className="text-[#7C7467] font-medium flex items-center gap-2">
                               <Mail className="h-3.5 w-3.5 text-[#C89B3C]" /> Email Address
                             </span>
                             <span className="text-[#1A1A1A] font-semibold font-mono text-xs break-all">{user.email}</span>
                           </div>
-                          <div className="flex items-center justify-between py-2">
+                          <div className="flex flex-col items-start justify-between gap-1 py-3 sm:flex-row sm:items-center">
                             <span className="text-[#7C7467] font-medium flex items-center gap-2">
                               <Phone className="h-3.5 w-3.5 text-[#C89B3C]" /> Phone Number
                             </span>
@@ -289,7 +333,7 @@ export default function AccountPage() {
                     </div>
 
                     {/* Security Card */}
-                    <div className="bg-[#FCFAF7] border border-[#EAE3D2] rounded-2xl shadow-sm hover:shadow-md transition-shadow p-6 lg:p-8 flex flex-col justify-between">
+                    <div className="flex flex-col justify-between rounded-2xl border border-[#EAE3D2] bg-[#FCFAF7] p-5 shadow-sm transition-shadow hover:shadow-md sm:p-7">
                       <div>
                         <div className="flex items-center gap-3 border-b border-[#EAE3D2] pb-4 mb-6">
                           <div className="p-2 bg-[#1B3B2B]/5 rounded-lg text-[#1B3B2B]">
@@ -328,7 +372,13 @@ export default function AccountPage() {
             )}
 
             {/* OTHER TABS */}
-            {activeTab === 'orders' && <AccountOrdersTab orders={user?.orders}/>}
+            {activeTab === 'orders' && (
+              <AccountOrdersTab
+                orders={freshOrders}
+                isLoading={ordersLoading}
+                error={ordersError}
+              />
+            )}
             {activeTab === 'addresses' && <AccountAddressesTab />}
             {activeTab === 'sessions' && <AccountSessionsTab />}
             {activeTab === 'reviews' && (

@@ -367,20 +367,20 @@ export default function KitCheckoutPage() {
   return (
     <div className="min-h-screen bg-[#FDFCFB] text-[#1B3B2B] antialiased pb-28 sm:pb-12">
       <header className="border-b border-[#EAE3D2] bg-[#FCFAF7]/80 backdrop-blur-md sticky top-0 z-30">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-3 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-2">
           <Link href="/account/kit/builder" className="flex items-center gap-1.5 text-xs font-mono text-[#7C7467] hover:text-[#1B3B2B] transition-colors">
             <ArrowLeft className="w-4 h-4" />
             <span className="hidden xs:inline uppercase tracking-wider">Back to Builder</span>
           </Link>
           
-          <div className="flex items-center gap-2">
+          <div className="min-w-0 flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 text-[#C89B3C]" />
-            <span className="font-serif text-sm sm:text-base font-medium tracking-tight text-[#1B3B2B]">
+            <span className="truncate font-serif text-sm sm:text-base font-medium tracking-tight text-[#1B3B2B]">
               Encrypted Kit Checkout
             </span>
           </div>
 
-          <div className="flex items-center gap-1 text-[11px] font-mono text-[#C89B3C] bg-[#C89B3C]/10 px-2.5 py-1 rounded-full border border-[#C89B3C]/20">
+          <div className="hidden sm:flex shrink-0 items-center gap-1 text-[11px] font-mono text-[#C89B3C] bg-[#C89B3C]/10 px-2.5 py-1 rounded-full border border-[#C89B3C]/20">
             <Lock className="w-3 h-3" />
             <span>256-BIT SSL</span>
           </div>
@@ -656,6 +656,16 @@ export default function KitCheckoutPage() {
                 isDisabled={isSubmittingOrder || !selectedAddressId}
               />
 
+              <div className="sm:hidden pt-1">
+                <CheckoutButton
+                  isMobile
+                  onPlaceOrder={handlePlaceOrder}
+                  isSubmitting={isSubmittingOrder}
+                  isDisabled={isSubmittingOrder || !selectedAddressId}
+                  label="Confirm Order"
+                />
+              </div>
+
               <div className="pt-2 text-[10.5px] text-[#7C7467] space-y-2 border-t border-[#EAE3D2]/60 font-mono">
                 <div className="flex items-center gap-2">
                   <Truck className="w-3.5 h-3.5 text-[#C89B3C]" />
@@ -676,6 +686,7 @@ export default function KitCheckoutPage() {
         onClose={() => setIsDialogOpen(false)}
         onSubmit={handleCreateAddress}
       />
+
     </div>
   );
 }

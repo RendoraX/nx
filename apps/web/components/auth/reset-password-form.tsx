@@ -46,7 +46,7 @@ export function ResetPasswordForm() {
     }
 
     if (password !== confirmPassword) {
-      setValidationError('Target credentials do not match confirmed entry arrays.');
+      setValidationError('The passwords do not match.');
       return;
     }
 

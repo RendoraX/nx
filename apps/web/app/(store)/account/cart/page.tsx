@@ -116,17 +116,17 @@ export default function CartPage() {
           <div className="flex items-center gap-1.5 mb-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-[#C89B3C]" />
             <span className="text-[9px] font-bold tracking-[0.22em] text-[#C89B3C] uppercase font-mono">
-              Bespoke Selection
+              Cart Summary
             </span>
           </div>
 
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
             <div>
               <h1 className="text-2xl sm:text-4xl lg:text-5xl font-serif font-normal text-[#1B3B2B] tracking-tight">
-                Your Vault
+                Your Cart
               </h1>
               <p className="text-[11px] sm:text-xs text-[#7C7467] font-serif italic mt-0.5">
-                Review and manage your curated reservations prior to checkout.
+                Review your selected products before checkout.
               </p>
             </div>
             
@@ -142,10 +142,10 @@ export default function CartPage() {
                 <button
                   onClick={() => setShowClearModal(true)}
                   className="flex items-center gap-1.5 text-[10px] sm:text-[11px] font-mono uppercase tracking-wider text-[#7C7467] hover:text-red-700 bg-[#FCFAF7] hover:bg-red-50/60 border border-[#EAE3D2] hover:border-red-200 px-3 py-1.5 rounded-full transition-all duration-300 cursor-pointer"
-                  title="Clear all items from vault"
+                  title="Clear all items from cart"
                 >
                   <RotateCcw className="w-3 h-3" />
-                  <span className="hidden xs:inline">Clear Vault</span>
+                  <span className="hidden xs:inline">Clear Cart</span>
                 </button>
               )}
             </div>
@@ -173,7 +173,7 @@ export default function CartPage() {
               </div>
               
               <div className="space-y-1">
-                <h2 className="font-serif text-xl sm:text-2xl font-medium text-[#1B3B2B]">Your vault is empty</h2>
+                <h2 className="font-serif text-xl sm:text-2xl font-medium text-[#1B3B2B]">Your cart is empty</h2>
                 <p className="text-[11px] sm:text-xs text-[#7C7467] font-light leading-relaxed max-w-xs mx-auto">
                   Immerse yourself in our catalog to reserve handcrafted, limited-edition items.
                 </p>
@@ -366,7 +366,7 @@ export default function CartPage() {
                     <div className="flex items-center gap-1.5">
                       <Receipt className="w-3.5 h-3.5 text-[#C89B3C]" />
                       <span className="text-[8.5px] font-mono uppercase tracking-[0.2em] text-[#C89B3C] font-bold">
-                        Vault Assessment
+                        Order Summary
                       </span>
                     </div>
                     <h2 className="font-serif text-lg sm:text-xl font-normal text-[#FCFAF7] tracking-tight">
@@ -480,7 +480,7 @@ export default function CartPage() {
 
       {/* Mobile Floating Bottom Bar */}
       {items.length > 0 && !loading && (
-        <div className="fixed bottom-0 left-0 right-0 z-40 bg-[#1B3B2B]/95 backdrop-blur-md border-t border-[#C89B3C]/30 px-3 py-2.5 sm:hidden shadow-2xl flex items-center justify-between gap-3">
+        <div className="fixed inset-x-3 bottom-[6.75rem] z-[65] rounded-2xl bg-[#1B3B2B]/95 px-3 py-2.5 shadow-[0_14px_35px_rgba(27,59,43,0.24)] ring-1 ring-[#C89B3C]/30 backdrop-blur-md sm:hidden flex items-center justify-between gap-3">
           <div className="flex flex-col">
             <span className="text-[8px] font-mono uppercase tracking-widest text-[#FCFAF7]/60">Total</span>
             <span className="font-mono font-bold text-base text-[#C89B3C]">
@@ -488,7 +488,7 @@ export default function CartPage() {
             </span>
           </div>
           <Link
-            href="/cart/checkout"
+            href="/account/cart/checkout"
             className="flex-1 h-9 bg-[#C89B3C] active:bg-[#D4A747] text-[#1B3B2B] font-bold text-[10px] tracking-[0.16em] uppercase rounded-lg flex items-center justify-center gap-1.5 shadow-md"
           >
             Checkout <ArrowRight className="w-3 h-3" />

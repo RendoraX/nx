@@ -105,14 +105,14 @@ const handleRemove = async (productId: string, variantId: string) => {
       refetch();
     }, 300);
 
-    toast.success("Item removed from your vault.");
+    toast.success("Item removed from saved items.");
   } catch (err) {
     toast.error("Could not remove item from wishlist.");
   }
 };
 
   const handleClear = () => {
-    if (confirm("Are you sure you want to clear your saved vault?")) {
+    if (confirm("Are you sure you want to clear all saved items?")) {
       clearWishlist();
       toast.success("Wishlist cleared.");
     }
@@ -181,7 +181,7 @@ const handleRemove = async (productId: string, variantId: string) => {
               <Link href="/products" className="hover:text-[#1F5E3B] transition-colors">Atelier Shop</Link>
             </li>
             <ChevronRight className="w-3 h-3 text-[#C89B3C]/60 shrink-0" />
-            <li className="text-[#2B2B2B] font-bold truncate">Personal Vault</li>
+            <li className="text-[#2B2B2B] font-bold truncate">Saved items</li>
           </ol>
         </nav>
 
@@ -194,10 +194,10 @@ const handleRemove = async (productId: string, variantId: string) => {
               <div className="space-y-3">
                 <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-[#1F5E3B]/10 border border-[#1F5E3B]/20 text-[#1F5E3B] text-[10px] font-mono uppercase tracking-[0.25em] font-bold rounded-full backdrop-blur-md">
                   <Sparkles className="w-3.5 h-3.5 text-[#C89B3C] animate-pulse" />
-                  <span>Preserved Collection</span>
+                  <span>Saved items</span>
                 </div>
                 <h1 className="text-3xl sm:text-5xl font-serif text-[#2B2B2B] font-normal tracking-tight">
-                  Saved Rituals & Formulations
+                  Saved items
                 </h1>
                 <p className="text-xs sm:text-sm text-[#7C7467] font-serif italic max-w-xl leading-relaxed">
                   Your handpicked library of pure extracts, oils, and botanical remedies stored for your routine.
@@ -220,7 +220,7 @@ const handleRemove = async (productId: string, variantId: string) => {
                     className="inline-flex items-center text-[10px] font-mono uppercase tracking-[0.2em] text-red-700 hover:text-white bg-red-50/90 hover:bg-red-800 border border-red-200/90 px-4 py-3.5 rounded-2xl transition-all cursor-pointer backdrop-blur-md active:scale-95 disabled:opacity-50 shadow-2xs"
                   >
                     <Trash2 className="w-3.5 h-3.5 mr-2" />
-                    {isClearing ? "Clearing..." : "Clear Vault"}
+                    {isClearing ? "Clearing..." : "Clear saved items"}
                   </button>
                 )}
               </div>
@@ -295,7 +295,7 @@ const handleRemove = async (productId: string, variantId: string) => {
                 onClick={() => refetch()}
                 className="inline-flex items-center px-6 py-3 text-xs font-mono uppercase tracking-[0.2em] bg-[#1F5E3B] text-white font-medium rounded-xl hover:bg-[#154128] transition-all cursor-pointer active:scale-95 shadow-md"
               >
-                <RefreshCw className="w-3.5 h-3.5 mr-2" /> Reload Ledger
+                <RefreshCw className="w-3.5 h-3.5 mr-2" /> Try again
               </button>
             </div>
           )}
@@ -307,7 +307,7 @@ const handleRemove = async (productId: string, variantId: string) => {
                 <Heart className="w-7 h-7 text-[#C89B3C]" />
               </div>
               <h2 className="text-2xl font-serif text-[#2B2B2B] font-normal mb-2">
-                Your Vault is Empty
+                No saved items yet
               </h2>
               <p className="text-xs text-[#7C7467] font-mono leading-relaxed mb-8 uppercase tracking-widest">
                 No botanical formulations saved in your collection yet.
@@ -316,7 +316,7 @@ const handleRemove = async (productId: string, variantId: string) => {
                 href="/products"
                 className="inline-flex items-center space-x-2 px-8 py-4 bg-[#1F5E3B] text-white text-xs font-mono uppercase tracking-[0.2em] font-medium rounded-2xl hover:bg-[#154128] transition-all shadow-md active:scale-95"
               >
-                <span>Browse Atelier</span>
+                <span>Browse products</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>

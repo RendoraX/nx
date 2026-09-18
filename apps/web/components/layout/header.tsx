@@ -3,10 +3,12 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useAuthContext } from '../../providers/AuthProviders';
+import { useCart } from '../../providers/CartProvider';
 import { 
   Sparkles, Menu, X, Search, Globe, Heart, ShoppingBag, User, LogOut, Loader2,
-  Package, MapPin, Laptop, Star, Bell, Settings
+  Package, MapPin, Laptop, Star, Bell, Settings, Compass
 } from 'lucide-react';
 
 export function Header() {
@@ -14,8 +16,16 @@ export function Header() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const pathname = usePathname();
   
   const { user, loading, isAuthenticated, logout } = useAuthContext();
+  const { cart } = useCart();
+  const cartItemCount = cart?.itemCount || 0;
+  const isHomeActive = pathname === '/';
+  const isShopActive = pathname.startsWith('/products');
+  const isWishlistActive = pathname.startsWith('/account/wishlist');
+  const isCartActive = pathname.startsWith('/account/cart');
+  const isAccountActive = pathname.startsWith('/account') && !isWishlistActive && !isCartActive;
 
   // Close the desktop dropdown menu when clicking anywhere outside of it
   useEffect(() => {
@@ -44,7 +54,7 @@ export function Header() {
           <div className="flex items-center gap-2 flex-shrink-0">
             <button 
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
-              className="lg:hidden p-1.5 text-[#1A1A1A] hover:text-[#1B3B2B] focus:outline-none"
+              className="hidden lg:hidden p-1.5 text-[#1A1A1A] hover:text-[#1B3B2B] focus:outline-none"
               aria-label="Toggle Navigation Menu"
             >
               {mobileMenuOpen ? <X className="h-5 w-5 stroke-[1.5]" /> : <Menu className="h-5 w-5 stroke-[1.5]" />}
@@ -69,11 +79,11 @@ export function Header() {
           </div>
 
           {/* Navigation Items & User Dashboard Actions */}
-          <div className="flex items-center gap-1 md:gap-2">
+          <div className="hidden lg:flex items-center gap-1 md:gap-2">
             <nav className="hidden lg:flex items-center gap-6 text-[11px] font-medium uppercase tracking-[0.2em] text-[#7C7467] mr-4">
               <Link href="/philosophy" className="hover:text-[#1B3B2B] transition-colors duration-300">Philosophy</Link>
               <Link href="/products" className="text-[#1B3B2B] font-semibold tracking-[0.2em]">Shop</Link>
-              <Link href="/bespoke" className="hover:text-[#1B3B2B] transition-colors duration-300">Bespoke Kit</Link>
+              <Link href="/bespoke" className="hover:text-[#1B3B2B] transition-colors duration-300">Custom Kit</Link>
             </nav>
 
             <div className="h-3 w-[1px] bg-[#EAE3D2] hidden lg:block mr-2"></div>
@@ -156,11 +166,11 @@ export function Header() {
 
         {/* Responsive Mobile Drawer Menu Layout */}
         {mobileMenuOpen && (
-          <div className="lg:hidden border-t border-[#EAE3D2] bg-[#FCFAF7] px-6 py-5 space-y-4 shadow-sm transition-all duration-300 divide-y divide-[#EAE3D2]/60">
+          <div className="hidden lg:hidden border-t border-[#EAE3D2] bg-[#FCFAF7] px-6 py-5 space-y-4 shadow-sm transition-all duration-300 divide-y divide-[#EAE3D2]/60">
             <div className="space-y-3 pb-3">
               <Link href="/philosophy" onClick={() => setMobileMenuOpen(false)} className="block text-[11px] uppercase tracking-[0.2em] font-medium text-[#7C7467] hover:text-[#1B3B2B]">Philosophy</Link>
               <Link href="/products" onClick={() => setMobileMenuOpen(false)} className="block text-[11px] uppercase tracking-[0.2em] font-medium text-[#1B3B2B]">Shop</Link>
-              <Link href="/bespoke" onClick={() => setMobileMenuOpen(false)} className="block text-[11px] uppercase tracking-[0.2em] font-medium text-[#7C7467] hover:text-[#1B3B2B]">Bespoke Kit</Link>
+              <Link href="/bespoke" onClick={() => setMobileMenuOpen(false)} className="block text-[11px] uppercase tracking-[0.2em] font-medium text-[#7C7467] hover:text-[#1B3B2B]">Custom Kit</Link>
             </div>
             <div className="pt-4 space-y-2.5 text-left">
               {isAuthenticated ? (
@@ -208,6 +218,68 @@ export function Header() {
           </div>
         )}
       </header>
+
+      {/* Mobile primary navigation */}
+      <nav
+        aria-label="Mobile primary navigation"
+        className="fixed inset-x-3 bottom-3 z-[60] grid grid-cols-5 rounded-2xl border border-[#EAE3D2] bg-[#FCFAF7]/95 px-1.5 pt-1.5 pb-[calc(0.375rem+env(safe-area-inset-bottom))] shadow-[0_14px_40px_rgba(27,59,43,0.18),0_2px_8px_rgba(200,155,60,0.12)] backdrop-blur-xl lg:hidden"
+      >
+        <Link
+          href="/"
+          aria-current={isHomeActive ? 'page' : undefined}
+          className={`flex min-h-12 flex-col items-center justify-center gap-1 rounded-xl text-[#7C7467] transition-colors hover:bg-[#1B3B2B]/5 hover:text-[#1B3B2B] ${isHomeActive ? 'text-[#1B3B2B]' : ''}`}
+        >
+          <span className={`flex h-8 w-8 items-center justify-center rounded-full transition-all duration-500 ${isHomeActive ? '-translate-y-2 bg-[#1B3B2B] text-[#C89B3C] shadow-[0_8px_16px_rgba(27,59,43,0.22)] ring-4 ring-[#FCFAF7]' : ''}`}>
+            <Compass className="h-4 w-4 stroke-[1.5]" />
+          </span>
+          <span className={`text-[9px] font-semibold uppercase tracking-[0.12em] transition-transform duration-500 ${isHomeActive ? '-translate-y-1' : ''}`}>Home</span>
+        </Link>
+        <Link
+          href="/products"
+          aria-current={isShopActive ? 'page' : undefined}
+          className={`flex min-h-12 flex-col items-center justify-center gap-1 rounded-xl text-[#7C7467] transition-colors hover:bg-[#1B3B2B]/5 hover:text-[#1B3B2B] ${isShopActive ? 'text-[#1B3B2B]' : ''}`}
+        >
+          <span className={`flex h-8 w-8 items-center justify-center rounded-full transition-all duration-500 ${isShopActive ? '-translate-y-2 bg-[#1B3B2B] text-[#C89B3C] shadow-[0_8px_16px_rgba(27,59,43,0.22)] ring-4 ring-[#FCFAF7]' : ''}`}>
+            <ShoppingBag className="h-4 w-4 stroke-[1.5]" />
+          </span>
+          <span className={`text-[9px] font-semibold uppercase tracking-[0.12em] transition-transform duration-500 ${isShopActive ? '-translate-y-1' : ''}`}>Shop</span>
+        </Link>
+        <Link
+          href={isAuthenticated ? "/account/wishlist" : "/login?redirectTo=/account/wishlist"}
+          aria-current={isWishlistActive ? 'page' : undefined}
+          className={`flex min-h-12 flex-col items-center justify-center gap-1 rounded-xl text-[#7C7467] transition-colors hover:bg-[#1B3B2B]/5 hover:text-[#1B3B2B] ${isWishlistActive ? 'text-[#1B3B2B]' : ''}`}
+        >
+          <span className={`flex h-8 w-8 items-center justify-center rounded-full transition-all duration-500 ${isWishlistActive ? '-translate-y-2 bg-[#1B3B2B] text-[#C89B3C] shadow-[0_8px_16px_rgba(27,59,43,0.22)] ring-4 ring-[#FCFAF7]' : ''}`}>
+            <Heart className="h-4 w-4 stroke-[1.5]" />
+          </span>
+          <span className={`text-[9px] font-semibold uppercase tracking-[0.12em] transition-transform duration-500 ${isWishlistActive ? '-translate-y-1' : ''}`}>Wishlist</span>
+        </Link>
+        <Link
+          href="/account/cart"
+          aria-current={isCartActive ? 'page' : undefined}
+          className={`relative flex min-h-12 flex-col items-center justify-center gap-1 rounded-xl text-[#7C7467] transition-colors duration-300 hover:bg-[#1B3B2B]/5 hover:text-[#1B3B2B] ${isCartActive ? 'text-[#1B3B2B]' : ''}`}
+        >
+          <span className={`relative flex h-8 w-8 items-center justify-center rounded-full transition-all duration-500 ease-out ${isCartActive ? '-translate-y-2 bg-[#1B3B2B] text-[#C89B3C] shadow-[0_8px_16px_rgba(27,59,43,0.28)] ring-4 ring-[#FCFAF7]' : ''}`}>
+            <ShoppingBag className="h-4 w-4 stroke-[1.5]" />
+            {cartItemCount > 0 && (
+              <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#C89B3C] px-1 text-[8px] font-bold leading-none text-[#1B3B2B] shadow-sm transition-all duration-500">
+                {cartItemCount > 99 ? '99+' : cartItemCount}
+              </span>
+            )}
+          </span>
+          <span className={`text-[9px] font-semibold uppercase tracking-[0.12em] transition-transform duration-500 ${isCartActive ? '-translate-y-1' : ''}`}>Cart</span>
+        </Link>
+        <Link
+          href={isAuthenticated ? "/account" : "/login"}
+          aria-current={isAccountActive ? 'page' : undefined}
+          className={`flex min-h-12 flex-col items-center justify-center gap-1 rounded-xl text-[#7C7467] transition-colors hover:bg-[#1B3B2B]/5 hover:text-[#1B3B2B] ${isAccountActive ? 'text-[#1B3B2B]' : ''}`}
+        >
+          <span className={`flex h-8 w-8 items-center justify-center rounded-full transition-all duration-500 ${isAccountActive ? '-translate-y-2 bg-[#1B3B2B] text-[#C89B3C] shadow-[0_8px_16px_rgba(27,59,43,0.22)] ring-4 ring-[#FCFAF7]' : ''}`}>
+            <User className="h-4 w-4 stroke-[1.5]" />
+          </span>
+          <span className={`text-[9px] font-semibold uppercase tracking-[0.12em] transition-transform duration-500 ${isAccountActive ? '-translate-y-1' : ''}`}>Account</span>
+        </Link>
+      </nav>
     </>
   );
 }

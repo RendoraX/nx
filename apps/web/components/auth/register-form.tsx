@@ -34,7 +34,7 @@ export function RegisterForm() {
     
     // Simple email pattern check before animating to next phase
     if (!/\S+@\S+\.\S+/.test(email)) {
-      setValidationError('Please enter a valid email structural configuration.');
+      setValidationError('Please enter a valid email address.');
       return;
     }
 
@@ -46,7 +46,7 @@ export function RegisterForm() {
     setValidationError(null);
 
     if (!password || !confirmPassword) {
-      setValidationError('Security configuration matrices cannot be vacant.');
+      setValidationError('Password fields cannot be empty.');
       return;
     }
 

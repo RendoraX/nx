@@ -129,7 +129,7 @@ export default function ProductsPage() {
         <div className="max-w-7xl mx-auto space-y-3 sm:space-y-4 text-left">
           <div className="inline-flex items-center gap-2 bg-[#FCFAF7] border border-[#EAE3D2] px-3 py-1 rounded-full text-[9px] font-mono font-bold uppercase tracking-[0.2em] text-[#1F5E3B] shadow-2xs">
             <span className="w-1.5 h-1.5 rounded-full bg-[#1F5E3B] animate-ping" />
-            <ShoppingBag className="h-3 w-3 text-[#C89B3C]" /> Store Catalog Open
+            <ShoppingBag className="h-3 w-3 text-[#C89B3C]" /> Shop
           </div>
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 sm:gap-6">
             <h1 className="font-serif text-2xl sm:text-5xl md:text-6xl font-normal text-[#2B2B2B] tracking-tight leading-[1.1]">
@@ -153,7 +153,7 @@ export default function ProductsPage() {
           </span>
           <ChevronRight className="w-3 h-3 text-[#EAE3D2] shrink-0" />
           <span className="text-[#2B2B2B] font-semibold shrink-0 bg-[#EAE3D2]/30 px-2 py-0.5 rounded-2xs">
-            Shop Catalog
+            Products
           </span>
         </div>
         
@@ -170,7 +170,7 @@ export default function ProductsPage() {
         
         {/* DESKTOP SIDEBAR & MOBILE SLIDE-OVER DRAWER */}
         <aside className={`
-          fixed lg:relative inset-0 z-50 lg:z-30 lg:block
+          fixed lg:relative inset-0 z-[70] lg:z-30 lg:block
           ${isMobileFilterOpen ? 'flex' : 'hidden'}
           lg:w-72 flex-shrink-0 lg:sticky lg:top-8 transition-all duration-300
         `}>
@@ -266,7 +266,7 @@ export default function ProductsPage() {
 
           {/* MOBILE 2-COLUMN GRID / DESKTOP 3-COLUMN GRID */}
           {isLoading ? (
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-5 lg:gap-6 w-full">
+            <div className="grid grid-cols-1 min-[420px]:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-5 lg:gap-6 w-full">
               {Array.from({ length: 6 }).map((_, idx) => (
                 <div key={idx} className="bg-white border border-[#EAE3D2] p-2.5 sm:p-4 rounded-2xs sm:rounded-sm shadow-2xs">
                   <ProductSkeleton />
@@ -274,7 +274,7 @@ export default function ProductsPage() {
               ))}
             </div>
           ) : data?.products && data.products.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-5 lg:gap-6 w-full">
+            <div className="grid grid-cols-1 min-[420px]:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-5 lg:gap-6 w-full">
               {data.products.map((product) => (
                 <div 
                   key={product.id} 

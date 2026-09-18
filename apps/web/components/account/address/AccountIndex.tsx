@@ -103,11 +103,11 @@ const {
 
         <div className="relative z-10 space-y-2 text-center sm:text-left">
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#C89B3C]/15 border border-[#C89B3C]/30 rounded-full text-[10px] font-semibold text-[#C89B3C] uppercase tracking-widest mb-1">
-            <Compass className="w-3 h-3" /> Private Registry
+            <Compass className="w-3 h-3" /> Saved addresses
           </div>
-          <h2 className="font-serif text-2xl font-bold text-[#FCFAF7] tracking-tight">Delivery Coordinates</h2>
+          <h2 className="font-serif text-2xl font-bold text-[#FCFAF7] tracking-tight">Delivery addresses</h2>
           <p className="text-xs text-[#EAE3D2]/80 tracking-wide max-w-md font-light leading-relaxed">
-            Manage your verified destination points and primary delivery dispatch targets.
+            Manage the addresses you use for delivery.
           </p>
         </div>
         
@@ -121,7 +121,7 @@ const {
           ) : (
             <Plus className="h-4 w-4 stroke-[2.5]" />
           )}
-          <span>Add New Location</span>
+          <span>Add address</span>
         </button>
       </div>
 
@@ -132,15 +132,15 @@ const {
             <div className="w-16 h-16 bg-[#1B3B2B]/5 rounded-2xl flex items-center justify-center text-[#C89B3C] mx-auto mb-5 border border-[#C89B3C]/20 shadow-inner">
               <MapPin className="h-8 w-8 stroke-[1.25]" />
             </div>
-            <h4 className="font-serif text-xl text-[#1B3B2B] font-semibold tracking-tight">No Locations Registered</h4>
+            <h4 className="font-serif text-xl text-[#1B3B2B] font-semibold tracking-tight">No saved addresses</h4>
             <p className="text-xs text-[#7C7467] font-light mt-2 max-w-xs mx-auto leading-relaxed">
-              Your profile currently has no destination points attached. Register an address to enable tailored logistics.
+              Add an address to make checkout faster.
             </p>
             <button
               onClick={() => setIsDialogOpen(true)}
               className="mt-6 px-5 py-3 border border-[#1B3B2B] text-[#1B3B2B] hover:bg-[#1B3B2B] hover:text-[#FCFAF7] text-xs font-semibold uppercase tracking-wider rounded-xl transition-all duration-200 cursor-pointer shadow-sm"
             >
-              Set Up First Location
+              Add your first address
             </button>
           </div>
         ) : (

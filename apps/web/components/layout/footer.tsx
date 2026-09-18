@@ -7,8 +7,8 @@ import { Sparkles } from 'lucide-react';
 
 export function Footer() {
   return (
-    <footer className="w-full bg-[#1F5E3B] text-[#FAF8F3] border-t border-[#C89B3C]/20 pt-16 pb-8 antialiased">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-12 text-left">
+    <footer className="w-full bg-[#1F5E3B] text-[#FAF8F3] border-t border-[#C89B3C]/20 pt-12 sm:pt-16 pb-8 antialiased">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 sm:gap-12 text-left">
 
         {/* Brand */}
         <div className="space-y-4">
@@ -17,20 +17,20 @@ export function Footer() {
           </span>
 
           <p className="text-xs text-[#FAF8F3]/70 font-light leading-relaxed tracking-wide">
-            Revitalizing traditional healthcare protocols through rigorous
-            validation frameworks and authentic Vedic extraction disciplines.
+            Trusted Ayurvedic products and traditional essentials, selected with
+            care and presented with clear product information.
           </p>
 
           <div className="inline-flex items-center gap-2 text-[10px] font-bold text-[#C89B3C] tracking-wider uppercase">
             <Sparkles className="w-3 h-3 text-[#C89B3C]" />
-            <span>Ritual Grade Purity</span>
+            <span>Quality checked</span>
           </div>
         </div>
 
         {/* The Pillars */}
         <div>
           <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-[#C89B3C] mb-4">
-            The Pillars
+            Explore
           </h4>
 
           <ul className="space-y-2 text-xs text-[#FAF8F3]/80 font-medium">
@@ -48,7 +48,7 @@ export function Footer() {
                 href="/products"
                 className="hover:text-white transition-colors"
               >
-                Apothecary Shop
+                Shop Products
               </Link>
             </li>
 
@@ -57,7 +57,7 @@ export function Footer() {
                 href="/bespoke"
                 className="hover:text-white transition-colors"
               >
-                Bespoke Configurations
+                Custom Kits
               </Link>
             </li>
           </ul>
@@ -66,7 +66,7 @@ export function Footer() {
         {/* Customer Care */}
         <div>
           <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-[#C89B3C] mb-4">
-            Customer Care
+            Help
           </h4>
 
           <ul className="space-y-2 text-xs text-[#FAF8F3]/80 font-medium">
@@ -83,7 +83,7 @@ export function Footer() {
                 href="/purity"
                 className="hover:text-white transition-colors"
               >
-                Lab Certificates
+                Product Information
               </Link>
             </li>
 
@@ -92,7 +92,7 @@ export function Footer() {
                 href="/contact"
                 className="hover:text-white transition-colors"
               >
-                Consult an Acharya
+                Contact Us
               </Link>
             </li>
 
@@ -102,12 +102,11 @@ export function Footer() {
         {/* Newsletter */}
         <div>
           <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-[#C89B3C] mb-4">
-            Subscribe NewsLetter
+            Subscribe
           </h4>
 
           <p className="text-xs text-[#FAF8F3]/70 leading-relaxed font-light mb-2">
-            Subscribe to get best health notifications and custom ayurvedic
-            kit&apos;s.
+            Get updates about products and custom kits.
           </p>
 
           <input
@@ -119,7 +118,7 @@ export function Footer() {
       </div>
 
       {/* Copyright */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 pt-8 border-t border-[#FAF8F3]/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] text-[#FAF8F3]/50 tracking-widest uppercase font-bold">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10 sm:mt-12 pt-6 sm:pt-8 border-t border-[#FAF8F3]/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] text-[#FAF8F3]/50 tracking-widest uppercase font-bold text-center sm:text-left">
         <span>
           © 2026 Shri Ayurved Inc. All Rights Reserved.
         </span>

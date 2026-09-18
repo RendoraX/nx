@@ -43,8 +43,8 @@ export default function AddressFormDialog({ isOpen, onClose, onSubmit }: Address
       <div className="relative bg-white border border-[#EAE3D2] w-full max-w-lg rounded-xl shadow-xl overflow-hidden flex flex-col animate-scale-up text-left">
         <div className="bg-[#1B3B2B] px-6 py-4 flex items-center justify-between border-b border-[#1B3B2B]">
           <div>
-            <h3 className="font-serif text-lg font-medium text-[#FCFAF7]">Add Delivery Target</h3>
-            <p className="text-[11px] text-[#EAE3D2]/80">Register a new physical distribution address in your ledger.</p>
+            <h3 className="font-serif text-lg font-medium text-[#FCFAF7]">Add delivery address</h3>
+            <p className="text-[11px] text-[#EAE3D2]/80">Add an address for future deliveries.</p>
           </div>
           <button 
             onClick={onClose}
@@ -100,7 +100,7 @@ export default function AddressFormDialog({ isOpen, onClose, onSubmit }: Address
 
           <div className="flex items-center gap-2 pt-2">
             <input id="isDefault" name="isDefault" type="checkbox" value="true" className="w-4 h-4 rounded text-[#1B3B2B] border-[#EAE3D2] focus:ring-[#1B3B2B]" />
-            <label htmlFor="isDefault" className="text-xs text-[#7C7467] font-medium selection:bg-transparent">Set as default dispatch target allocation</label>
+            <label htmlFor="isDefault" className="text-xs text-[#7C7467] font-medium selection:bg-transparent">Use as my default address</label>
           </div>
 
           <div className="flex justify-end gap-3 pt-4 border-t border-[#EAE3D2]/60">
