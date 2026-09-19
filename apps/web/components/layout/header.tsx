@@ -26,6 +26,7 @@ export function Header() {
   const isWishlistActive = pathname.startsWith('/account/wishlist');
   const isCartActive = pathname.startsWith('/account/cart');
   const isAccountActive = pathname.startsWith('/account') && !isWishlistActive && !isCartActive;
+  const isAuthPage = pathname === '/login' || pathname === '/register';
 
   // Close the desktop dropdown menu when clicking anywhere outside of it
   useEffect(() => {
@@ -37,6 +38,10 @@ export function Header() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  if (isAuthPage) {
+    return null;
+  }
 
   return (
     <>
@@ -54,8 +59,9 @@ export function Header() {
           <div className="flex items-center gap-2 flex-shrink-0">
             <button 
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
-              className="hidden lg:hidden p-1.5 text-[#1A1A1A] hover:text-[#1B3B2B] focus:outline-none"
+              className="p-1.5 text-[#1A1A1A] hover:text-[#1B3B2B] focus:outline-none lg:hidden"
               aria-label="Toggle Navigation Menu"
+              aria-expanded={mobileMenuOpen}
             >
               {mobileMenuOpen ? <X className="h-5 w-5 stroke-[1.5]" /> : <Menu className="h-5 w-5 stroke-[1.5]" />}
             </button>
@@ -166,14 +172,18 @@ export function Header() {
 
         {/* Responsive Mobile Drawer Menu Layout */}
         {mobileMenuOpen && (
-          <div className="hidden lg:hidden border-t border-[#EAE3D2] bg-[#FCFAF7] px-6 py-5 space-y-4 shadow-sm transition-all duration-300 divide-y divide-[#EAE3D2]/60">
+          <div className="border-t border-[#EAE3D2] bg-[#FCFAF7] px-6 py-5 space-y-4 shadow-sm transition-all duration-300 divide-y divide-[#EAE3D2]/60 lg:hidden">
             <div className="space-y-3 pb-3">
               <Link href="/philosophy" onClick={() => setMobileMenuOpen(false)} className="block text-[11px] uppercase tracking-[0.2em] font-medium text-[#7C7467] hover:text-[#1B3B2B]">Philosophy</Link>
               <Link href="/products" onClick={() => setMobileMenuOpen(false)} className="block text-[11px] uppercase tracking-[0.2em] font-medium text-[#1B3B2B]">Shop</Link>
               <Link href="/bespoke" onClick={() => setMobileMenuOpen(false)} className="block text-[11px] uppercase tracking-[0.2em] font-medium text-[#7C7467] hover:text-[#1B3B2B]">Custom Kit</Link>
             </div>
             <div className="pt-4 space-y-2.5 text-left">
-              {isAuthenticated ? (
+              {loading ? (
+                <div className="flex items-center justify-center py-2 text-[#A39785]" aria-label="Checking account status">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                </div>
+              ) : isAuthenticated ? (
                 <>
                   <p className="text-[10px] uppercase font-semibold text-[#A39785] tracking-wider pl-1">Dashboard Menu ({user?.name})</p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 pt-1">
@@ -270,12 +280,18 @@ export function Header() {
           <span className={`text-[9px] font-semibold uppercase tracking-[0.12em] transition-transform duration-500 ${isCartActive ? '-translate-y-1' : ''}`}>Cart</span>
         </Link>
         <Link
-          href={isAuthenticated ? "/account" : "/login"}
+          href={loading ? '#' : isAuthenticated ? "/account" : "/login?redirectTo=/account"}
+          onClick={(event) => {
+            if (loading) {
+              event.preventDefault();
+            }
+          }}
           aria-current={isAccountActive ? 'page' : undefined}
+          aria-disabled={loading}
           className={`flex min-h-12 flex-col items-center justify-center gap-1 rounded-xl text-[#7C7467] transition-colors hover:bg-[#1B3B2B]/5 hover:text-[#1B3B2B] ${isAccountActive ? 'text-[#1B3B2B]' : ''}`}
         >
           <span className={`flex h-8 w-8 items-center justify-center rounded-full transition-all duration-500 ${isAccountActive ? '-translate-y-2 bg-[#1B3B2B] text-[#C89B3C] shadow-[0_8px_16px_rgba(27,59,43,0.22)] ring-4 ring-[#FCFAF7]' : ''}`}>
-            <User className="h-4 w-4 stroke-[1.5]" />
+            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <User className="h-4 w-4 stroke-[1.5]" />}
           </span>
           <span className={`text-[9px] font-semibold uppercase tracking-[0.12em] transition-transform duration-500 ${isAccountActive ? '-translate-y-1' : ''}`}>Account</span>
         </Link>

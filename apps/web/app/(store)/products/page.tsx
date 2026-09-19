@@ -11,7 +11,10 @@ import { ProductCard } from '@/components/shop/product-card';
 import { ProductSkeleton } from '@/components/shop/product-skeleton';
 import { EmptyProducts } from '@/components/shop/empty-products';
 import { Pagination } from '@/components/shop/pagination';
+import { useDebounce } from '@/hooks/useDebounce';
 import { SlidersHorizontal, RefreshCw, ShoppingBag, ChevronRight, Sparkles, X } from 'lucide-react';
+
+type ProductSortValue = 'price_asc' | 'price_desc' | 'rating' | 'newest';
 
 export default function ProductsPage() {
   const router = useRouter();
@@ -20,7 +23,7 @@ export default function ProductsPage() {
   // Read URL query parameters cleanly as your initial state setup
   const urlSearch = searchParams.get('search') || '';
   const urlCategory = searchParams.get('categoryId') || undefined;
-  const urlSort = (searchParams.get('sort') as any) || 'newest';
+  const urlSort = (searchParams.get('sort') as ProductSortValue) || 'newest';
   const urlMinPrice = searchParams.get('minPrice') ? Number(searchParams.get('minPrice')) : 0;
   const urlMaxPrice = searchParams.get('maxPrice') ? Number(searchParams.get('maxPrice')) : 2000;
   const urlPage = searchParams.get('page') ? Number(searchParams.get('page')) : 1;
@@ -33,9 +36,12 @@ export default function ProductsPage() {
   const [page, setPage] = useState(urlPage);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const limit = 20;
+  const debouncedSearch = useDebounce(search, 350);
 
 
   // Sync internal state directly if the browser navigation URL changes externally
+  // URL changes from browser navigation need to refresh the controlled filters.
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     setSearch(urlSearch);
     setCategoryId(urlCategory);
@@ -43,6 +49,7 @@ export default function ProductsPage() {
     setPriceRange({ min: urlMinPrice, max: urlMaxPrice });
     setPage(urlPage);
   }, [urlSearch, urlCategory, urlSort, urlMinPrice, urlMaxPrice, urlPage]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   // Central Router Sync Matrix helper to safely maintain browse history and parameters
   const updateUrlParams = (updates: {
@@ -63,14 +70,15 @@ export default function ProductsPage() {
       }
     });
 
-    router.push(`/shop?${current.toString()}`);
+    const query = current.toString();
+    router.push(query ? `/products?${query}` : '/products');
   };
 
   // React Query Hook utilizing your dynamic state variables
   const { data, isLoading, isError, refetch } = useProducts({
     page,
     limit,
-    search: search || undefined,
+    search: debouncedSearch || undefined,
     categoryId: categoryId || undefined,
     sort,
     minPrice: priceRange.min,
@@ -160,7 +168,7 @@ export default function ProductsPage() {
         <div className="flex items-center gap-1.5 sm:gap-2 bg-white/80 border border-[#EAE3D2] px-2.5 sm:px-3 py-1 rounded-full shadow-2xs shrink-0">
           <Sparkles className="w-3 h-3 text-[#C89B3C]" />
           <span className="font-light text-[#7C7467] tracking-normal text-[11px] font-mono">
-            <strong className="text-[#1F5E3B] font-semibold">{data?.products?.length || 0}</strong> Items
+            <strong className="text-[#1F5E3B] font-semibold">{data?.pagination?.totalItems || 0}</strong> Items
           </span>
         </div>
       </div>
@@ -258,7 +266,7 @@ export default function ProductsPage() {
                     setSort(val);
                     updateUrlParams({ sort: val });
                   }} 
-                  totalItems={data?.products?.length || 0} 
+                  totalItems={data?.pagination?.totalItems || 0}
                 />
               </div>
             </div>

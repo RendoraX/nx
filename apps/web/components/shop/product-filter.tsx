@@ -12,7 +12,7 @@ interface ProductFilterProps {
   facets?: FilterFacets;
   selectedCategory?: string;
   selectedPriceRange: { min: number; max: number };
-  onCategoryChange: (slug: string | undefined) => void;
+  onCategoryChange: (categoryId: string | undefined) => void;
   onPriceChange: (min: number, max: number) => void;
   onReset: () => void;
 }
@@ -52,12 +52,12 @@ export function ProductFilter({
           </button>
           
           {categories.map((cat) => {
-            const isSelected = selectedCategory === cat.slug;
+            const isSelected = selectedCategory === cat.id;
             return (
               <button
                 key={cat.id}
                 type="button"
-                onClick={(e) => { e.preventDefault(); onCategoryChange(cat.slug); }}
+                onClick={(e) => { e.preventDefault(); onCategoryChange(cat.id); }}
                 className={`group flex items-center justify-between text-[13px] tracking-wide transition-all text-left cursor-pointer duration-300 ${
                   isSelected ? 'text-[#1F5E3B] font-medium' : 'text-[#7C7467] hover:text-[#2B2B2B]'
                 }`}

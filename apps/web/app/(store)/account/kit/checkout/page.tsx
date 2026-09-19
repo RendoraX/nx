@@ -656,16 +656,6 @@ export default function KitCheckoutPage() {
                 isDisabled={isSubmittingOrder || !selectedAddressId}
               />
 
-              <div className="sm:hidden pt-1">
-                <CheckoutButton
-                  isMobile
-                  onPlaceOrder={handlePlaceOrder}
-                  isSubmitting={isSubmittingOrder}
-                  isDisabled={isSubmittingOrder || !selectedAddressId}
-                  label="Confirm Order"
-                />
-              </div>
-
               <div className="pt-2 text-[10.5px] text-[#7C7467] space-y-2 border-t border-[#EAE3D2]/60 font-mono">
                 <div className="flex items-center gap-2">
                   <Truck className="w-3.5 h-3.5 text-[#C89B3C]" />

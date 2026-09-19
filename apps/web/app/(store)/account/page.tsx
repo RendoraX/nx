@@ -225,7 +225,7 @@ export default function AccountPage() {
           
           {/* Navigation Sidebar */}
           <nav className="w-full flex-shrink-0 rounded-2xl border border-[#EAE3D2] bg-[#FCFAF7]/80 p-2 shadow-[0_8px_24px_rgba(27,59,43,0.04)] backdrop-blur-sm lg:sticky lg:top-24 lg:w-72 lg:p-3">
-            <div className="flex gap-1.5 overflow-x-auto scrollbar-none lg:flex-col lg:gap-1">
+            <div className="grid grid-cols-2 gap-1.5 lg:flex lg:flex-col lg:gap-1">
             {[
               { id: 'profile', label: 'Profile & Security', icon: UserIcon },
               { id: 'orders', label: 'Order History', icon: Package },
@@ -240,15 +240,15 @@ export default function AccountPage() {
                 <button
                   key={tab.id}
                   onClick={() => handleTabChange(tab.id as ActiveTab)}
-                    className={`flex min-w-max items-center justify-between rounded-xl px-3 py-3 text-[10px] font-semibold uppercase tracking-wider whitespace-nowrap transition-all duration-300 cursor-pointer lg:px-4 lg:py-3.5 lg:text-xs ${
+                    className={`flex min-w-0 items-center justify-start gap-2 rounded-xl px-2.5 py-2.5 text-left text-[9px] font-semibold uppercase tracking-wider transition-all duration-300 cursor-pointer sm:px-3 sm:text-[10px] lg:justify-between lg:px-4 lg:py-3.5 lg:text-xs ${
                     isSelected 
                       ? "bg-[#1B3B2B] text-[#FCFAF7] shadow-[0_8px_18px_rgba(27,59,43,0.18)] lg:translate-x-1"
                       : "bg-transparent text-[#7C7467] hover:bg-[#1B3B2B]/5 hover:text-[#1B3B2B]"
                   }`}
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex min-w-0 items-center gap-2.5 lg:gap-3">
                     <Icon className={`h-4 w-4 stroke-[2] ${isSelected ? 'text-[#C89B3C]' : 'text-[#7C7467]'}`} />
-                    <span>{tab.label}</span>
+                    <span className="truncate">{tab.label}</span>
                   </div>
                   <ChevronRight className={`h-3.5 w-3.5 hidden lg:block opacity-0 transition-opacity ${isSelected ? 'opacity-100 text-[#C89B3C]' : ''}`} />
                 </button>
@@ -258,7 +258,7 @@ export default function AccountPage() {
           </nav>
 
           {/* Tab Content Canvas */}
-          <div className="min-w-0 flex-1 rounded-2xl border border-[#EAE3D2]/80 bg-white/45 p-3 shadow-[0_12px_40px_rgba(27,59,43,0.04)] sm:p-5 lg:p-7">
+          <div className="min-w-0 flex-1 border-y border-[#EAE3D2]/80 bg-white/45 p-0 shadow-[0_12px_40px_rgba(27,59,43,0.04)] sm:rounded-2xl sm:border sm:p-5 lg:p-7">
             
             {/* PROFILE TAB */}
             {activeTab === 'profile' && (

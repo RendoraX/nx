@@ -26,7 +26,7 @@ export function Pagination({ meta, onPageChange }: PaginationProps) {
         <span>Previous</span>
       </button>
 
-      <div className="flex items-center gap-1">
+      <div className="hidden items-center gap-1 sm:flex">
         {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
           <button
             key={page}

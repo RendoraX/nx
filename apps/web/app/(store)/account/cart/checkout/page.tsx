@@ -487,22 +487,11 @@ const handlePlaceOrder = async () => {
                 </div>
               </div>
 
-              {/* Desktop Checkout Button */}
               <CheckoutButton
                 onPlaceOrder={handlePlaceOrder}
                 isSubmitting={isSubmittingOrder}
                 isDisabled={isAddressProcessing || !selectedAddressId}
               />
-
-              <div className="sm:hidden pt-1">
-                <CheckoutButton
-                  isMobile
-                  onPlaceOrder={handlePlaceOrder}
-                  isSubmitting={isSubmittingOrder}
-                  isDisabled={isAddressProcessing || !selectedAddressId}
-                  label="Confirm Order"
-                />
-              </div>
 
               {/* Trust Badges */}
               <div className="pt-2 border-t border-[#FCFAF7]/15 space-y-2 text-[10.5px] text-[#FCFAF7]/70">
