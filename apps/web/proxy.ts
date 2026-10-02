@@ -86,10 +86,7 @@ export function proxy(request: NextRequest) {
     );
 
     // Optional: return user to the requested page
-    loginUrl.searchParams.set(
-      "redirect",
-      pathname
-    );
+    loginUrl.searchParams.set("redirectTo", pathname);
 
     return NextResponse.redirect(loginUrl);
   }

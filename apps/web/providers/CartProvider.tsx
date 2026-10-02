@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { CartService } from '@/services/cart.service';
+import { useAuthContext } from '@/providers/AuthProviders';
 
 export interface Variant {
   id: string;
@@ -62,12 +63,25 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, loading: authLoading } = useAuthContext();
   const [cart, setCart] = useState<CartResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [addingToCart, setAddingToCart] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   const refreshCart = useCallback(async () => {
+    if (authLoading) {
+      setLoading(true);
+      return;
+    }
+
+    if (!isAuthenticated) {
+      setCart(null);
+      setError(null);
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
@@ -78,13 +92,17 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [authLoading, isAuthenticated]);
 
   useEffect(() => {
     refreshCart();
   }, [refreshCart]);
 
   const addToCart = async (variantId: string, quantity: number = 1) => {
+    if (!isAuthenticated) {
+      throw new Error('Please sign in to add items to your cart.');
+    }
+
     try {
       setAddingToCart(true);
       setError(null);
@@ -101,6 +119,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateQuantity = async (itemId: string, quantity: number) => {
+    if (!isAuthenticated) {
+      throw new Error('Please sign in to update your cart.');
+    }
+
     try {
       setError(null);
       // Optimistic update
@@ -130,6 +152,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   };
 
   const removeFromCart = async (itemId: string) => {
+    if (!isAuthenticated) {
+      throw new Error('Please sign in to update your cart.');
+    }
+
     try {
       setError(null);
       // Optimistic update
@@ -153,6 +179,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   };
 
   const clearCart = async () => {
+    if (!isAuthenticated) {
+      throw new Error('Please sign in to update your cart.');
+    }
+
     try {
       setError(null);
       setCart((prev) => prev ? { ...prev, items: [], subtotal: 0, itemCount: 0, totalUniqueItems: 0 } : null);

@@ -7,6 +7,7 @@ import { Toaster } from "sonner";
 import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
 import { CartProvider } from "@/providers/CartProvider";
+import { LanguageProvider } from "@/providers/LanguageProvider";
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
@@ -22,12 +23,14 @@ export default function RootLayout({
         <main className="pb-[calc(6.25rem+env(safe-area-inset-bottom))] lg:pb-0">
          <AuthProvider>
           <QueryProvider>
-            <CartProvider>
-              <Header />
-              {children}
-            </CartProvider>
-            <Footer />
-            <Toaster/>
+            <LanguageProvider>
+              <CartProvider>
+                <Header />
+                {children}
+              </CartProvider>
+              <Footer />
+              <Toaster/>
+            </LanguageProvider>
           </QueryProvider>
          </AuthProvider>
         </main>

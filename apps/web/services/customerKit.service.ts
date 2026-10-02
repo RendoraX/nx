@@ -7,6 +7,8 @@ export interface CustomerProductSummary {
   sku: string;
   price: number;
   description?: string;
+  images?: { url: string; alt?: string | null }[];
+  variants?: CustomerProductVariant[];
 }
 
 export interface CustomerProductVariant {

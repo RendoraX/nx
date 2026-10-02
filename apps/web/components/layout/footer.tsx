@@ -4,8 +4,11 @@
 import React from 'react';
 import Link from 'next/link';
 import { Sparkles } from 'lucide-react';
+import { useLanguage } from '@/providers/LanguageProvider';
 
 export function Footer() {
+  const { t } = useLanguage();
+
   return (
     <footer className="w-full bg-[#1F5E3B] text-[#FAF8F3] border-t border-[#C89B3C]/20 pt-12 sm:pt-16 pb-8 antialiased">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 sm:gap-12 text-left">
@@ -17,20 +20,19 @@ export function Footer() {
           </span>
 
           <p className="text-xs text-[#FAF8F3]/70 font-light leading-relaxed tracking-wide">
-            Trusted Ayurvedic products and traditional essentials, selected with
-            care and presented with clear product information.
+            {t('Trusted Ayurvedic products and traditional essentials, selected with care and presented with clear product information.')}
           </p>
 
           <div className="inline-flex items-center gap-2 text-[10px] font-bold text-[#C89B3C] tracking-wider uppercase">
             <Sparkles className="w-3 h-3 text-[#C89B3C]" />
-            <span>Quality checked</span>
+            <span>{t('Quality checked')}</span>
           </div>
         </div>
 
         {/* The Pillars */}
         <div>
           <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-[#C89B3C] mb-4">
-            Explore
+            {t('Explore')}
           </h4>
 
           <ul className="space-y-2 text-xs text-[#FAF8F3]/80 font-medium">
@@ -39,7 +41,7 @@ export function Footer() {
                 href="/philosophy"
                 className="hover:text-white transition-colors"
               >
-                Our Philosophy
+                {t('Our Philosophy')}
               </Link>
             </li>
 
@@ -48,7 +50,7 @@ export function Footer() {
                 href="/products"
                 className="hover:text-white transition-colors"
               >
-                Shop Products
+                {t('Shop Products')}
               </Link>
             </li>
 
@@ -57,7 +59,7 @@ export function Footer() {
                 href="/bespoke"
                 className="hover:text-white transition-colors"
               >
-                Custom Kits
+                {t('Custom Kits')}
               </Link>
             </li>
           </ul>
@@ -66,7 +68,7 @@ export function Footer() {
         {/* Customer Care */}
         <div>
           <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-[#C89B3C] mb-4">
-            Help
+            {t('Help')}
           </h4>
 
           <ul className="space-y-2 text-xs text-[#FAF8F3]/80 font-medium">
@@ -74,7 +76,7 @@ export function Footer() {
             {/* Route does not exist yet — intentionally non-clickable */}
             <li>
               <span className="cursor-default hover:text-white transition-colors">
-                Worldwide Shipping
+                {t('Worldwide Shipping')}
               </span>
             </li>
 
@@ -83,7 +85,7 @@ export function Footer() {
                 href="/purity"
                 className="hover:text-white transition-colors"
               >
-                Product Information
+                {t('Product Information')}
               </Link>
             </li>
 
@@ -92,7 +94,7 @@ export function Footer() {
                 href="/contact"
                 className="hover:text-white transition-colors"
               >
-                Contact Us
+                {t('Contact Us')}
               </Link>
             </li>
 
@@ -102,16 +104,16 @@ export function Footer() {
         {/* Newsletter */}
         <div>
           <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-[#C89B3C] mb-4">
-            Subscribe
+            {t('Subscribe')}
           </h4>
 
           <p className="text-xs text-[#FAF8F3]/70 leading-relaxed font-light mb-2">
-            Get updates about products and custom kits.
+            {t('Get updates about products and custom kits.')}
           </p>
 
           <input
             type="email"
-            placeholder="Enter your email destination..."
+            placeholder={t('Enter your email destination...')}
             className="w-full bg-white/10 border border-[#FAF8F3]/20 text-xs rounded-md p-2.5 text-white placeholder-white/40 focus:outline-none focus:border-[#C89B3C]"
           />
         </div>

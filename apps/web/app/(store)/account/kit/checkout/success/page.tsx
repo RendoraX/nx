@@ -16,8 +16,10 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { useOrders } from '@/hooks/secure_hook/useOrder';
+import { useLanguage } from '@/providers/LanguageProvider';
 
 export default function CustomKitOrderSuccessPage() {
+  const { t } = useLanguage();
   const searchParams = useSearchParams();
   const orderId = searchParams.get('orderId');
 
@@ -48,10 +50,10 @@ export default function CustomKitOrderSuccessPage() {
           </div>
           <div className="space-y-2">
             <h3 className="font-serif text-xl font-normal tracking-wide text-[#FCFAF7]">
-              Retrieving Custom Kit Ledger
+              {t('Loading order details...')}
             </h3>
             <p className="text-[11px] font-mono tracking-widest text-[#C89B3C] uppercase">
-              Verifying Bespoke Kit Assembly...
+              {t('Checking your order...')}
             </p>
           </div>
         </div>
@@ -65,15 +67,15 @@ export default function CustomKitOrderSuccessPage() {
         <div className="w-14 h-14 bg-red-50 border border-red-200 rounded-full flex items-center justify-center mb-4 text-red-600 shadow-2xs">
           <AlertCircle className="w-7 h-7" />
         </div>
-        <h2 className="font-serif text-2xl text-[#1B3B2B] mb-2">Custom Kit Order Not Found</h2>
+        <h2 className="font-serif text-2xl text-[#1B3B2B] mb-2">{t('Order not found')}</h2>
         <p className="text-xs text-[#7C7467] max-w-sm mb-6">
-          {error || 'No valid custom kit order reference was identified.'}
+          {error || t('We could not find this order. Check the order link and try again.')}
         </p>
         <Link
           href="/kit/builder"
           className="px-6 py-3 bg-[#1B3B2B] text-[#FCFAF7] text-xs font-bold uppercase tracking-wider rounded-xl hover:bg-[#254f3a] transition-all shadow-md"
         >
-          Return to Kit Builder
+          {t('Open kit builder')}
         </Link>
       </div>
     );
@@ -101,20 +103,20 @@ export default function CustomKitOrderSuccessPage() {
           </div>
 
           <span className="text-[9px] font-mono uppercase tracking-[0.25em] text-[#C89B3C] font-bold block mb-1">
-            Custom Kit Assembly Confirmed
+            {t('Order confirmed')}
           </span>
 
           <h1 className="font-serif text-2xl sm:text-4xl font-normal tracking-tight text-[#FCFAF7] mb-2">
-            Your Custom Kit Is Being Assembled
+            {t('Your puja kit is being prepared')}
           </h1>
 
           <p className="text-xs sm:text-sm text-[#FCFAF7]/70 font-serif italic max-w-md mx-auto mb-6">
-            Kit reference <span className="font-mono text-[#C89B3C] not-italic font-bold">{order.id || orderId}</span> has been scheduled for hand packaging on {formattedDate}.
+            {t('Your order number')} <span className="font-mono text-[#C89B3C] not-italic font-bold">{order.id || orderId}</span> {t('was placed on')} {formattedDate}.
           </p>
 
           <div className="inline-flex items-center gap-2 bg-[#FCFAF7]/10 border border-[#FCFAF7]/15 rounded-full px-4 py-1.5 text-[11px] font-mono text-[#FCFAF7]">
             <Clock className="w-3.5 h-3.5 text-[#C89B3C]" />
-            <span>Assembly & Priority Dispatch: 1 - 3 Business Days</span>
+            <span>{t('Estimated delivery: 1 - 3 business days')}</span>
           </div>
         </div>
 
@@ -123,32 +125,32 @@ export default function CustomKitOrderSuccessPage() {
           <div className="bg-[#FCFAF7] border border-[#EAE3D2] rounded-2xl p-5 shadow-2xs space-y-3">
             <div className="flex items-center gap-2 border-b border-[#EAE3D2]/80 pb-2.5">
               <MapPin className="w-4 h-4 text-[#C89B3C]" />
-              <h3 className="font-serif text-sm font-medium text-[#1B3B2B]">Dispatch Address</h3>
+              <h3 className="font-serif text-sm font-medium text-[#1B3B2B]">{t('Delivery address')}</h3>
             </div>
             <div className="text-xs space-y-1 text-[#7C7467]">
-              <p className="font-serif font-medium text-[#1B3B2B]">{address.fullName || 'Valued Customer'}</p>
+              <p className="font-serif font-medium text-[#1B3B2B]">{address.fullName || t('Customer')}</p>
               <p>{address.line1}{address.line2 ? `, ${address.line2}` : ''}</p>
               <p>{address.city}, {address.state} - {address.postalCode}</p>
-              <p className="font-mono text-[11px] pt-1 text-[#1B3B2B]">Phone: {address.phone}</p>
+              <p className="font-mono text-[11px] pt-1 text-[#1B3B2B]">{t('Phone number')}: {address.phone}</p>
             </div>
           </div>
 
           <div className="bg-[#FCFAF7] border border-[#EAE3D2] rounded-2xl p-5 shadow-2xs space-y-3">
             <div className="flex items-center gap-2 border-b border-[#EAE3D2]/80 pb-2.5">
               <Sparkles className="w-4 h-4 text-[#C89B3C]" />
-              <h3 className="font-serif text-sm font-medium text-[#1B3B2B]">Kit Status</h3>
+              <h3 className="font-serif text-sm font-medium text-[#1B3B2B]">{t('Kit status')}</h3>
             </div>
             <div className="text-xs space-y-2 text-[#7C7467]">
               <div className="flex justify-between border-b border-[#EAE3D2]/40 pb-1.5">
-                <span>Status:</span>
+                <span>{t('Status')}:</span>
                 <span className="font-mono text-[#1B3B2B] font-bold uppercase">{order.status || 'PROCESSING'}</span>
               </div>
               <div className="flex justify-between border-b border-[#EAE3D2]/40 pb-1.5">
-                <span>Payment:</span>
+                <span>{t('Payment')}:</span>
                 <span className="font-mono text-[#1B3B2B]">{order.paymentMethod || 'ONLINE'}</span>
               </div>
               <div className="flex justify-between pt-0.5">
-                <span className="font-serif font-medium text-[#1B3B2B]">Total Paid:</span>
+                <span className="font-serif font-medium text-[#1B3B2B]">{t('Total paid')}:</span>
                 <span className="font-mono text-[#C89B3C] font-bold">
                   ₹{(order.totalAmount || order.grandTotal || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                 </span>
@@ -162,7 +164,7 @@ export default function CustomKitOrderSuccessPage() {
           <div className="flex items-center justify-between border-b border-[#EAE3D2]/80 pb-3">
             <div className="flex items-center gap-2">
               <Layers className="w-4 h-4 text-[#C89B3C]" />
-              <h3 className="font-serif text-base text-[#1B3B2B]">Assembled Kit Items ({itemsList.length})</h3>
+              <h3 className="font-serif text-base text-[#1B3B2B]">{t('Your kit items')} ({itemsList.length})</h3>
             </div>
           </div>
 
@@ -185,7 +187,7 @@ export default function CustomKitOrderSuccessPage() {
                 <div className="flex-1 min-w-0">
                   <h4 className="text-xs font-serif text-[#1B3B2B] truncate">{item.product?.name || item.name}</h4>
                   <p className="text-[10px] font-mono text-[#7C7467]">
-                    Qty: <span className="font-bold text-[#1B3B2B]">{item.quantity}</span>
+                    {t('Quantity')}: <span className="font-bold text-[#1B3B2B]">{item.quantity}</span>
                   </p>
                 </div>
                 <div className="text-right font-mono text-xs font-medium text-[#1B3B2B]">
@@ -201,14 +203,14 @@ export default function CustomKitOrderSuccessPage() {
             href="/account/orders"
             className="w-full sm:w-auto px-6 py-3 bg-[#1B3B2B] text-[#FCFAF7] text-xs font-bold uppercase tracking-wider rounded-xl text-center hover:bg-[#254f3a] transition-all flex items-center justify-center gap-2"
           >
-            <span>View All Orders</span>
+            <span>{t('Track order status')}</span>
             <ArrowRight className="w-4 h-4" />
           </Link>
           <Link
             href="/kit/builder"
             className="w-full sm:w-auto px-6 py-3 bg-white border border-[#EAE3D2] text-[#1B3B2B] text-xs font-bold uppercase tracking-wider rounded-xl text-center hover:bg-[#FCFAF7] transition-all"
           >
-            Build Another Kit
+            {t('Build another kit')}
           </Link>
         </div>
 

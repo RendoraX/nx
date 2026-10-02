@@ -122,12 +122,15 @@ export function useCustomerKit(kitSlug?: string) {
       return;
     }
 
-    // Accumulate sum matrix based on customer selections
+    // The kit base includes the first selected unit; charge only additional units.
+    let includedItemAllowance = 1;
     const itemsSum = customizedItems.reduce((acc, item) => {
       const activePrice = item.selectedVariant 
         ? Number(item.selectedVariant.price) 
         : Number(item.product?.price || 0);
-      return acc + (activePrice * item.quantity);
+      const includedQuantity = Math.min(includedItemAllowance, item.quantity);
+      includedItemAllowance -= includedQuantity;
+      return acc + (activePrice * (item.quantity - includedQuantity));
     }, 0);
 
     setDynamicTotalPrice(basePrice + itemsSum);

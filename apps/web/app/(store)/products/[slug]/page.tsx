@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useProductDetails } from "@/hooks/useProductDetails";
 import { useCart } from "@/providers/CartProvider";
+import { useLanguage } from "@/providers/LanguageProvider";
 import { Product } from "@/types/product";
 import { useWishlist } from "@/hooks/useWishlist";
 import { toast } from "sonner";
@@ -35,6 +36,7 @@ interface ProductPageProps {
 
 export default function ProductPage({ params }: ProductPageProps) {
   const { slug } = use(params);
+  const { t } = useLanguage();
   const {
     product,
     loading,
@@ -486,9 +488,9 @@ const handleAddToWishlist = async () => {
                   : "border-transparent text-[#7C7467] hover:text-[#2B2B2B]"
               }`}
             >
-              {tab === "description" && "Description"}
-              {tab === "specs" && "Product Specifications"}
-              {tab === "reviews" && `Reviews (${product.reviewsCount || product.reviews?.length || 0})`}
+              {tab === "description" && t('Description')}
+              {tab === "specs" && t('Product details')}
+              {tab === "reviews" && `${t('Reviews')} (${product.reviewsCount || product.reviews?.length || 0})`}
             </button>
           ))}
         </div>
@@ -499,27 +501,27 @@ const handleAddToWishlist = async () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
               <div className="md:col-span-2 space-y-4 text-[#7C7467] font-light text-sm sm:text-base leading-relaxed">
                 <p className="first-letter:text-4xl sm:first-letter:text-5xl first-letter:font-serif first-letter:text-[#1F5E3B] first-letter:mr-3 first-letter:float-left first-letter:leading-none">
-                  {product.description || "No supplemental details available for this product item."}
+                  {product.description || t('No extra product details are available.')}
                 </p>
                 <div className="p-4 sm:p-5 rounded-none bg-[#FCFAF7] border border-[#EAE3D2] flex items-start space-x-3.5 mt-6 shadow-2xs">
                   <Sparkles className="w-4 h-4 text-[#C89B3C] mt-0.5 flex-shrink-0" />
                   <div className="text-xs font-mono text-[#7C7467] space-y-1">
-                    <span className="text-[#2B2B2B] block font-bold uppercase tracking-wider">Premium Selection Note</span>
-                    <span>This organic configuration meets dynamic purity control and standard testing profiles for transparent direct-to-household verification.</span>
+                    <span className="text-[#2B2B2B] block font-bold uppercase tracking-wider">{t('Product information')}</span>
+                    <span>{t('We check product details and share clear information before you buy.')}</span>
                   </div>
                 </div>
               </div>
               <div className="p-5 sm:p-6 rounded-none bg-gradient-to-b from-[#FCFAF7] to-white border border-[#EAE3D2] space-y-3.5 font-mono text-[11px] shadow-2xs">
                 <h4 className="text-[#2B2B2B] font-bold uppercase tracking-[0.15em] mb-3 flex items-center gap-2 text-xs text-[#1F5E3B]">
-                  <Layers className="w-3.5 h-3.5 text-[#C89B3C]" /> Core Information
+                  <Layers className="w-3.5 h-3.5 text-[#C89B3C]" /> {t('Product details')}
                 </h4>
                 <div className="flex justify-between py-1.5 border-b border-[#EAE3D2]/60">
                   <span className="text-[#7C7467]">SKU</span>
                   <span className="text-[#2B2B2B] font-bold">{selectedVariant ? selectedVariant.sku : (product.sku || "N/A")}</span>
                 </div>
                 <div className="flex justify-between py-1.5 border-b border-[#EAE3D2]/60">
-                  <span className="text-[#7C7467]">Product details</span>
-                  <span className="text-[#2B2B2B]">Verified Sourcing</span>
+                  <span className="text-[#7C7467]">{t('Source')}</span>
+                  <span className="text-[#2B2B2B]">{t('Product details checked')}</span>
                 </div>
                 <div className="flex justify-between py-1.5 border-b border-[#EAE3D2]/60">
                   <span className="text-[#7C7467]">Status</span>

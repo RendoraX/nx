@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuthContext } from '../../providers/AuthProviders';
 import { useCart } from '../../providers/CartProvider';
+import { useLanguage } from '../../providers/LanguageProvider';
+import type { Language } from '../../providers/LanguageProvider';
 import { 
   Sparkles, Menu, X, Search, Globe, Heart, ShoppingBag, User, LogOut, Loader2,
   Package, MapPin, Laptop, Star, Bell, Settings, Compass
@@ -20,13 +22,20 @@ export function Header() {
   
   const { user, loading, isAuthenticated, logout } = useAuthContext();
   const { cart } = useCart();
+  const { language, setLanguage, t } = useLanguage();
   const cartItemCount = cart?.itemCount || 0;
   const isHomeActive = pathname === '/';
   const isShopActive = pathname.startsWith('/products');
+  const isCustomKitActive = pathname.startsWith('/bespoke');
   const isWishlistActive = pathname.startsWith('/account/wishlist');
   const isCartActive = pathname.startsWith('/account/cart');
   const isAccountActive = pathname.startsWith('/account') && !isWishlistActive && !isCartActive;
   const isAuthPage = pathname === '/login' || pathname === '/register';
+  const cartHref = loading
+    ? '#'
+    : isAuthenticated
+      ? '/account/cart'
+      : '/login?redirectTo=%2Faccount%2Fcart';
 
   // Close the desktop dropdown menu when clicking anywhere outside of it
   useEffect(() => {
@@ -48,7 +57,7 @@ export function Header() {
       {/* Announcement Strip */}
       <div className="bg-[#1B3B2B] text-[#FCFAF7] text-[10px] py-1.5 px-4 text-center font-medium tracking-[0.2em] uppercase border-b border-[#EAE3D2]/20 flex items-center justify-center gap-2">
         <Sparkles className="h-3 w-3 text-[#C89B3C]" />
-        <span>Purity Is Our Pride • Fast Worldwide Handling • Traditional Sourcing</span>
+        <span>{t('Purity Is Our Pride • Fast Worldwide Handling • Traditional Sourcing')}</span>
       </div>
 
       {/* Header Container */}
@@ -60,7 +69,7 @@ export function Header() {
             <button 
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
               className="p-1.5 text-[#1A1A1A] hover:text-[#1B3B2B] focus:outline-none lg:hidden"
-              aria-label="Toggle Navigation Menu"
+              aria-label={t('Toggle Navigation Menu')}
               aria-expanded={mobileMenuOpen}
             >
               {mobileMenuOpen ? <X className="h-5 w-5 stroke-[1.5]" /> : <Menu className="h-5 w-5 stroke-[1.5]" />}
@@ -68,13 +77,29 @@ export function Header() {
             <Link href="/" className="text-left focus:outline-none">
               <span className="font-serif text-lg md:text-xl font-normal tracking-tight text-[#1B3B2B] block">Shri Ayurved</span>
             </Link>
+            <label className="flex items-center gap-1 text-[#7C7467] lg:hidden">
+              <Globe className="h-3.5 w-3.5" aria-hidden="true" />
+              <select
+                aria-label={t('Language')}
+                value={language}
+                onChange={(event) => setLanguage(event.target.value as Language)}
+                className="max-w-[90px] bg-transparent text-[10px] font-medium focus:outline-none"
+              >
+                <option value="en">English</option>
+                <option value="hi">हिन्दी</option>
+                <option value="mr">मराठी</option>
+                <option value="mwr">मारवाड़ी</option>
+                <option value="gu">ગુજરાતી</option>
+                <option value="sa">संस्कृतम्</option>
+              </select>
+            </label>
           </div>
 
           {/* Premium Search Bar */}
           <div className="hidden md:flex flex-1 max-w-md relative">
             <input
               type="text"
-              placeholder="Search by Formulation, Herb, Ritual..."
+              placeholder={t('Search by Formulation, Herb, Ritual...')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-white border border-[#EAE3D2] text-[11px] rounded-none pl-3 pr-10 py-1.5 focus:outline-none focus:border-[#1B3B2B] text-[#1A1A1A] tracking-wide placeholder-[#A39785]"
@@ -87,23 +112,42 @@ export function Header() {
           {/* Navigation Items & User Dashboard Actions */}
           <div className="hidden lg:flex items-center gap-1 md:gap-2">
             <nav className="hidden lg:flex items-center gap-6 text-[11px] font-medium uppercase tracking-[0.2em] text-[#7C7467] mr-4">
-              <Link href="/philosophy" className="hover:text-[#1B3B2B] transition-colors duration-300">Philosophy</Link>
-              <Link href="/products" className="text-[#1B3B2B] font-semibold tracking-[0.2em]">Shop</Link>
-              <Link href="/bespoke" className="hover:text-[#1B3B2B] transition-colors duration-300">Custom Kit</Link>
+              <Link href="/philosophy" className="hover:text-[#1B3B2B] transition-colors duration-300">{t('Philosophy')}</Link>
+              <Link href="/products" className="text-[#1B3B2B] font-semibold tracking-[0.2em]">{t('Shop')}</Link>
+              <Link href="/bespoke" className="hover:text-[#1B3B2B] transition-colors duration-300">{t('Custom Kit')}</Link>
             </nav>
 
             <div className="h-3 w-[1px] bg-[#EAE3D2] hidden lg:block mr-2"></div>
 
-            <button className="p-1.5 text-[#1A1A1A] hover:text-[#1B3B2B] flex items-center gap-1 text-[10px] font-medium uppercase tracking-widest focus:outline-none transition-colors duration-300">
+            <label className="p-1.5 text-[#1A1A1A] hover:text-[#1B3B2B] flex items-center gap-1 text-[10px] font-medium uppercase tracking-widest transition-colors duration-300">
               <Globe className="h-3.5 w-3.5 text-[#A39785] stroke-[1.5]" />
-              <span className="hidden sm:inline text-[#7C7467]">EN</span>
-            </button>
+              <select
+                aria-label={t('Language')}
+                value={language}
+                onChange={(event) => setLanguage(event.target.value as Language)}
+                className="bg-transparent text-[#7C7467] focus:outline-none"
+              >
+                <option value="en">English</option>
+                <option value="hi">हिन्दी</option>
+                <option value="mr">मराठी</option>
+                <option value="mwr">मारवाड़ी</option>
+                <option value="gu">ગુજરાતી</option>
+                <option value="sa">संस्कृतम्</option>
+              </select>
+            </label>
 
             <Link href={isAuthenticated ? "/account/wishlist" : "/login?redirectTo=/account/wishlist"} className="p-1.5 text-[#1A1A1A] hover:text-[#1B3B2B] transition-colors duration-300">
               <Heart className="h-3.5 w-3.5 stroke-[1.5]" />
             </Link>
 
-            <Link href="/account/cart" className="p-1.5 text-[#1A1A1A] hover:text-[#1B3B2B] relative transition-colors duration-300">
+            <Link
+              href={cartHref}
+              onClick={(event) => {
+                if (loading) event.preventDefault();
+              }}
+              aria-disabled={loading}
+              className="p-1.5 text-[#1A1A1A] hover:text-[#1B3B2B] relative transition-colors duration-300"
+            >
               <ShoppingBag className="h-3.5 w-3.5 stroke-[1.5]" />
               <span className="absolute top-1.5 right-1.5 w-1 h-1 bg-[#1B3B2B] rounded-full"></span>
             </Link>
@@ -127,27 +171,27 @@ export function Header() {
                   {dropdownOpen && (
                     <div className="hidden lg:block absolute right-0 top-full mt-2 w-56 bg-[#FCFAF7] border border-[#EAE3D2] shadow-md divide-y divide-[#EAE3D2] text-left z-50">
                       <div className="px-4 py-2.5">
-                        <p className="text-[10px] uppercase font-semibold text-[#A39785] tracking-wider">Signed in as</p>
+                        <p className="text-[10px] uppercase font-semibold text-[#A39785] tracking-wider">{t('Signed in as')}</p>
                         <p className="text-xs font-medium text-[#1B3B2B] truncate mt-0.5">{user?.name}</p>
                       </div>
                       <div className="py-1 flex flex-col">
                         <Link href="/account" onClick={() => setDropdownOpen(false)} className="px-4 py-2 text-[11px] text-[#7C7467] hover:text-[#1B3B2B] hover:bg-[#1B3B2B]/5 font-medium flex items-center gap-2.5 transition-colors">
-                          <Settings className="h-3.5 w-3.5 stroke-[1.5]" /> Account Settings
+                          <Settings className="h-3.5 w-3.5 stroke-[1.5]" /> {t('Account Settings')}
                         </Link>
                         <Link href="/account?tab=orders" onClick={() => setDropdownOpen(false)} className="px-4 py-2 text-[11px] text-[#7C7467] hover:text-[#1B3B2B] hover:bg-[#1B3B2B]/5 font-medium flex items-center gap-2.5 transition-colors">
-                          <Package className="h-3.5 w-3.5 stroke-[1.5]" /> Order History
+                          <Package className="h-3.5 w-3.5 stroke-[1.5]" /> {t('Order History')}
                         </Link>
                         <Link href="/account?tab=addresses" onClick={() => setDropdownOpen(false)} className="px-4 py-2 text-[11px] text-[#7C7467] hover:text-[#1B3B2B] hover:bg-[#1B3B2B]/5 font-medium flex items-center gap-2.5 transition-colors">
-                          <MapPin className="h-3.5 w-3.5 stroke-[1.5]" /> Saved Addresses
+                          <MapPin className="h-3.5 w-3.5 stroke-[1.5]" /> {t('Saved Addresses')}
                         </Link>
                         <Link href="/account?tab=sessions" onClick={() => setDropdownOpen(false)} className="px-4 py-2 text-[11px] text-[#7C7467] hover:text-[#1B3B2B] hover:bg-[#1B3B2B]/5 font-medium flex items-center gap-2.5 transition-colors">
-                          <Laptop className="h-3.5 w-3.5 stroke-[1.5]" /> Logged-in Devices
+                          <Laptop className="h-3.5 w-3.5 stroke-[1.5]" /> {t('Logged-in Devices')}
                         </Link>
                         <Link href="/account?tab=reviews" onClick={() => setDropdownOpen(false)} className="px-4 py-2 text-[11px] text-[#7C7467] hover:text-[#1B3B2B] hover:bg-[#1B3B2B]/5 font-medium flex items-center gap-2.5 transition-colors">
-                          <Star className="h-3.5 w-3.5 stroke-[1.5]" /> My Reviews
+                          <Star className="h-3.5 w-3.5 stroke-[1.5]" /> {t('My Reviews')}
                         </Link>
                         <Link href="/account?tab=notifications" onClick={() => setDropdownOpen(false)} className="px-4 py-2 text-[11px] text-[#7C7467] hover:text-[#1B3B2B] hover:bg-[#1B3B2B]/5 font-medium flex items-center gap-2.5 transition-colors">
-                          <Bell className="h-3.5 w-3.5 stroke-[1.5]" /> Notifications
+                          <Bell className="h-3.5 w-3.5 stroke-[1.5]" /> {t('Notifications')}
                         </Link>
                       </div>
                       <div className="py-1">
@@ -155,7 +199,7 @@ export function Header() {
                           onClick={() => { logout(); setDropdownOpen(false); }}
                           className="w-full px-4 py-2 text-[11px] font-medium text-red-700 hover:bg-red-50 flex items-center gap-2.5 text-left cursor-pointer transition-colors"
                         >
-                          <LogOut className="h-3.5 w-3.5 stroke-[1.5]" /> Sign Out
+                          <LogOut className="h-3.5 w-3.5 stroke-[1.5]" /> {t('Sign Out')}
                         </button>
                       </div>
                     </div>
@@ -174,9 +218,9 @@ export function Header() {
         {mobileMenuOpen && (
           <div className="border-t border-[#EAE3D2] bg-[#FCFAF7] px-6 py-5 space-y-4 shadow-sm transition-all duration-300 divide-y divide-[#EAE3D2]/60 lg:hidden">
             <div className="space-y-3 pb-3">
-              <Link href="/philosophy" onClick={() => setMobileMenuOpen(false)} className="block text-[11px] uppercase tracking-[0.2em] font-medium text-[#7C7467] hover:text-[#1B3B2B]">Philosophy</Link>
-              <Link href="/products" onClick={() => setMobileMenuOpen(false)} className="block text-[11px] uppercase tracking-[0.2em] font-medium text-[#1B3B2B]">Shop</Link>
-              <Link href="/bespoke" onClick={() => setMobileMenuOpen(false)} className="block text-[11px] uppercase tracking-[0.2em] font-medium text-[#7C7467] hover:text-[#1B3B2B]">Custom Kit</Link>
+              <Link href="/philosophy" onClick={() => setMobileMenuOpen(false)} className="block text-[11px] uppercase tracking-[0.2em] font-medium text-[#7C7467] hover:text-[#1B3B2B]">{t('Philosophy')}</Link>
+              <Link href="/products" onClick={() => setMobileMenuOpen(false)} className="block text-[11px] uppercase tracking-[0.2em] font-medium text-[#1B3B2B]">{t('Shop')}</Link>
+              <Link href="/bespoke" onClick={() => setMobileMenuOpen(false)} className="block text-[11px] uppercase tracking-[0.2em] font-medium text-[#7C7467] hover:text-[#1B3B2B]">{t('Custom Kit')}</Link>
             </div>
             <div className="pt-4 space-y-2.5 text-left">
               {loading ? (
@@ -185,25 +229,25 @@ export function Header() {
                 </div>
               ) : isAuthenticated ? (
                 <>
-                  <p className="text-[10px] uppercase font-semibold text-[#A39785] tracking-wider pl-1">Dashboard Menu ({user?.name})</p>
+                  <p className="text-[10px] uppercase font-semibold text-[#A39785] tracking-wider pl-1">{t('Dashboard Menu')} ({user?.name})</p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 pt-1">
                     <Link href="/account" onClick={() => setMobileMenuOpen(false)} className="py-1.5 text-[11px] text-[#7C7467] hover:text-[#1B3B2B] font-medium flex items-center gap-2">
-                      <Settings className="h-3.5 w-3.5 stroke-[1.5]" /> Account Settings
+                      <Settings className="h-3.5 w-3.5 stroke-[1.5]" /> {t('Account Settings')}
                     </Link>
                     <Link href="/account?tab=orders" onClick={() => setMobileMenuOpen(false)} className="py-1.5 text-[11px] text-[#7C7467] hover:text-[#1B3B2B] font-medium flex items-center gap-2">
-                      <Package className="h-3.5 w-3.5 stroke-[1.5]" /> Order History
+                      <Package className="h-3.5 w-3.5 stroke-[1.5]" /> {t('Order History')}
                     </Link>
                     <Link href="/account?tab=addresses" onClick={() => setMobileMenuOpen(false)} className="py-1.5 text-[11px] text-[#7C7467] hover:text-[#1B3B2B] font-medium flex items-center gap-2">
-                      <MapPin className="h-3.5 w-3.5 stroke-[1.5]" /> Saved Addresses
+                      <MapPin className="h-3.5 w-3.5 stroke-[1.5]" /> {t('Saved Addresses')}
                     </Link>
                     <Link href="/account?tab=sessions" onClick={() => setMobileMenuOpen(false)} className="py-1.5 text-[11px] text-[#7C7467] hover:text-[#1B3B2B] font-medium flex items-center gap-2">
-                      <Laptop className="h-3.5 w-3.5 stroke-[1.5]" /> Logged-in Devices
+                      <Laptop className="h-3.5 w-3.5 stroke-[1.5]" /> {t('Logged-in Devices')}
                     </Link>
                     <Link href="/account?tab=reviews" onClick={() => setMobileMenuOpen(false)} className="py-1.5 text-[11px] text-[#7C7467] hover:text-[#1B3B2B] font-medium flex items-center gap-2">
-                      <Star className="h-3.5 w-3.5 stroke-[1.5]" /> My Reviews
+                      <Star className="h-3.5 w-3.5 stroke-[1.5]" /> {t('My Reviews')}
                     </Link>
                     <Link href="/account?tab=notifications" onClick={() => setMobileMenuOpen(false)} className="py-1.5 text-[11px] text-[#7C7467] hover:text-[#1B3B2B] font-medium flex items-center gap-2">
-                      <Bell className="h-3.5 w-3.5 stroke-[1.5]" /> Notifications
+                      <Bell className="h-3.5 w-3.5 stroke-[1.5]" /> {t('Notifications')}
                     </Link>
                   </div>
                   <div className="pt-3 border-t border-[#EAE3D2]/40 mt-2">
@@ -211,7 +255,7 @@ export function Header() {
                       onClick={() => { logout(); setMobileMenuOpen(false); }} 
                       className="w-full py-2 bg-red-50 text-red-700 text-center rounded text-[11px] uppercase tracking-wider font-semibold cursor-pointer border border-red-100"
                     >
-                      Sign Out
+                      {t('Sign Out')}
                     </button>
                   </div>
                 </>
@@ -221,7 +265,7 @@ export function Header() {
                   onClick={() => setMobileMenuOpen(false)} 
                   className="block text-center w-full py-2 bg-[#1B3B2B] text-white text-[11px] uppercase tracking-wider font-semibold rounded"
                 >
-                  Sign In
+                  {t('Sign In')}
                 </Link>
               )}
             </div>
@@ -231,8 +275,8 @@ export function Header() {
 
       {/* Mobile primary navigation */}
       <nav
-        aria-label="Mobile primary navigation"
-        className="fixed inset-x-3 bottom-3 z-[60] grid grid-cols-5 rounded-2xl border border-[#EAE3D2] bg-[#FCFAF7]/95 px-1.5 pt-1.5 pb-[calc(0.375rem+env(safe-area-inset-bottom))] shadow-[0_14px_40px_rgba(27,59,43,0.18),0_2px_8px_rgba(200,155,60,0.12)] backdrop-blur-xl lg:hidden"
+        aria-label={t('Mobile primary navigation')}
+        className="fixed inset-x-3 bottom-3 z-[60] grid grid-cols-6 rounded-2xl border border-[#EAE3D2] bg-[#FCFAF7]/95 px-1.5 pt-1.5 pb-[calc(0.375rem+env(safe-area-inset-bottom))] shadow-[0_14px_40px_rgba(27,59,43,0.18),0_2px_8px_rgba(200,155,60,0.12)] backdrop-blur-xl lg:hidden"
       >
         <Link
           href="/"
@@ -242,7 +286,7 @@ export function Header() {
           <span className={`flex h-8 w-8 items-center justify-center rounded-full transition-all duration-500 ${isHomeActive ? '-translate-y-2 bg-[#1B3B2B] text-[#C89B3C] shadow-[0_8px_16px_rgba(27,59,43,0.22)] ring-4 ring-[#FCFAF7]' : ''}`}>
             <Compass className="h-4 w-4 stroke-[1.5]" />
           </span>
-          <span className={`text-[9px] font-semibold uppercase tracking-[0.12em] transition-transform duration-500 ${isHomeActive ? '-translate-y-1' : ''}`}>Home</span>
+          <span className={`text-[9px] font-semibold uppercase tracking-[0.12em] transition-transform duration-500 ${isHomeActive ? '-translate-y-1' : ''}`}>{t('Home')}</span>
         </Link>
         <Link
           href="/products"
@@ -252,7 +296,18 @@ export function Header() {
           <span className={`flex h-8 w-8 items-center justify-center rounded-full transition-all duration-500 ${isShopActive ? '-translate-y-2 bg-[#1B3B2B] text-[#C89B3C] shadow-[0_8px_16px_rgba(27,59,43,0.22)] ring-4 ring-[#FCFAF7]' : ''}`}>
             <ShoppingBag className="h-4 w-4 stroke-[1.5]" />
           </span>
-          <span className={`text-[9px] font-semibold uppercase tracking-[0.12em] transition-transform duration-500 ${isShopActive ? '-translate-y-1' : ''}`}>Shop</span>
+          <span className={`text-[9px] font-semibold uppercase tracking-[0.12em] transition-transform duration-500 ${isShopActive ? '-translate-y-1' : ''}`}>{t('Shop')}</span>
+        </Link>
+        <Link
+          href="/bespoke"
+          aria-label="Custom Kit"
+          aria-current={isCustomKitActive ? 'page' : undefined}
+          className={`flex min-h-12 flex-col items-center justify-center gap-1 rounded-xl text-[#7C7467] transition-colors hover:bg-[#1B3B2B]/5 hover:text-[#1B3B2B] ${isCustomKitActive ? 'text-[#1B3B2B]' : ''}`}
+        >
+          <span className={`flex h-8 w-8 items-center justify-center rounded-full transition-all duration-500 ${isCustomKitActive ? '-translate-y-2 bg-[#1B3B2B] text-[#C89B3C] shadow-[0_8px_16px_rgba(27,59,43,0.22)] ring-4 ring-[#FCFAF7]' : ''}`}>
+            <Sparkles className="h-4 w-4 stroke-[1.5]" />
+          </span>
+          <span className={`text-[9px] font-semibold uppercase tracking-[0.12em] transition-transform duration-500 ${isCustomKitActive ? '-translate-y-1' : ''}`}>Kit</span>
         </Link>
         <Link
           href={isAuthenticated ? "/account/wishlist" : "/login?redirectTo=/account/wishlist"}
@@ -262,11 +317,15 @@ export function Header() {
           <span className={`flex h-8 w-8 items-center justify-center rounded-full transition-all duration-500 ${isWishlistActive ? '-translate-y-2 bg-[#1B3B2B] text-[#C89B3C] shadow-[0_8px_16px_rgba(27,59,43,0.22)] ring-4 ring-[#FCFAF7]' : ''}`}>
             <Heart className="h-4 w-4 stroke-[1.5]" />
           </span>
-          <span className={`text-[9px] font-semibold uppercase tracking-[0.12em] transition-transform duration-500 ${isWishlistActive ? '-translate-y-1' : ''}`}>Wishlist</span>
+          <span className={`text-[9px] font-semibold uppercase tracking-[0.12em] transition-transform duration-500 ${isWishlistActive ? '-translate-y-1' : ''}`}>{t('Wishlist')}</span>
         </Link>
         <Link
-          href="/account/cart"
+          href={cartHref}
+          onClick={(event) => {
+            if (loading) event.preventDefault();
+          }}
           aria-current={isCartActive ? 'page' : undefined}
+          aria-disabled={loading}
           className={`relative flex min-h-12 flex-col items-center justify-center gap-1 rounded-xl text-[#7C7467] transition-colors duration-300 hover:bg-[#1B3B2B]/5 hover:text-[#1B3B2B] ${isCartActive ? 'text-[#1B3B2B]' : ''}`}
         >
           <span className={`relative flex h-8 w-8 items-center justify-center rounded-full transition-all duration-500 ease-out ${isCartActive ? '-translate-y-2 bg-[#1B3B2B] text-[#C89B3C] shadow-[0_8px_16px_rgba(27,59,43,0.28)] ring-4 ring-[#FCFAF7]' : ''}`}>
@@ -277,7 +336,7 @@ export function Header() {
               </span>
             )}
           </span>
-          <span className={`text-[9px] font-semibold uppercase tracking-[0.12em] transition-transform duration-500 ${isCartActive ? '-translate-y-1' : ''}`}>Cart</span>
+          <span className={`text-[9px] font-semibold uppercase tracking-[0.12em] transition-transform duration-500 ${isCartActive ? '-translate-y-1' : ''}`}>{t('Cart')}</span>
         </Link>
         <Link
           href={loading ? '#' : isAuthenticated ? "/account" : "/login?redirectTo=/account"}
@@ -293,7 +352,7 @@ export function Header() {
           <span className={`flex h-8 w-8 items-center justify-center rounded-full transition-all duration-500 ${isAccountActive ? '-translate-y-2 bg-[#1B3B2B] text-[#C89B3C] shadow-[0_8px_16px_rgba(27,59,43,0.22)] ring-4 ring-[#FCFAF7]' : ''}`}>
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <User className="h-4 w-4 stroke-[1.5]" />}
           </span>
-          <span className={`text-[9px] font-semibold uppercase tracking-[0.12em] transition-transform duration-500 ${isAccountActive ? '-translate-y-1' : ''}`}>Account</span>
+          <span className={`text-[9px] font-semibold uppercase tracking-[0.12em] transition-transform duration-500 ${isAccountActive ? '-translate-y-1' : ''}`}>{t('Account')}</span>
         </Link>
       </nav>
     </>

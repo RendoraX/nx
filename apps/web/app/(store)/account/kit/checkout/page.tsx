@@ -29,6 +29,7 @@ import { usePayment } from '@/hooks/secure_hook/usePayment';
 import { useCustomerKit } from '@/hooks/useCustomerKit';
 import AddressFormDialog from '@/components/account/address/AddressFormDialouge';
 import CheckoutButton from '@/components/account/checkout/checkoutButton';
+import { useLanguage } from '@/providers/LanguageProvider';
 
 export interface ProductVariant {
   id: string;
@@ -85,6 +86,11 @@ export interface CustomizedItem {
   productId: string;
   quantity: number;
   variantId?: string;
+  productName?: string;
+  productPrice?: number;
+  productImageUrl?: string;
+  variantName?: string;
+  variantPrice?: number;
 }
 
 export interface CreateBespokeKitPayload {
@@ -183,10 +189,10 @@ export interface User {
   currentSessionId: string;
 }
 
-const SHIPPING_THRESHOLD = 500;
 const STORAGE_KEY = 'active_custom_kit';
 
 export default function KitCheckoutPage() {
+  const { t } = useLanguage();
   const router = useRouter();
   
   const { catalogKits, isLoading: isCatalogLoading } = useCustomerKit();
@@ -239,37 +245,48 @@ export default function KitCheckoutPage() {
     }
   };
 
-  const activeKitBlueprint = (catalogKits as any[])?.find(
-    (kit: any) => kit.id === kitPayload?.templateId
-  );
+  const activeKitBlueprint = catalogKits.find((kit) => kit.id === kitPayload?.templateId);
 
   const activeKitItems = (kitPayload?.items || [])
     .map((savedItem: CustomizedItem) => {
-      const defaultTemplateItemMatch = activeKitBlueprint?.defaultItems?.find(
-        (item: any) => item.productId === savedItem.productId
+      const defaultTemplateItemMatch = activeKitBlueprint?.defaultItems.find(
+        (item) => item.productId === savedItem.productId && (item.variantId ?? undefined) === savedItem.variantId
+      ) ?? activeKitBlueprint?.defaultItems.find(
+        (item) => item.productId === savedItem.productId || item.product?.id === savedItem.productId
       );
+      const product = defaultTemplateItemMatch?.product;
+      const selectedVariant = defaultTemplateItemMatch?.selectedVariant
+        ?? product?.variants?.find((variant) => variant.id === savedItem.variantId)
+        ?? null;
 
       return {
         productId: savedItem.productId,
         variantId: savedItem.variantId,
         quantity: savedItem.quantity,
-        product: defaultTemplateItemMatch?.product,
-        selectedVariant: defaultTemplateItemMatch?.selectedVariant
+        product,
+        selectedVariant,
+        productName: savedItem.productName ?? product?.name,
+        productPrice: savedItem.productPrice ?? product?.price,
+        productImageUrl: savedItem.productImageUrl ?? product?.images?.[0]?.url,
+        variantName: savedItem.variantName ?? selectedVariant?.size,
+        variantPrice: savedItem.variantPrice ?? selectedVariant?.price,
       };
     })
     .filter((item) => item.quantity > 0);
 
-  const kitBasePrice = kitPayload?.baseBoxPrice ?? activeKitBlueprint?.baseBoxPrice ?? 0;
-  
+  const kitBasePrice = Number(kitPayload?.baseBoxPrice ?? activeKitBlueprint?.baseBoxPrice ?? 0);
+  const isFixedKitPrice = activeKitBlueprint?.isManualPrice ?? false;
+  let includedItemAllowance = isFixedKitPrice ? 0 : 1;
   const itemsSubtotal = activeKitItems.reduce((acc, item) => {
-    const unitPrice = item.selectedVariant 
-      ? item.selectedVariant.price 
-      : item.product?.price || 0;
-    return acc + unitPrice * item.quantity;
+    const unitPrice = Number(item.variantPrice ?? item.selectedVariant?.price ?? item.productPrice ?? item.product?.price ?? 0);
+    const includedQuantity = Math.min(includedItemAllowance, item.quantity);
+    includedItemAllowance -= includedQuantity;
+    return acc + unitPrice * (item.quantity - includedQuantity);
   }, 0);
-
-  const subtotal = kitBasePrice + itemsSubtotal;
-  const shipping = subtotal >= SHIPPING_THRESHOLD || activeKitItems.length === 0 ? 0 : 40;
+  const subtotal = isFixedKitPrice
+    ? Number(kitPayload?.totalPrice ?? kitBasePrice)
+    : kitBasePrice + itemsSubtotal;
+  const shipping = 0;
   const grandTotal = subtotal + shipping;
 
   const selectedAddress = (addresses as any[])?.find((a: any) => a.id === selectedAddressId);
@@ -292,7 +309,7 @@ export default function KitCheckoutPage() {
         addressId: selectedAddressId,
         paymentMethod: paymentMethod === 'cod' ? 'COD' : 'ONLINE',
         isKitOrder: true,
-        kitDetails: kitPayload
+        kitDetails: { ...kitPayload, totalPrice: grandTotal }
       } as any);
 
       const orderRef = createdOrder?.order?.id || (createdOrder as any)?.id;
@@ -341,7 +358,7 @@ export default function KitCheckoutPage() {
       <div className="min-h-screen bg-[#FDFCFB] flex items-center justify-center p-4">
         <div className="space-y-4 text-center">
           <div className="w-10 h-10 border-2 border-[#C89B3C] border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-xs font-mono tracking-widest text-[#1B3B2B] uppercase">Preparing Custom Kit Checkout...</p>
+          <p className="text-xs font-mono tracking-widest text-[#1B3B2B] uppercase">{t('Preparing your kit order...')}</p>
         </div>
       </div>
     );
@@ -354,10 +371,10 @@ export default function KitCheckoutPage() {
           <div className="w-16 h-16 bg-[#1B3B2B]/5 rounded-full flex items-center justify-center mx-auto text-[#C89B3C]">
             <ShoppingBag className="w-8 h-8" />
           </div>
-          <h2 className="font-serif text-2xl text-[#1B3B2B]">No Active Ritual Kit Selected</h2>
-          <p className="text-xs text-[#7C7467]">Customize your bespoke ritual blueprint before proceeding to checkout.</p>
+          <h2 className="font-serif text-2xl text-[#1B3B2B]">{t('No puja kit selected')}</h2>
+          <p className="text-xs text-[#7C7467]">{t('Choose your puja items before placing the order.')}</p>
           <Link href="/account/kit/builder" className="inline-block px-6 py-2.5 bg-[#1B3B2B] text-[#FCFAF7] text-xs font-bold uppercase tracking-wider rounded-lg">
-            Open Kit Builder
+            {t('Open kit builder')}
           </Link>
         </div>
       </div>
@@ -370,13 +387,13 @@ export default function KitCheckoutPage() {
         <div className="max-w-6xl mx-auto px-3 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-2">
           <Link href="/account/kit/builder" className="flex items-center gap-1.5 text-xs font-mono text-[#7C7467] hover:text-[#1B3B2B] transition-colors">
             <ArrowLeft className="w-4 h-4" />
-            <span className="hidden xs:inline uppercase tracking-wider">Back to Builder</span>
+            <span className="hidden xs:inline uppercase tracking-wider">{t('Back to kit builder')}</span>
           </Link>
           
           <div className="min-w-0 flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 text-[#C89B3C]" />
             <span className="truncate font-serif text-sm sm:text-base font-medium tracking-tight text-[#1B3B2B]">
-              Encrypted Kit Checkout
+              {t('Checkout')}
             </span>
           </div>
 
@@ -404,7 +421,7 @@ export default function KitCheckoutPage() {
                     1
                   </div>
                   <h2 className="font-serif text-base sm:text-lg text-[#1B3B2B] font-medium">
-                    Delivery Address
+                    {t('Delivery address')}
                   </h2>
                 </div>
 
@@ -413,19 +430,19 @@ export default function KitCheckoutPage() {
                   className="flex items-center gap-1.5 text-[11px] font-mono font-bold text-[#C89B3C] hover:text-[#1B3B2B] uppercase tracking-wider bg-white border border-[#EAE3D2] px-3 py-1.5 rounded-lg shadow-2xs transition-all duration-200 cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  <span>Add New</span>
+                  <span>{t('Add new')}</span>
                 </button>
               </div>
 
               {(!addresses || addresses.length === 0) ? (
                 <div className="text-center py-6 border border-dashed border-[#EAE3D2] rounded-xl p-4 bg-white">
                   <MapPin className="w-8 h-8 text-[#C89B3C] mx-auto mb-2 opacity-80" />
-                  <p className="text-xs text-[#7C7467] font-serif italic mb-3">No physical delivery addresses found in your ledger.</p>
+                  <p className="text-xs text-[#7C7467] font-serif italic mb-3">{t('No delivery addresses found. Add one to continue.')}</p>
                   <button
                     onClick={() => setIsDialogOpen(true)}
                     className="px-4 py-2 bg-[#1B3B2B] text-[#FCFAF7] text-xs font-bold uppercase tracking-wider rounded-lg cursor-pointer"
                   >
-                    Add Delivery Target
+                    {t('Add delivery address')}
                   </button>
                 </div>
               ) : (
@@ -450,7 +467,7 @@ export default function KitCheckoutPage() {
                             </span>
                             {address.isDefault && (
                               <span className="text-[8px] font-mono uppercase bg-[#1B3B2B]/10 text-[#1B3B2B] px-1.5 py-0.2 rounded font-semibold">
-                                Default
+                                {t('Default')}
                               </span>
                             )}
                           </div>
@@ -467,7 +484,7 @@ export default function KitCheckoutPage() {
 
                         <div className="mt-3 pt-2 border-t border-[#EAE3D2]/40 flex items-center justify-between">
                           <span className="text-[9.5px] font-mono uppercase tracking-wider text-[#7C7467]">
-                            {isSelected ? 'Selected Target' : 'Select Target'}
+                            {t(isSelected ? 'Selected address' : 'Select address')}
                           </span>
                           <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${
                             isSelected ? 'bg-[#1B3B2B] border-[#1B3B2B] text-white' : 'border-[#EAE3D2]'
@@ -488,7 +505,7 @@ export default function KitCheckoutPage() {
                   2
                 </div>
                 <h2 className="font-serif text-base sm:text-lg text-[#1B3B2B] font-medium">
-                  Payment Method
+                  {t('Payment method')}
                 </h2>
               </div>
 
@@ -506,14 +523,14 @@ export default function KitCheckoutPage() {
                   </div>
                   <div className="space-y-0.5 flex-1">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-xs font-serif font-medium text-[#1B3B2B]">Online Payment</h3>
+                      <h3 className="text-xs font-serif font-medium text-[#1B3B2B]">{t('Online payment')}</h3>
                       <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${
                         paymentMethod === 'online' ? 'bg-[#1B3B2B] border-[#1B3B2B] text-white' : 'border-[#EAE3D2]'
                       }`}>
                         {paymentMethod === 'online' && <Check className="w-2 h-2 stroke-[3]" />}
                       </div>
                     </div>
-                    <p className="text-[10.5px] text-[#7C7467] leading-tight">UPI, Credit/Debit Cards, NetBanking, Wallets</p>
+                    <p className="text-[10.5px] text-[#7C7467] leading-tight">{t('UPI, cards, net banking, and wallets')}</p>
                   </div>
                 </div>
 
@@ -530,14 +547,14 @@ export default function KitCheckoutPage() {
                   </div>
                   <div className="space-y-0.5 flex-1">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-xs font-serif font-medium text-[#1B3B2B]">Cash on Delivery</h3>
+                      <h3 className="text-xs font-serif font-medium text-[#1B3B2B]">{t('Cash on delivery')}</h3>
                       <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${
                         paymentMethod === 'cod' ? 'bg-[#1B3B2B] border-[#1B3B2B] text-white' : 'border-[#EAE3D2]'
                       }`}>
                         {paymentMethod === 'cod' && <Check className="w-2 h-2 stroke-[3]" />}
                       </div>
                     </div>
-                    <p className="text-[10.5px] text-[#7C7467] leading-tight">Pay upon physical hand-off at destination</p>
+                    <p className="text-[10.5px] text-[#7C7467] leading-tight">{t('Pay when your order arrives.')}</p>
                   </div>
                 </div>
               </div>
@@ -549,68 +566,56 @@ export default function KitCheckoutPage() {
                   <div className="w-6 h-6 rounded-full bg-[#1B3B2B] text-[#FCFAF7] text-xs font-mono flex items-center justify-center font-bold">
                     3
                   </div>
-                  <h2 className="font-serif text-base sm:text-lg text-[#1B3B2B] font-medium">
-                    Kit Manifest ({activeKitItems.length} Products)
-                  </h2>
+                  <div className="min-w-0">
+                    <h2 className="font-serif text-base sm:text-lg text-[#1B3B2B] font-medium truncate">
+                      {kitPayload.templateName || activeKitBlueprint?.name || t('Your kit items')}
+                    </h2>
+                    <p className="text-[10px] text-[#7C7467]">{t('Your kit items')} · {activeKitItems.length}</p>
+                    <p className="text-[10px] text-[#7C7467]">{t('First item and delivery are included in the kit price. Extra quantities are charged.')}</p>
+                  </div>
                 </div>
                 <Link href="/account/kit/builder" className="text-[10px] font-mono uppercase tracking-wider text-[#C89B3C] hover:underline">
-                  Edit Kit
+                  {t('Edit kit')}
                 </Link>
-              </div>
-
-              <div className="bg-white border border-[#EAE3D2] rounded-xl p-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2.5 rounded-lg bg-[#1B3B2B]/5 text-[#C89B3C]">
-                    <Layers className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-serif font-medium text-sm text-[#1B3B2B]">
-                        {kitPayload.templateName || activeKitBlueprint?.name}
-                      </h3>
-                      {activeKitBlueprint?.curatedBy && (
-                        <span className="text-[9px] font-bold text-[#C89B3C] bg-[#C89B3C]/10 border border-[#C89B3C]/20 px-2 py-0.5 rounded-full">
-                          {activeKitBlueprint.curatedBy}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-[11px] text-[#7C7467]">Base box configuration & assembly</p>
-                  </div>
-                </div>
-                <span className="font-mono text-xs font-semibold text-[#1B3B2B]">₹{kitBasePrice}</span>
               </div>
 
               <div className="space-y-2.5">
                 {activeKitItems.map((item, index) => {
-                  const itemPrice = item.selectedVariant ? item.selectedVariant.price : item.product?.price || 0;
-                  const itemImg = (item.product as any)?.images?.[0]?.url || (item.product as any)?.imageUrl || '/placeholder.png';
+                  const itemPrice = Number(item.variantPrice ?? item.selectedVariant?.price ?? item.productPrice ?? item.product?.price ?? 0);
+                  const itemImg = item.productImageUrl || item.product?.images?.[0]?.url;
+                  const productName = item.productName || item.product?.name || t('Product details unavailable');
+                  const variantName = item.variantName || item.selectedVariant?.size;
+                  const includedQuantity = isFixedKitPrice ? item.quantity : index === 0 ? Math.min(1, item.quantity) : 0;
+                  const addedQuantity = item.quantity - includedQuantity;
+                  const itemTotal = itemPrice * addedQuantity;
 
                   return (
                     <div key={index} className="bg-white border border-[#EAE3D2] rounded-xl p-3 flex items-center justify-between gap-3">
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="relative w-12 h-12 bg-[#F5F2EB] rounded-lg overflow-hidden flex-shrink-0 border border-[#EAE3D2]/60">
                           {itemImg ? (
-                            <Image src={itemImg} alt={item.product?.name || 'Product'} fill className="object-cover" />
+                            <Image src={itemImg} alt={productName} fill className="object-cover" />
                           ) : (
                             <ShoppingBag className="w-5 h-5 text-[#C89B3C] absolute inset-0 m-auto" />
                           )}
                         </div>
                         <div className="min-w-0">
                           <h4 className="font-serif text-xs font-medium text-[#1B3B2B] truncate">
-                            {item.product?.name || 'Custom Herb/Item'}
+                            {productName}
                           </h4>
-                          {item.selectedVariant && (
+                          {variantName && (
                             <p className="text-[10px] font-mono text-[#7C7467]">
-                              Variant: {item.selectedVariant.size}
+                              {t('Size')}: {variantName}
                             </p>
                           )}
                           <p className="text-[10px] font-mono text-[#7C7467]">
-                            Qty: {item.quantity} × ₹{itemPrice}
+                            {t('Quantity')}: {item.quantity} {includedQuantity > 0 && <span>({includedQuantity} {t('Included')})</span>}
+                            {addedQuantity > 0 && <span> · {addedQuantity} × ₹{itemPrice.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>}
                           </p>
                         </div>
                       </div>
                       <span className="font-mono text-xs font-semibold text-[#1B3B2B] flex-shrink-0">
-                        ₹{itemPrice * item.quantity}
+                        {itemTotal > 0 ? `₹${itemTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}` : t('Included')}
                       </span>
                     </div>
                   );
@@ -623,30 +628,30 @@ export default function KitCheckoutPage() {
             <div className="bg-[#FCFAF7] border border-[#EAE3D2] rounded-2xl p-5 sm:p-6 shadow-xs sticky top-20 space-y-5">
               <h2 className="font-serif text-lg text-[#1B3B2B] font-medium border-b border-[#EAE3D2]/80 pb-3 flex items-center gap-2">
                 <Receipt className="w-5 h-5 text-[#C89B3C]" />
-                Order Summary
+                {t('Order summary')}
               </h2>
 
               <div className="space-y-3 text-xs font-mono">
                 <div className="flex justify-between text-[#7C7467]">
-                  <span>Base Box Fee</span>
-                  <span>₹{kitBasePrice}</span>
+                  <span>{t('Kit base price')}</span>
+                  <span>{isFixedKitPrice ? t('Included in kit price') : `₹${Number(kitBasePrice).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`}</span>
                 </div>
                 <div className="flex justify-between text-[#7C7467]">
-                  <span>Items Total ({activeKitItems.length})</span>
-                  <span>₹{itemsSubtotal}</span>
+                  <span>{t('Items total')} ({activeKitItems.length})</span>
+                  <span>{isFixedKitPrice ? t('Included in kit price') : `₹${itemsSubtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`}</span>
                 </div>
                 <div className="flex justify-between text-[#7C7467]">
-                  <span>Subtotal</span>
-                  <span className="text-[#1B3B2B] font-semibold">₹{subtotal}</span>
+                  <span>{t('Subtotal')}</span>
+                  <span className="text-[#1B3B2B] font-semibold">₹{subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                 </div>
                 <div className="flex justify-between text-[#7C7467]">
-                  <span>Estimated Shipping</span>
-                  <span>{shipping === 0 ? <span className="text-emerald-700 font-bold uppercase text-[10px]">Free</span> : `₹${shipping}`}</span>
+                  <span>{t('Shipping')}</span>
+                  <span className="text-emerald-700 font-bold uppercase text-[10px]">{t('Included')}</span>
                 </div>
 
                 <div className="border-t border-[#EAE3D2] pt-3 flex justify-between items-baseline text-sm">
-                  <span className="font-serif font-medium text-[#1B3B2B]">Grand Total</span>
-                  <span className="font-mono font-bold text-base text-[#1B3B2B]">₹{grandTotal}</span>
+                  <span className="font-serif font-medium text-[#1B3B2B]">{t('Total')}</span>
+                  <span className="font-mono font-bold text-base text-[#1B3B2B]">₹{grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                 </div>
               </div>
 
@@ -654,16 +659,17 @@ export default function KitCheckoutPage() {
                 onPlaceOrder={handlePlaceOrder}
                 isSubmitting={isSubmittingOrder}
                 isDisabled={isSubmittingOrder || !selectedAddressId}
+                label={t('Place kit order')}
               />
 
               <div className="pt-2 text-[10.5px] text-[#7C7467] space-y-2 border-t border-[#EAE3D2]/60 font-mono">
                 <div className="flex items-center gap-2">
                   <Truck className="w-3.5 h-3.5 text-[#C89B3C]" />
-                  <span>Standard Delivery (3-5 Business Days)</span>
+                  <span>{t('Delivery takes 3 to 5 business days')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <PackageCheck className="w-3.5 h-3.5 text-[#C89B3C]" />
-                  <span>Custom packaged in authentic Shri Vishwanath Box</span>
+                  <span>{t('Packed with care in Shri Vishwanath packaging')}</span>
                 </div>
               </div>
             </div>

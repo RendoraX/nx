@@ -21,6 +21,7 @@ import {
   X
 } from 'lucide-react';
 import { useCart } from '@/providers/CartProvider';
+import { useLanguage } from '@/providers/LanguageProvider';
 
 const SHIPPING_THRESHOLD = 500;
 
@@ -47,6 +48,7 @@ function LuxurySkeleton() {
 }
 
 export default function CartPage() {
+  const { t } = useLanguage();
   const { 
     cart, 
     loading, 
@@ -116,17 +118,17 @@ export default function CartPage() {
           <div className="flex items-center gap-1.5 mb-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-[#C89B3C]" />
             <span className="text-[9px] font-bold tracking-[0.22em] text-[#C89B3C] uppercase font-mono">
-              Cart Summary
+              {t('Cart Summary')}
             </span>
           </div>
 
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
             <div>
               <h1 className="text-2xl sm:text-4xl lg:text-5xl font-serif font-normal text-[#1B3B2B] tracking-tight">
-                Your Cart
+                {t('Your Cart')}
               </h1>
               <p className="text-[11px] sm:text-xs text-[#7C7467] font-serif italic mt-0.5">
-                Review your selected products before checkout.
+                {t('Review your selected products before checkout.')}
               </p>
             </div>
             
@@ -134,7 +136,7 @@ export default function CartPage() {
               <div className="flex items-center gap-2 bg-[#FCFAF7] border border-[#EAE3D2] px-3 py-1.5 rounded-full shadow-2xs">
                 <ShoppingBag className="w-3.5 h-3.5 text-[#C89B3C]" />
                 <span className="text-[10px] sm:text-[11px] font-mono tracking-widest text-[#1B3B2B] uppercase">
-                  {cart?.itemCount || 0} {cart?.itemCount === 1 ? 'Piece' : 'Pieces'}
+                  {cart?.itemCount || 0} {t(cart?.itemCount === 1 ? 'Piece' : 'Pieces')}
                 </span>
               </div>
 
@@ -142,10 +144,10 @@ export default function CartPage() {
                 <button
                   onClick={() => setShowClearModal(true)}
                   className="flex items-center gap-1.5 text-[10px] sm:text-[11px] font-mono uppercase tracking-wider text-[#7C7467] hover:text-red-700 bg-[#FCFAF7] hover:bg-red-50/60 border border-[#EAE3D2] hover:border-red-200 px-3 py-1.5 rounded-full transition-all duration-300 cursor-pointer"
-                  title="Clear all items from cart"
+                  title={t('Clear all items from cart')}
                 >
                   <RotateCcw className="w-3 h-3" />
-                  <span className="hidden xs:inline">Clear Cart</span>
+                  <span className="hidden xs:inline">{t('Clear Cart')}</span>
                 </button>
               )}
             </div>
@@ -173,9 +175,9 @@ export default function CartPage() {
               </div>
               
               <div className="space-y-1">
-                <h2 className="font-serif text-xl sm:text-2xl font-medium text-[#1B3B2B]">Your cart is empty</h2>
+                <h2 className="font-serif text-xl sm:text-2xl font-medium text-[#1B3B2B]">{t('Your cart is empty')}</h2>
                 <p className="text-[11px] sm:text-xs text-[#7C7467] font-light leading-relaxed max-w-xs mx-auto">
-                  Immerse yourself in our catalog to reserve handcrafted, limited-edition items.
+                  {t('Browse our products and add something you like.')}
                 </p>
               </div>
 
@@ -184,7 +186,7 @@ export default function CartPage() {
                   href="/products"
                   className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#1B3B2B] text-[#FCFAF7] text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.18em] rounded-lg hover:bg-[#C89B3C] hover:text-[#1B3B2B] transition-all duration-500 shadow-sm hover:shadow-md"
                 >
-                  Explore Collection <ArrowRight className="w-3.5 h-3.5" />
+                  {t('Explore Collection')} <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
             </div>
@@ -201,9 +203,9 @@ export default function CartPage() {
                   <span className="flex items-center gap-1.5 text-[#1B3B2B] font-medium">
                     <Truck className="w-3.5 h-3.5 text-[#C89B3C] flex-shrink-0" />
                     {subtotal >= SHIPPING_THRESHOLD ? (
-                      <span className="text-[#1B3B2B]">Unlocked <strong className="text-[#C89B3C]">Complimentary Shipping</strong></span>
+                      <span className="text-[#1B3B2B]">{t('Unlocked')} <strong className="text-[#C89B3C]">{t('Free shipping')}</strong></span>
                     ) : (
-                      <span>Add <strong className="text-[#C89B3C]">₹{amountToFreeShipping.toFixed(2)}</strong> for Free Delivery</span>
+                      <span>{t('Add')} <strong className="text-[#C89B3C]">₹{amountToFreeShipping.toFixed(2)}</strong> {t('for free delivery')}</span>
                     )}
                   </span>
                   <span className="text-[#7C7467] text-[10px]">{Math.round(shippingProgress)}%</span>
@@ -293,7 +295,7 @@ export default function CartPage() {
                         )}
 
                         <p className="text-[10px] sm:text-[11px] text-[#7C7467] font-mono pt-0.5">
-                          ₹{unitPrice.toLocaleString('en-IN', { minimumFractionDigits: 2 })} <span className="text-[8px] sm:text-[9px] uppercase text-[#7C7467]/60">each</span>
+                          ₹{unitPrice.toLocaleString('en-IN', { minimumFractionDigits: 2 })} <span className="text-[8px] sm:text-[9px] uppercase text-[#7C7467]/60">{t('each')}</span>
                         </p>
                       </div>
                     </div>
@@ -379,18 +381,18 @@ export default function CartPage() {
                 {/* Rows */}
                 <div className="space-y-2.5 text-xs relative z-10">
                   <div className="flex justify-between items-center text-[#FCFAF7]/80">
-                    <span className="font-serif italic text-xs">Subtotal</span>
+                        <span className="font-serif italic text-xs">{t('Subtotal')}</span>
                     <span className="font-mono text-[#FCFAF7] font-medium text-xs sm:text-sm">
                       ₹{subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                     </span>
                   </div>
                   
                   <div className="flex justify-between items-center text-[#FCFAF7]/80">
-                    <span className="font-serif italic text-xs">Courier Shipping</span>
+                    <span className="font-serif italic text-xs">{t('Delivery')}</span>
                     <span className="font-mono text-xs">
                       {shipping === 0 ? (
                         <span className="text-[#C89B3C] font-mono text-[9px] font-bold uppercase tracking-wider bg-[#C89B3C]/15 px-2 py-0.5 rounded border border-[#C89B3C]/30">
-                          Complimentary
+                          {t('Free')}
                         </span>
                       ) : (
                         <span className="text-[#FCFAF7] font-medium">₹{shipping.toFixed(2)}</span>
@@ -400,8 +402,8 @@ export default function CartPage() {
 
                   <div className="border-t border-[#FCFAF7]/15 pt-3 flex justify-between items-end">
                     <div className="space-y-0.5">
-                      <span className="font-serif text-base sm:text-lg font-normal text-[#FCFAF7] block">Grand Total</span>
-                      <span className="text-[8.5px] text-[#FCFAF7]/50 font-mono tracking-wider uppercase block">Taxes & duties included</span>
+                      <span className="font-serif text-base sm:text-lg font-normal text-[#FCFAF7] block">{t('Total')}</span>
+                      <span className="text-[8.5px] text-[#FCFAF7]/50 font-mono tracking-wider uppercase block">{t('Taxes included')}</span>
                     </div>
                     <span className="font-mono text-lg sm:text-2xl font-bold text-[#C89B3C]">
                       ₹{grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
@@ -410,12 +412,12 @@ export default function CartPage() {
                 </div>
 
                 {/* Primary Action */}
-                <div className="pt-1 relative z-10">
+                <div className="hidden sm:block pt-1 relative z-10">
                   <Link
                     href="/account/cart/checkout"
                     className="w-full h-10 sm:h-11 bg-[#C89B3C] hover:bg-[#D4A747] text-[#1B3B2B] font-semibold text-[11px] tracking-[0.18em] uppercase rounded-lg transition-all duration-300 shadow-md flex items-center justify-center gap-2 cursor-pointer group"
                   >
-                    Proceed to Checkout 
+                    {t('Proceed to Checkout')}
                     <ArrowRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-1" />
                   </Link>
                 </div>
@@ -424,11 +426,11 @@ export default function CartPage() {
                 <div className="pt-3 border-t border-[#FCFAF7]/15 space-y-2 text-[10px] sm:text-[11px] text-[#FCFAF7]/70 relative z-10">
                   <div className="flex items-center gap-2">
                     <ShieldCheck className="w-3.5 h-3.5 text-[#C89B3C] flex-shrink-0" />
-                    <span className="font-serif italic">256-Bit Encrypted & Authenticated</span>
+                    <span className="font-serif italic">{t('Secure payment')}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <PackageCheck className="w-3.5 h-3.5 text-[#C89B3C] flex-shrink-0" />
-                    <span className="font-serif italic">Insured Bespoke Packaging & Transit</span>
+                    <span className="font-serif italic">{t('Careful packing and delivery')}</span>
                   </div>
                 </div>
 
@@ -482,7 +484,7 @@ export default function CartPage() {
       {items.length > 0 && !loading && (
         <div className="fixed inset-x-3 bottom-[6.75rem] z-[65] rounded-2xl bg-[#1B3B2B]/95 px-3 py-2.5 shadow-[0_14px_35px_rgba(27,59,43,0.24)] ring-1 ring-[#C89B3C]/30 backdrop-blur-md sm:hidden flex items-center justify-between gap-3">
           <div className="flex flex-col">
-            <span className="text-[8px] font-mono uppercase tracking-widest text-[#FCFAF7]/60">Total</span>
+            <span className="text-[8px] font-mono uppercase tracking-widest text-[#FCFAF7]/60">{t('Total')}</span>
             <span className="font-mono font-bold text-base text-[#C89B3C]">
               ₹{grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
             </span>
@@ -491,7 +493,7 @@ export default function CartPage() {
             href="/account/cart/checkout"
             className="flex-1 h-9 bg-[#C89B3C] active:bg-[#D4A747] text-[#1B3B2B] font-bold text-[10px] tracking-[0.16em] uppercase rounded-lg flex items-center justify-center gap-1.5 shadow-md"
           >
-            Checkout <ArrowRight className="w-3 h-3" />
+            {t('Checkout')} <ArrowRight className="w-3 h-3" />
           </Link>
         </div>
       )}

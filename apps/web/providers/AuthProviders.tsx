@@ -21,8 +21,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { user, setUser, loading, error, isAuthenticated, refreshSession } = useAuth();
-  
-  console.log('AuthProvider user:', user); // Debugging line to check the user state
+
   // Pass a local callback to clean out provider context memory synchronously
   const { logout , logoutAll } = useLogout(() => setUser(null));
 

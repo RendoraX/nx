@@ -18,8 +18,10 @@ import {
   Crown
 } from 'lucide-react';
 import { useOrders } from '@/hooks/secure_hook/useOrder';
+import { useLanguage } from '@/providers/LanguageProvider';
 
 export default function OrderSuccessPage() {
+  const { t } = useLanguage();
   const searchParams = useSearchParams();
   const orderId = searchParams.get('orderId');
 
@@ -57,10 +59,10 @@ export default function OrderSuccessPage() {
 
           <div className="space-y-2">
             <h3 className="font-serif text-xl font-normal tracking-wide text-[#FCFAF7]">
-              Retrieving Vault Ledger
+              {t('Loading order details...')}
             </h3>
             <p className="text-[11px] font-mono tracking-widest text-[#C89B3C] uppercase">
-              Verifying Bespoke Transaction Details...
+              {t('Checking your order...')}
             </p>
           </div>
         </div>
@@ -75,15 +77,15 @@ export default function OrderSuccessPage() {
         <div className="w-14 h-14 bg-red-50 border border-red-200 rounded-full flex items-center justify-center mb-4 text-red-600 shadow-2xs">
           <AlertCircle className="w-7 h-7" />
         </div>
-        <h2 className="font-serif text-2xl text-[#1B3B2B] mb-2">Order Not Found</h2>
+        <h2 className="font-serif text-2xl text-[#1B3B2B] mb-2">{t('Order not found')}</h2>
         <p className="text-xs text-[#7C7467] max-w-sm mb-6">
-          {error || 'No valid order reference was identified in the dispatch ledger.'}
+          {error || t('We could not find this order. Check the order link and try again.')}
         </p>
         <Link
           href="/products"
           className="px-6 py-3 bg-[#1B3B2B] text-[#FCFAF7] text-xs font-bold uppercase tracking-wider rounded-xl hover:bg-[#254f3a] transition-all shadow-md"
         >
-          Return to Collection
+          {t('Explore Collection')}
         </Link>
       </div>
     );
@@ -117,20 +119,20 @@ export default function OrderSuccessPage() {
           </div>
 
           <span className="text-[9px] font-mono uppercase tracking-[0.25em] text-[#C89B3C] font-bold block mb-1">
-            Order Confirmed & Secured
+            {t('Order confirmed')}
           </span>
 
           <h1 className="font-serif text-2xl sm:text-4xl font-normal tracking-tight text-[#FCFAF7] mb-2">
-            Thank You for Your Selection
+            {t('Thank you for your order')}
           </h1>
 
           <p className="text-xs sm:text-sm text-[#FCFAF7]/70 font-serif italic max-w-md mx-auto mb-6">
-            Your order reference <span className="font-mono text-[#C89B3C] not-italic font-bold">{order.id || orderId}</span> has been logged into our vault ledger on {formattedDate}.
+            {t('Your order number')} <span className="font-mono text-[#C89B3C] not-italic font-bold">{order.id || orderId}</span> {t('was placed on')} {formattedDate}.
           </p>
 
           <div className="inline-flex items-center gap-2 bg-[#FCFAF7]/10 border border-[#FCFAF7]/15 rounded-full px-4 py-1.5 text-[11px] font-mono text-[#FCFAF7]">
             <Clock className="w-3.5 h-3.5 text-[#C89B3C]" />
-            <span>Estimated Dispatch: 2 - 4 Business Days</span>
+            <span>{t('Estimated delivery: 2 - 4 business days')}</span>
           </div>
         </div>
 
@@ -141,12 +143,12 @@ export default function OrderSuccessPage() {
           <div className="bg-[#FCFAF7] border border-[#EAE3D2] rounded-2xl p-5 shadow-2xs space-y-3">
             <div className="flex items-center gap-2 border-b border-[#EAE3D2]/80 pb-2.5">
               <MapPin className="w-4 h-4 text-[#C89B3C]" />
-              <h3 className="font-serif text-sm font-medium text-[#1B3B2B]">Dispatch Destination</h3>
+              <h3 className="font-serif text-sm font-medium text-[#1B3B2B]">{t('Delivery address')}</h3>
             </div>
             
             <div className="text-xs space-y-1 text-[#7C7467]">
               <p className="font-serif font-semibold text-[#1B3B2B] text-sm">
-                {address.fullName || 'Valued Client'}
+                {address.fullName || t('Customer')}
               </p>
               <p>{address.line1}{address.line2 ? `, ${address.line2}` : ''}</p>
               <p>{address.city}, {address.state} - <span className="font-mono">{address.postalCode}</span></p>
@@ -163,19 +165,19 @@ export default function OrderSuccessPage() {
           <div className="bg-[#FCFAF7] border border-[#EAE3D2] rounded-2xl p-5 shadow-2xs space-y-3">
             <div className="flex items-center gap-2 border-b border-[#EAE3D2]/80 pb-2.5">
               <ShieldCheck className="w-4 h-4 text-[#C89B3C]" />
-              <h3 className="font-serif text-sm font-medium text-[#1B3B2B]">Payment Verification</h3>
+              <h3 className="font-serif text-sm font-medium text-[#1B3B2B]">{t('Payment details')}</h3>
             </div>
             
             <div className="text-xs space-y-2 text-[#7C7467]">
               <div>
-                <span className="text-[9.5px] font-mono uppercase text-[#7C7467] block">Method</span>
+                <span className="text-[9.5px] font-mono uppercase text-[#7C7467] block">{t('Payment method')}</span>
                 <p className="font-serif text-[#1B3B2B] uppercase font-medium">
-                  {paymentProvider === 'COD' ? 'Cash On Delivery' : paymentProvider}
+                  {paymentProvider === 'COD' ? t('Cash on delivery') : paymentProvider}
                 </p>
               </div>
 
               <div>
-                <span className="text-[9.5px] font-mono uppercase text-[#7C7467] block">Status</span>
+                <span className="text-[9.5px] font-mono uppercase text-[#7C7467] block">{t('Status')}</span>
                 <span className="inline-block text-[10px] font-mono font-bold text-[#1B3B2B] bg-[#C89B3C]/20 border border-[#C89B3C]/40 px-2 py-0.5 rounded mt-0.5 uppercase">
                   {paymentStatus}
                 </span>
@@ -190,14 +192,14 @@ export default function OrderSuccessPage() {
           <div className="flex items-center justify-between border-b border-[#EAE3D2]/80 pb-3">
             <div className="flex items-center gap-2">
               <Receipt className="w-4 h-4 text-[#C89B3C]" />
-              <h3 className="font-serif text-base font-medium text-[#1B3B2B]">Itemized Valuation</h3>
+              <h3 className="font-serif text-base font-medium text-[#1B3B2B]">{t('Order items')}</h3>
             </div>
             <button 
               onClick={() => window.print()} 
               className="text-[10px] font-mono uppercase tracking-wider text-[#C89B3C] hover:text-[#1B3B2B] flex items-center gap-1 transition-colors"
             >
               <Download className="w-3 h-3" />
-              <span>Print Receipt</span>
+              <span>{t('Print receipt')}</span>
             </button>
           </div>
 
@@ -231,7 +233,7 @@ export default function OrderSuccessPage() {
                       </h4>
                       <p className="text-[10.5px] font-mono text-[#7C7467]">
                         {variant.size ? `${variant.size} • ` : ''}
-                        Quantity: <span className="font-bold text-[#1B3B2B]">{quantity}</span>
+                        {t('Quantity')}: <span className="font-bold text-[#1B3B2B]">{quantity}</span>
                       </p>
                     </div>
                   </div>
@@ -247,19 +249,19 @@ export default function OrderSuccessPage() {
           {/* Totals Calculation */}
           <div className="border-t border-[#EAE3D2] pt-3 space-y-2 text-xs">
             <div className="flex justify-between text-[#7C7467]">
-              <span className="font-serif italic">Subtotal</span>
+              <span className="font-serif italic">{t('Subtotal')}</span>
               <span className="font-mono">
                 ₹{Number(order.subtotal || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
               </span>
             </div>
             <div className="flex justify-between text-[#7C7467]">
-              <span className="font-serif italic">Insured Express Shipping</span>
+              <span className="font-serif italic">{t('Shipping')}</span>
               <span className="font-mono text-[#C89B3C] uppercase text-[10px] font-bold">
-                {Number(order.shippingAmount || 0) === 0 ? 'Complimentary' : `₹${order.shippingAmount}`}
+                {Number(order.shippingAmount || 0) === 0 ? t('Free') : `₹${order.shippingAmount}`}
               </span>
             </div>
             <div className="flex justify-between text-sm font-semibold text-[#1B3B2B] pt-2 border-t border-[#EAE3D2]/60">
-              <span className="font-serif">Grand Total</span>
+              <span className="font-serif">{t('Total')}</span>
               <span className="font-mono text-base font-bold text-[#C89B3C]">
                 ₹{Number(order.totalAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
               </span>
@@ -273,14 +275,14 @@ export default function OrderSuccessPage() {
             href="/account?tab=orders"
             className="w-full sm:w-auto px-6 py-3 bg-[#FCFAF7] border border-[#EAE3D2] text-[#1B3B2B] text-xs font-bold uppercase tracking-wider rounded-xl hover:bg-white text-center transition-all shadow-2xs"
           >
-            Track Order Status
+            {t('Track order status')}
           </Link>
 
           <Link
             href="/products"
             className="w-full sm:w-auto px-6 py-3 bg-[#1B3B2B] text-[#FCFAF7] text-xs font-bold uppercase tracking-wider rounded-xl hover:bg-[#254f3a] text-center transition-all flex items-center justify-center gap-2 shadow-md"
           >
-            <span>Continue Shopping</span>
+            <span>{t('Continue shopping')}</span>
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>

@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 
 import { useCart } from '@/providers/CartProvider';
+import { useLanguage } from '@/providers/LanguageProvider';
 import { useAddressBook } from '@/hooks/useAddressBooks';
 import { useOrders } from '@/hooks/secure_hook/useOrder';
 import { usePayment } from '@/hooks/secure_hook/usePayment';
@@ -36,6 +37,7 @@ const SHIPPING_THRESHOLD = 500;
 
 export default function CheckoutPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const { cart, loading: cartLoading, error: cartError , clearCart } = useCart();
   const { addresses, isProcessing: isAddressProcessing, addAddress } = useAddressBook();
   const { createOrder, loading: isOrderLoading, error: orderHookError } = useOrders();
@@ -84,7 +86,7 @@ export default function CheckoutPage() {
 const handlePlaceOrder = async () => {
   // 1. Validation
   if (!selectedAddressId) {
-    setCheckoutError("Please select a delivery address.");
+    setCheckoutError(t('Please select a delivery address.'));
     return;
   }
 
@@ -161,7 +163,7 @@ const handlePlaceOrder = async () => {
       <div className="min-h-screen bg-[#FDFCFB] flex items-center justify-center p-4">
         <div className="space-y-4 text-center">
           <div className="w-10 h-10 border-2 border-[#C89B3C] border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-xs font-mono tracking-widest text-[#1B3B2B] uppercase">Preparing checkout...</p>
+          <p className="text-xs font-mono tracking-widest text-[#1B3B2B] uppercase">{t('Preparing checkout...')}</p>
         </div>
       </div>
     );
@@ -175,10 +177,10 @@ const handlePlaceOrder = async () => {
           <div className="w-16 h-16 bg-[#1B3B2B]/5 rounded-full flex items-center justify-center mx-auto text-[#C89B3C]">
             <ShoppingBag className="w-8 h-8" />
           </div>
-          <h2 className="font-serif text-2xl text-[#1B3B2B]">Your cart is empty</h2>
-          <p className="text-xs text-[#7C7467]">Add items to your selection before proceeding to checkout.</p>
+          <h2 className="font-serif text-2xl text-[#1B3B2B]">{t('Your cart is empty')}</h2>
+          <p className="text-xs text-[#7C7467]">{t('Browse our products and add something you like.')}</p>
           <Link href="/products" className="inline-block px-6 py-2.5 bg-[#1B3B2B] text-[#FCFAF7] text-xs font-bold uppercase tracking-wider rounded-lg">
-            Return to Collection
+            {t('Explore Collection')}
           </Link>
         </div>
       </div>
@@ -193,13 +195,13 @@ const handlePlaceOrder = async () => {
         <div className="max-w-6xl mx-auto px-3 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-2">
           <Link href="/cart" className="flex items-center gap-1.5 text-xs font-mono text-[#7C7467] hover:text-[#1B3B2B] transition-colors">
             <ArrowLeft className="w-4 h-4" />
-            <span className="hidden xs:inline uppercase tracking-wider">Back to Cart</span>
+            <span className="hidden xs:inline uppercase tracking-wider">{t('Back to Cart')}</span>
           </Link>
           
           <div className="min-w-0 flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 text-[#C89B3C]" />
             <span className="truncate font-serif text-sm sm:text-base font-medium tracking-tight text-[#1B3B2B]">
-              Encrypted Checkout
+              {t('Checkout')}
             </span>
           </div>
 
@@ -233,7 +235,7 @@ const handlePlaceOrder = async () => {
                     1
                   </div>
                   <h2 className="font-serif text-base sm:text-lg text-[#1B3B2B] font-medium">
-                    Delivery Address
+                    {t('Delivery address')}
                   </h2>
                 </div>
 
@@ -242,7 +244,7 @@ const handlePlaceOrder = async () => {
                   className="flex items-center gap-1.5 text-[11px] font-mono font-bold text-[#C89B3C] hover:text-[#1B3B2B] uppercase tracking-wider bg-white border border-[#EAE3D2] px-3 py-1.5 rounded-lg shadow-2xs transition-all duration-200 cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  <span>Add New</span>
+                  <span>{t('Add new')}</span>
                 </button>
               </div>
 
@@ -250,12 +252,12 @@ const handlePlaceOrder = async () => {
               {addresses.length === 0 ? (
                 <div className="text-center py-6 border border-dashed border-[#EAE3D2] rounded-xl p-4 bg-white">
                   <MapPin className="w-8 h-8 text-[#C89B3C] mx-auto mb-2 opacity-80" />
-                  <p className="text-xs text-[#7C7467] font-serif italic mb-3">No delivery addresses found. Add one to continue.</p>
+                  <p className="text-xs text-[#7C7467] font-serif italic mb-3">{t('No delivery addresses found. Add one to continue.')}</p>
                   <button
                     onClick={() => setIsDialogOpen(true)}
                     className="px-4 py-2 bg-[#1B3B2B] text-[#FCFAF7] text-xs font-bold uppercase tracking-wider rounded-lg cursor-pointer"
                   >
-                    Add delivery address
+                    {t('Add delivery address')}
                   </button>
                 </div>
               ) : (
@@ -281,7 +283,7 @@ const handlePlaceOrder = async () => {
                             </span>
                             {address.isDefault && (
                               <span className="text-[8px] font-mono uppercase bg-[#1B3B2B]/10 text-[#1B3B2B] px-1.5 py-0.2 rounded font-semibold">
-                                Default
+                                {t('Default')}
                               </span>
                             )}
                           </div>
@@ -299,7 +301,7 @@ const handlePlaceOrder = async () => {
                         {/* Selection Radio Circle */}
                         <div className="mt-3 pt-2 border-t border-[#EAE3D2]/40 flex items-center justify-between">
                           <span className="text-[9.5px] font-mono uppercase tracking-wider text-[#7C7467]">
-                            {isSelected ? 'Selected address' : 'Select address'}
+                            {t(isSelected ? 'Selected address' : 'Select address')}
                           </span>
                           <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${
                             isSelected ? 'bg-[#1B3B2B] border-[#1B3B2B] text-white' : 'border-[#EAE3D2]'
@@ -321,7 +323,7 @@ const handlePlaceOrder = async () => {
                   2
                 </div>
                 <h2 className="font-serif text-base sm:text-lg text-[#1B3B2B] font-medium">
-                  Payment Method
+                  {t('Payment method')}
                 </h2>
               </div>
 
@@ -341,14 +343,14 @@ const handlePlaceOrder = async () => {
                   </div>
                   <div className="space-y-0.5 flex-1">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-xs font-serif font-medium text-[#1B3B2B]">Online Payment</h3>
+                      <h3 className="text-xs font-serif font-medium text-[#1B3B2B]">{t('Online payment')}</h3>
                       <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${
                         paymentMethod === 'online' ? 'bg-[#1B3B2B] border-[#1B3B2B] text-white' : 'border-[#EAE3D2]'
                       }`}>
                         {paymentMethod === 'online' && <Check className="w-2 h-2 stroke-[3]" />}
                       </div>
                     </div>
-                    <p className="text-[10.5px] text-[#7C7467] leading-tight">UPI, Credit/Debit Cards, NetBanking, Wallets</p>
+                    <p className="text-[10.5px] text-[#7C7467] leading-tight">{t('UPI, cards, net banking, and wallets')}</p>
                   </div>
                 </div>
 
@@ -366,14 +368,14 @@ const handlePlaceOrder = async () => {
                   </div>
                   <div className="space-y-0.5 flex-1">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-xs font-serif font-medium text-[#1B3B2B]">Cash on Delivery</h3>
+                      <h3 className="text-xs font-serif font-medium text-[#1B3B2B]">{t('Cash on delivery')}</h3>
                       <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${
                         paymentMethod === 'cod' ? 'bg-[#1B3B2B] border-[#1B3B2B] text-white' : 'border-[#EAE3D2]'
                       }`}>
                         {paymentMethod === 'cod' && <Check className="w-2 h-2 stroke-[3]" />}
                       </div>
                     </div>
-                    <p className="text-[10.5px] text-[#7C7467] leading-tight">Pay upon physical hand-off at destination</p>
+                    <p className="text-[10.5px] text-[#7C7467] leading-tight">{t('Pay when your order arrives.')}</p>
                   </div>
                 </div>
 
@@ -388,11 +390,11 @@ const handlePlaceOrder = async () => {
                     3
                   </div>
                   <h2 className="font-serif text-base sm:text-lg text-[#1B3B2B] font-medium">
-                    Order Items ({items.length})
+                    {t('Order items')} ({items.length})
                   </h2>
                 </div>
                 <Link href="/cart" className="text-[10px] font-mono uppercase tracking-wider text-[#C89B3C] hover:underline">
-                  Edit Items
+                  {t('Edit items')}
                 </Link>
               </div>
 
@@ -439,10 +441,10 @@ const handlePlaceOrder = async () => {
                   <div className="flex items-center gap-1.5">
                     <Receipt className="w-3.5 h-3.5 text-[#C89B3C]" />
                     <span className="text-[8.5px] font-mono uppercase tracking-[0.2em] text-[#C89B3C] font-bold">
-                      Order Summary
+                      {t('Order summary')}
                     </span>
                   </div>
-                  <h3 className="font-serif text-lg font-normal text-[#FCFAF7]">Final Valuation</h3>
+                  <h3 className="font-serif text-lg font-normal text-[#FCFAF7]">{t('Order total')}</h3>
                 </div>
                 <PackageCheck className="w-4 h-4 text-[#C89B3C]" />
               </div>
@@ -450,7 +452,7 @@ const handlePlaceOrder = async () => {
               {/* Selected Target Summary */}
               {selectedAddress && (
                 <div className="bg-[#FCFAF7]/5 border border-[#FCFAF7]/10 p-3 rounded-xl text-xs space-y-1">
-                  <span className="text-[9px] font-mono uppercase text-[#C89B3C] tracking-wider block">Delivering to</span>
+                  <span className="text-[9px] font-mono uppercase text-[#C89B3C] tracking-wider block">{t('Delivering to')}</span>
                   <p className="font-serif text-[#FCFAF7] truncate">{selectedAddress.fullName}</p>
                   <p className="text-[10.5px] text-[#FCFAF7]/70 truncate">{selectedAddress.line1}, {selectedAddress.city}</p>
                 </div>
@@ -459,16 +461,16 @@ const handlePlaceOrder = async () => {
               {/* Price Table */}
               <div className="space-y-2.5 text-xs">
                 <div className="flex justify-between items-center text-[#FCFAF7]/80">
-                  <span className="font-serif italic">Subtotal</span>
+                  <span className="font-serif italic">{t('Subtotal')}</span>
                   <span className="font-mono">₹{subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                 </div>
 
                 <div className="flex justify-between items-center text-[#FCFAF7]/80">
-                  <span className="font-serif italic">Shipping</span>
+                  <span className="font-serif italic">{t('Shipping')}</span>
                   <span className="font-mono">
                     {shipping === 0 ? (
                       <span className="text-[#C89B3C] font-mono text-[9px] font-bold uppercase tracking-wider bg-[#C89B3C]/15 px-2 py-0.5 rounded border border-[#C89B3C]/30">
-                        Complimentary
+                        {t('Free')}
                       </span>
                     ) : (
                       `₹${shipping.toFixed(2)}`
@@ -478,8 +480,8 @@ const handlePlaceOrder = async () => {
 
                 <div className="border-t border-[#FCFAF7]/15 pt-3 flex justify-between items-end">
                   <div>
-                    <span className="font-serif text-base font-normal text-[#FCFAF7] block">Total Payable</span>
-                    <span className="text-[8.5px] text-[#FCFAF7]/50 font-mono tracking-wider uppercase block">Taxes included</span>
+                    <span className="font-serif text-base font-normal text-[#FCFAF7] block">{t('Total')}</span>
+                    <span className="text-[8.5px] text-[#FCFAF7]/50 font-mono tracking-wider uppercase block">{t('Taxes included')}</span>
                   </div>
                   <span className="font-mono text-xl font-bold text-[#C89B3C]">
                     ₹{grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
@@ -491,17 +493,18 @@ const handlePlaceOrder = async () => {
                 onPlaceOrder={handlePlaceOrder}
                 isSubmitting={isSubmittingOrder}
                 isDisabled={isAddressProcessing || !selectedAddressId}
+                label={t('Place order')}
               />
 
               {/* Trust Badges */}
               <div className="pt-2 border-t border-[#FCFAF7]/15 space-y-2 text-[10.5px] text-[#FCFAF7]/70">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-3.5 h-3.5 text-[#C89B3C]" />
-                  <span className="font-serif italic">Insured Bespoke Transit Packaging</span>
+                  <span className="font-serif italic">{t('Careful packing and delivery')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Truck className="w-3.5 h-3.5 text-[#C89B3C]" />
-                  <span className="font-serif italic">Express Priority Dispatch Guaranteed</span>
+                  <span className="font-serif italic">{t('Delivery updates after dispatch')}</span>
                 </div>
               </div>
 
