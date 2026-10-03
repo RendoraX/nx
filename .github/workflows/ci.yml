@@ -18,5 +18,5 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm exec tsx apps/api/tests/unit/orders.service.test.ts
-      - run: pnpm exec tsc -p tsconfig.json --noEmit
+      - run: pnpm --filter @repo/api exec tsx tests/unit/orders.service.test.ts
+      - run: pnpm exec tsc -p apps/web/tsconfig.json --noEmit && pnpm exec tsc -p apps/admin/tsconfig.json --noEmit && pnpm exec tsc -p apps/delivery/tsconfig.json --noEmit

@@ -1,4 +1,5 @@
 import { AuthProvider } from "@/providers/AuthProviders";
+import { AuthRouteGuard } from "@/providers/AuthRouteGuard";
 import "./globals.css";
 import { QueryProvider } from "@/providers/QueryProviders";
 import { Geist } from "next/font/google";
@@ -26,7 +27,7 @@ export default function RootLayout({
             <LanguageProvider>
               <CartProvider>
                 <Header />
-                {children}
+                <AuthRouteGuard>{children}</AuthRouteGuard>
               </CartProvider>
               <Footer />
               <Toaster/>
