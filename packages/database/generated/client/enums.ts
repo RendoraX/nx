@@ -9,6 +9,14 @@
 * 🟢 You can import this file directly.
 */
 
+export const OrderType = {
+  PRODUCT: 'PRODUCT',
+  KIT: 'KIT'
+} as const
+
+export type OrderType = (typeof OrderType)[keyof typeof OrderType]
+
+
 export const UserRole = {
   USER: 'USER',
   ADMIN: 'ADMIN',

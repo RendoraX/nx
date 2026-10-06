@@ -206,6 +206,11 @@ model Payment {
   order         Order           @relation(fields: [orderId], references: [id])
 }
 
+enum OrderType{
+  PRODUCT
+  KIT
+}
+
 model Order {
   id             String               @id @default(cuid())
   userId         String
@@ -222,6 +227,7 @@ model Order {
   items          OrderItem[]
   statusHistory  OrderStatusHistory[]
   payment        Payment?
+  type      OrderType @default(PRODUCT)
 }
 
 model DeliveryAssignment {
