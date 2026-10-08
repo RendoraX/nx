@@ -1,17 +1,51 @@
 // components/product/product-card.tsx
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Heart, Eye, ShoppingBag, AlertCircle, Star } from 'lucide-react';
 import { Product } from '../../types/product';
+import { useWishlist } from '@/hooks/useWishlist';
+import { useAuthContext } from '@/providers/AuthProviders';
+import { toast } from 'sonner';
 
 interface ProductCardProps {
   product: Product;
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
-  const [isWishlisted, setIsWishlisted] = useState(false);
+  const router = useRouter();
+  const { isAuthenticated } = useAuthContext();
+  const wishlist = useWishlist();
+  const variantId = product.variants?.[0]?.id;
+  const savedItem = wishlist.items.find((item) => item.productId === product.id);
+  const isWishlisted = !!savedItem;
+
+  const toggleWishlist = async () => {
+    if (!isAuthenticated) {
+      router.push(`/login?redirectTo=${encodeURIComponent(`/products/${product.slug}`)}`);
+      return;
+    }
+    try {
+      if (savedItem) {
+        await wishlist.removeItemAsync({
+          productId: product.id,
+          variantId: savedItem.variantId,
+        });
+        toast.success('Removed from your wishlist.');
+      } else {
+        if (!variantId) {
+          toast.error('This product has no available variant to save.');
+          return;
+        }
+        await wishlist.addItemAsync({ productId: product.id, variantId });
+        toast.success('Saved to your wishlist.');
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to update wishlist.');
+    }
+  };
 
   // Calculate strict brand configuration parameters directly from active relational properties
   const stockConfig = (() => {
@@ -60,7 +94,9 @@ export default function ProductCard({ product }: ProductCardProps) {
       {/* WISHLIST ACTION TRIGGER */}
       <button
         type="button"
-        onClick={() => setIsWishlisted(!isWishlisted)}
+        onClick={toggleWishlist}
+        disabled={wishlist.isAdding || wishlist.isRemoving}
+        aria-pressed={isWishlisted}
         className="absolute top-7 right-7 z-10 p-2.5 bg-white/90 backdrop-blur-xs rounded-full border border-[#E6D5B8]/40 shadow-xs hover:bg-white text-[#6B6B6B] hover:text-rose-600 transition-colors focus-visible:outline-2 focus-visible:outline-[#1F5E3B]"
         aria-label={isWishlisted ? `Remove ${product.name} from wishlist` : `Add ${product.name} to wishlist`}
       >

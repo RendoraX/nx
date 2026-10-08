@@ -20,7 +20,6 @@ export default function BespokeKitBuilder() {
     selectKit,
     updateItemQuantity,
     resetToDefaults,
-    createOrder
   } = useCustomerKit();
 
   const [isSubmitting, setIsSubmitting] = useState(false);

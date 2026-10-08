@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { 
   User as UserIcon, 
@@ -96,10 +97,11 @@ export default function AccountPage() {
   };
 
   const [activeTab, setActiveTab] = useState<ActiveTab>(getInitialTab);
-  const [freshOrders, setFreshOrders] = useState<Order[] | undefined>(undefined);
-  const [ordersRefreshKey, setOrdersRefreshKey] = useState(0);
-  const [ordersLoading, setOrdersLoading] = useState(false);
-  const [ordersError, setOrdersError] = useState<string | null>(null);
+  const ordersQuery = useQuery({
+    queryKey: ['orders'],
+    queryFn: listOrders,
+    enabled: activeTab === 'orders',
+  });
 
   // Password Reset Modal State
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
@@ -118,42 +120,8 @@ export default function AccountPage() {
     }
   }, [searchParams]);
 
-  useEffect(() => {
-    if (activeTab !== 'orders') {
-      return;
-    }
-
-    let isCurrent = true;
-    setOrdersLoading(true);
-    setOrdersError(null);
-
-    listOrders()
-      .then((orders) => {
-        if (isCurrent) {
-          setFreshOrders(orders as unknown as Order[]);
-        }
-      })
-      .catch((error: Error) => {
-        if (isCurrent) {
-          setOrdersError(error.message || 'Unable to load your latest orders.');
-        }
-      })
-      .finally(() => {
-        if (isCurrent) {
-          setOrdersLoading(false);
-        }
-      });
-
-    return () => {
-      isCurrent = false;
-    };
-  }, [activeTab, listOrders, ordersRefreshKey]);
-
   const handleTabChange = (tabId: ActiveTab) => {
     setActiveTab(tabId);
-    if (tabId === 'orders') {
-      setOrdersRefreshKey((currentKey) => currentKey + 1);
-    }
     const params = new URLSearchParams(window.location.search);
     params.set('tab', tabId);
     router.push(`/account?${params.toString()}`);
@@ -374,9 +342,9 @@ export default function AccountPage() {
             {/* OTHER TABS */}
             {activeTab === 'orders' && (
               <AccountOrdersTab
-                orders={freshOrders}
-                isLoading={ordersLoading}
-                error={ordersError}
+                orders={ordersQuery.data as unknown as Order[] | undefined}
+                isLoading={ordersQuery.isLoading}
+                error={ordersQuery.error?.message ?? null}
               />
             )}
             {activeTab === 'addresses' && <AccountAddressesTab />}

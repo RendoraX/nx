@@ -275,7 +275,10 @@ export const OrderScalarFieldEnum = {
   status: 'status',
   subtotal: 'subtotal',
   totalAmount: 'totalAmount',
-  type: 'type'
+  type: 'type',
+  kitName: 'kitName',
+  kitSlug: 'kitSlug',
+  kitBasePrice: 'kitBasePrice'
 } as const
 
 export type OrderScalarFieldEnum = (typeof OrderScalarFieldEnum)[keyof typeof OrderScalarFieldEnum]
@@ -361,6 +364,7 @@ export const RitualTemplateScalarFieldEnum = {
   description: 'description',
   curatedBy: 'curatedBy',
   baseBoxPrice: 'baseBoxPrice',
+  isManualPrice: 'isManualPrice',
   isActive: 'isActive',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'

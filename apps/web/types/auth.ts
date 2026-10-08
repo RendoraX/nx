@@ -48,6 +48,10 @@ export interface Address {
 export interface Order {
   id: string;
   userId: string;
+  type?: 'PRODUCT' | 'KIT';
+  kitName?: string | null;
+  kitSlug?: string | null;
+  kitBasePrice?: number | string | null;
   status: 'PENDING' | 'CONFIRMED' | 'PACKED' | 'SHIPPED' | 'OUT_FOR_DELIVERY' | 'DELIVERED' | 'CANCELLED';
   subtotal: number | string;
   shippingAmount: number | string;

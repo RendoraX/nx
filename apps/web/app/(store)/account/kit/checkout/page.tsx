@@ -24,7 +24,6 @@ import {
 } from 'lucide-react';
 
 import { useAddressBook } from '@/hooks/useAddressBooks';
-import { useOrders } from '@/hooks/secure_hook/useOrder';
 import { usePayment } from '@/hooks/secure_hook/usePayment';
 import { useCustomerKit } from '@/hooks/useCustomerKit';
 import AddressFormDialog from '@/components/account/address/AddressFormDialouge';
@@ -195,9 +194,14 @@ export default function KitCheckoutPage() {
   const { t } = useLanguage();
   const router = useRouter();
   
-  const { catalogKits, isLoading: isCatalogLoading } = useCustomerKit();
+  const {
+    catalogKits,
+    isLoading: isCatalogLoading,
+    createOrder,
+    isSubmitting: isOrderLoading,
+    error: orderHookError,
+  } = useCustomerKit();
   const { addresses, addAddress } = useAddressBook();
-  const { createOrder, loading: isOrderLoading, error: orderHookError } = useOrders();
   const { startPayment, loading: isPaymentLoading, error: paymentHookError } = usePayment();
 
   const [kitPayload, setKitPayload] = useState<CreateBespokeKitPayload | null>(null);
@@ -256,12 +260,16 @@ export default function KitCheckoutPage() {
       );
       const product = defaultTemplateItemMatch?.product;
       const selectedVariant = defaultTemplateItemMatch?.selectedVariant
-        ?? product?.variants?.find((variant) => variant.id === savedItem.variantId)
+        ?? product?.variants?.find(
+          (variant) =>
+            variant.id === (savedItem.variantId ?? defaultTemplateItemMatch?.variantId)
+        )
+        ?? product?.variants?.[0]
         ?? null;
 
       return {
         productId: savedItem.productId,
-        variantId: savedItem.variantId,
+        variantId: savedItem.variantId ?? selectedVariant?.id,
         quantity: savedItem.quantity,
         product,
         selectedVariant,
@@ -306,13 +314,22 @@ export default function KitCheckoutPage() {
       setCheckoutError(null);
 
       const createdOrder = await createOrder({
+        kitId: kitPayload.templateId,
         addressId: selectedAddressId,
         paymentMethod: paymentMethod === 'cod' ? 'COD' : 'ONLINE',
-        isKitOrder: true,
-        kitDetails: { ...kitPayload, totalPrice: grandTotal }
-      } as any);
+        items: activeKitItems.map((item) => {
+          if (!item.variantId) {
+            throw new Error(`Choose an available variant for ${item.productName || 'each kit item'}.`);
+          }
+          return {
+            productId: item.productId,
+            variantId: item.variantId,
+            quantity: item.quantity,
+          };
+        }),
+      });
 
-      const orderRef = createdOrder?.order?.id || (createdOrder as any)?.id;
+      const orderRef = createdOrder.order?.id;
 
       if (!orderRef) {
         throw new Error('Order creation succeeded, but no valid Order ID was returned.');
@@ -330,7 +347,7 @@ export default function KitCheckoutPage() {
 
       await startPayment({
         orderId: orderRef,
-        amount: grandTotal,
+        amount: Number(createdOrder.order.totalAmount),
         prefill: {
           name: selectedAddress?.fullName || '',
           contact: selectedAddress?.phone || ''

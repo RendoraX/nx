@@ -4,7 +4,19 @@ export interface WishlistVariant {
   id: string;
   size?: string;
   sku?: string;
-  price?: number;
+  price?: number | string;
+}
+
+export interface WishlistProduct {
+  id: string;
+  name: string;
+  slug: string;
+  price: string | number;
+  comparePrice?: string | number | null;
+  description?: string;
+  sku?: string;
+  images?: Array<{ url: string; position?: number }>;
+  category?: { name: string };
 }
 
 export interface WishlistItem {
@@ -24,6 +36,7 @@ export interface WishlistItem {
   inStock?: boolean;
   category?: string;
   rating?: number;
+  product?: WishlistProduct;
 }
 
 export interface WishlistResponse {
@@ -90,16 +103,14 @@ export const wishlistService = {
   addToWishlist: async ({
     productId,
     variantId,
-  }: AddWishlistVariables): Promise<WishlistItem> => {
-    const { data } = await api.post(
+  }: AddWishlistVariables): Promise<void> => {
+    await api.post(
       "/api/wishlist/ad",
       {
         productId,
         variantId,
       }
     );
-
-    return data.item ?? data;
   },
 
   // =========================
@@ -127,6 +138,17 @@ removeFromWishlist: async ({
   // =========================
 
   clearWishlist: async (): Promise<void> => {
-    await api.delete("/api/wishlist");
+    const wishlist = await wishlistService.getWishlist();
+    if (!wishlist?.items.length) return;
+
+    await Promise.all(
+      wishlist.items.map((item) =>
+        wishlistService.removeFromWishlist({
+          id: wishlist.id,
+          productId: item.productId,
+          variantId: item.variantId,
+        }),
+      ),
+    );
   },
 };

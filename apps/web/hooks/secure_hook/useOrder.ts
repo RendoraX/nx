@@ -1,8 +1,10 @@
 import { useState, useCallback } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { orderService } from "@/services/order.service";
 import { CreateOrderPayload, OrderResponse } from "@/types/checkout";
 
 export const useOrders = () => {
+  const queryClient = useQueryClient();
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -56,6 +58,7 @@ export const useOrders = () => {
     setError(null);
     try {
       const response = await orderService.cancelOrder(id);
+      await queryClient.invalidateQueries({ queryKey: ["orders"] });
       return response;
     } catch (err: any) {
       const msg = err.response?.data?.message || err.message || "Failed to cancel order.";
@@ -64,7 +67,7 @@ export const useOrders = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [queryClient]);
 
   return { createOrder, getOrder, listOrders, cancelOrder, loading, error };
 };

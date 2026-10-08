@@ -228,6 +228,9 @@ model Order {
   statusHistory  OrderStatusHistory[]
   payment        Payment?
   type      OrderType @default(PRODUCT)
+  kitName        String?
+  kitSlug        String?
+  kitBasePrice   Decimal?             @db.Decimal(10, 2)
 }
 
 model DeliveryAssignment {
@@ -328,6 +331,7 @@ model RitualTemplate {
   description  String
   curatedBy    String
   baseBoxPrice Decimal        @db.Decimal(10, 2)
+  isManualPrice Boolean       @default(false)
   isActive     Boolean        @default(true)
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt

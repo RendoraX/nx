@@ -5,6 +5,7 @@ export const createCustomKitSchema = z.object({
   slug: z.string().min(1, "Slug is required"),
   description: z.string().min(1, "Description is required"),
   baseBoxPrice: z.number().positive("Price must be greater than 0"),
+  isManualPrice: z.boolean().default(false),
   isActive: z.boolean().default(true),
   curatedBy: z.string().default("Shri Vishwanath Team"),
   defaultItems: z.array(
@@ -23,6 +24,7 @@ export const updateCustomKitSchema = z.object({
     slug : z.string().optional(),
     description : z.string().optional(),
     baseBoxPrice : z.number().min(1 , "Please provide valid price for product !!").optional(),
+    isManualPrice: z.boolean().optional(),
     isActive : z.boolean().default(true).optional(),
     curatedBy : z.string().optional().default("Shri Vishwanath Team"),
     defaultItems : z.array(z.object({

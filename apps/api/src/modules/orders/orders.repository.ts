@@ -70,7 +70,17 @@ export async function findById(id: string) {
 }
 
 export async function findByUser(userId: string) {
-  return prisma.order.findMany({ where: { userId } });
+  return prisma.order.findMany({
+    where: { userId },
+    include: {
+      items: {
+        include: {
+          variant: { include: { product: true } },
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  });
 }
 
 export async function deleteOrderCascade(id: string) {

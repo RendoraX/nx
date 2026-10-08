@@ -9,6 +9,7 @@ import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
 import { CartProvider } from "@/providers/CartProvider";
 import { LanguageProvider } from "@/providers/LanguageProvider";
+import { WishlistProvider } from "@/providers/WishlistProvider";
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
@@ -25,10 +26,12 @@ export default function RootLayout({
          <AuthProvider>
           <QueryProvider>
             <LanguageProvider>
-              <CartProvider>
-                <Header />
-                <AuthRouteGuard>{children}</AuthRouteGuard>
-              </CartProvider>
+              <WishlistProvider>
+                <CartProvider>
+                  <Header />
+                  <AuthRouteGuard>{children}</AuthRouteGuard>
+                </CartProvider>
+              </WishlistProvider>
               <Footer />
               <Toaster/>
             </LanguageProvider>

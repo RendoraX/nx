@@ -1,143 +1,154 @@
-// /Users/swapnilnade/Project/shri_vishwanath/apps/web/hooks/useWishlist.ts
-import { useState, useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  wishlistService,
-  WishlistItem,
-  WishlistResponse,
+"use client";
+
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type {
   AddWishlistVariables,
   RemoveWishlistVariables,
 } from "@/services/wishlist.service";
+import { wishlistService } from "@/services/wishlist.service";
+import { useWishlistQuery } from "@/providers/WishlistProvider";
+import { useWishlistStore } from "@/store/wishlist.store";
+
+type WishlistSnapshot = Pick<
+  ReturnType<typeof useWishlistStore.getState>,
+  "wishlistId" | "ownerId" | "items"
+>;
 
 export function useWishlist() {
   const queryClient = useQueryClient();
+  const query = useWishlistQuery();
+  const items = useWishlistStore((state) => state.items);
+  const wishlistId = useWishlistStore((state) => state.wishlistId);
+  const addItemOptimistically = useWishlistStore(
+    (state) => state.addItemOptimistically,
+  );
+  const removeItemOptimistically = useWishlistStore(
+    (state) => state.removeItemOptimistically,
+  );
+  const clearItemsOptimistically = useWishlistStore(
+    (state) => state.clearItemsOptimistically,
+  );
+  const restore = useWishlistStore((state) => state.restore);
 
-  // 1. Fetch Wishlist Data
-  const {
-    data: wishlistData,
-    isLoading,
-    isError,
-    error,
-    refetch,
-  } = useQuery<WishlistResponse | null, Error>({
-    queryKey: ["wishlist"],
-    queryFn: wishlistService.getWishlist,
-    staleTime: 1000 * 60 * 5,
-  });
-
-  // Local state mirror to eliminate UI flicker/revert
-  const [localItems, setLocalItems] = useState<WishlistItem[]>([]);
-
-  // Keep local state synced with incoming server data
-  useEffect(() => {
-    if (wishlistData?.items) {
-      setLocalItems(wishlistData.items);
-    }
-  }, [wishlistData]);
-
-  const wishlistId: string | null = wishlistData?.id ?? null;
-
-  // 2. Add Mutation
-  const addItemMutation = useMutation<WishlistItem, Error, AddWishlistVariables>({
+  const addItemMutation = useMutation<
+    void,
+    Error,
+    AddWishlistVariables,
+    WishlistSnapshot
+  >({
     mutationFn: wishlistService.addToWishlist,
     onMutate: async (newItem) => {
-      // 1. Instantly update local react state
-      const tempItem: WishlistItem = {
+      await queryClient.cancelQueries({ queryKey: ["wishlist"] });
+      const { wishlistId: currentWishlistId, ownerId, items: currentItems } =
+        useWishlistStore.getState();
+      const snapshot = {
+        wishlistId: currentWishlistId,
+        ownerId,
+        items: currentItems,
+      };
+
+      addItemOptimistically({
         id: `temp-${Date.now()}`,
-        wishlistId: wishlistId || "",
+        wishlistId: currentWishlistId ?? "",
         productId: newItem.productId,
         variantId: newItem.variantId,
-      };
-      setLocalItems((prev) => [...prev, tempItem]);
+      });
+
+      return snapshot;
     },
-    onSuccess: () => {
-      // Delay refetch slightly so database finishes writing
-      setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: ["wishlist"] });
-      }, 500);
+    onError: (_error, _variables, snapshot) => {
+      if (snapshot) restore(snapshot);
     },
-    onError: () => {
-      // Revert local state on real backend error
-      if (wishlistData?.items) setLocalItems(wishlistData.items);
-    },
+    onSettled: () =>
+      queryClient.invalidateQueries({ queryKey: ["wishlist"] }),
   });
 
-  // 3. Remove Mutation
-  const removeItemMutation = useMutation<void, Error, RemoveWishlistVariables>({
-    mutationFn: (variables) =>
-      wishlistService.removeFromWishlist({
-        id: variables.id || wishlistId || "",
-        productId: variables.productId,
-        variantId: variables.variantId,
-      }),
+  const removeItemMutation = useMutation<
+    void,
+    Error,
+    RemoveWishlistVariables,
+    WishlistSnapshot
+  >({
+    mutationFn: ({ id, productId, variantId }) => {
+      const currentWishlistId = id ?? useWishlistStore.getState().wishlistId;
+      if (!currentWishlistId) {
+        throw new Error("Wishlist is not available.");
+      }
+
+      return wishlistService.removeFromWishlist({
+        id: currentWishlistId,
+        productId,
+        variantId,
+      });
+    },
     onMutate: async ({ productId, variantId }) => {
-      // 1. Instantly remove from local react state
-      setLocalItems((prev) =>
-        prev.filter(
-          (item) => !(item.productId === productId && (!variantId || item.variantId === variantId))
-        )
-      );
+      await queryClient.cancelQueries({ queryKey: ["wishlist"] });
+      const { wishlistId: currentWishlistId, ownerId, items: currentItems } =
+        useWishlistStore.getState();
+      const snapshot = {
+        wishlistId: currentWishlistId,
+        ownerId,
+        items: currentItems,
+      };
+
+      removeItemOptimistically(productId, variantId);
+      return snapshot;
     },
-    onSuccess: () => {
-      // Delay refetch slightly so database finishes deleting
-      setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: ["wishlist"] });
-      }, 500);
+    onError: (_error, _variables, snapshot) => {
+      if (snapshot) restore(snapshot);
     },
-    onError: () => {
-      // Revert local state on real backend error
-      if (wishlistData?.items) setLocalItems(wishlistData.items);
-    },
+    onSettled: () =>
+      queryClient.invalidateQueries({ queryKey: ["wishlist"] }),
   });
 
-  // Helper function to check if item is in wishlist using localItems
+  const clearMutation = useMutation<void, Error, void, WishlistSnapshot>({
+    mutationFn: wishlistService.clearWishlist,
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ["wishlist"] });
+      const { wishlistId: currentWishlistId, ownerId, items: currentItems } =
+        useWishlistStore.getState();
+      const snapshot = {
+        wishlistId: currentWishlistId,
+        ownerId,
+        items: currentItems,
+      };
+
+      clearItemsOptimistically();
+      return snapshot;
+    },
+    onError: (_error, _variables, snapshot) => {
+      if (snapshot) restore(snapshot);
+    },
+    onSettled: () =>
+      queryClient.invalidateQueries({ queryKey: ["wishlist"] }),
+  });
+
   const isInWishlist = (productId?: string, variantId?: string) => {
     if (!productId) return false;
-    return localItems.some(
+    return useWishlistStore.getState().items.some(
       (item) =>
         item.productId === productId &&
-        (!variantId || item.variantId === variantId)
+        (!variantId || item.variantId === variantId),
     );
   };
-// Add inside useWishlist hook in /Users/swapnilnade/Project/shri_vishwanath/apps/web/hooks/useWishlist.ts
-
-  // Clear Mutation
-  const clearMutation = useMutation<void, Error, void>({
-    mutationFn: () => wishlistService.clearWishlist(),
-    onMutate: async () => {
-      setLocalItems([]);
-    },
-    onSuccess: () => {
-      setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: ["wishlist"] });
-      }, 500);
-    },
-    onError: () => {
-      if (wishlistData?.items) setLocalItems(wishlistData.items);
-    },
-  });
 
   return {
-    items: localItems,
-    totalItems: localItems.length,
+    items,
+    totalItems: items.length,
     wishlistId,
-    isLoading,
-    isError,
-    error,
-    refetch,
-
+    isLoading: query.isLoading,
+    isError: query.isError,
+    error: query.error,
+    refetch: query.refetch,
     addItem: addItemMutation.mutate,
     addItemAsync: addItemMutation.mutateAsync,
     isAdding: addItemMutation.isPending,
-
     removeItem: removeItemMutation.mutate,
     removeItemAsync: removeItemMutation.mutateAsync,
     isRemoving: removeItemMutation.isPending,
-
     clearWishlist: clearMutation.mutate,
     clearWishlistAsync: clearMutation.mutateAsync,
     isClearing: clearMutation.isPending,
-
     isInWishlist,
   };
 }

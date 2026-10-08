@@ -5,7 +5,7 @@ import { authMiddleware } from "../../middleware/auth.middleware";
 const router = Router();
 
 
-router.post("/custKits/order" , authMiddleware , createCustomKitOrderEndpoint)
+router.post("/custkits/order", authMiddleware, createCustomKitOrderEndpoint);
 
 
 export default router

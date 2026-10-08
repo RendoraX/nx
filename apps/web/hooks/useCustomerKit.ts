@@ -6,8 +6,7 @@ import {
   CustomerKitItem, 
   CustomerProductVariant,
   CreateKitOrderPayload,
-  CustomerInfo,
-  OrderResponse
+  KitOrderResponse
 } from '@/services/customerKit.service';
 
 export function useCustomerKit(kitSlug?: string) {
@@ -199,31 +198,11 @@ export function useCustomerKit(kitSlug?: string) {
   /**
    * Execute create order request with current kit state
    */
-  const createOrder = useCallback(async (details?: { customerInfo?: CustomerInfo; paymentMethod?: string }): Promise<OrderResponse> => {
-    if (!activeKit) {
-      throw new Error("No active kit selected to process order.");
-    }
-
+  const createOrder = useCallback(async (payload: CreateKitOrderPayload): Promise<KitOrderResponse> => {
     setIsSubmitting(true);
     setError(null);
 
     try {
-      const payload: CreateKitOrderPayload = {
-        kitId: activeKit.id,
-        kitSlug: activeKit.slug,
-        items: customizedItems.map(item => ({
-          productId: item.productId,
-          variantId: item.variantId,
-          quantity: item.quantity,
-          unitPrice: item.selectedVariant 
-            ? Number(item.selectedVariant.price) 
-            : Number(item.product?.price || 0)
-        })),
-        totalPrice: dynamicTotalPrice,
-        customerInfo: details?.customerInfo,
-        paymentMethod: details?.paymentMethod
-      };
-
       const order = await CustomerKitService.createOrder(payload);
       return order;
     } catch (err: any) {
@@ -233,7 +212,7 @@ export function useCustomerKit(kitSlug?: string) {
     } finally {
       setIsSubmitting(false);
     }
-  }, [activeKit, customizedItems, dynamicTotalPrice]);
+  }, []);
 
   return {
     catalogKits,

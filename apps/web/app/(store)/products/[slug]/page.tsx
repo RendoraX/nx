@@ -54,7 +54,6 @@ export default function ProductPage({ params }: ProductPageProps) {
   const [loadingRelated, setLoadingRelated] = useState(false);
   const [selectedVariant, setSelectedVariant] = useState<Variant | null>(null);
   const [addedSuccess, setAddedSuccess] = useState(false);
-  const {} = useWishlist();
 
   const variants: Variant[] = product?.variants || [];
 

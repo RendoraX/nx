@@ -148,12 +148,16 @@ export async function cancelUserOrder(userId: string, id: string) {
     throw new Error("Order not found");
   }
 
-  if (order.status === "DELIVERED") {
-    throw new Error("Delivered orders cannot be cancelled");
+  if (order.status !== "PENDING") {
+    throw new Error("Only pending orders can be cancelled.");
   }
 
-  order.items.map(async (i) => {
-    await releaseStock(i?.variant?.inventory?.id as string ,i.quantity )
-  })
+  await Promise.all(order.items.map(async (item) => {
+    const inventoryId = item.variant.inventory?.id;
+    if (!inventoryId) {
+      throw new Error(`Inventory reference missing for order item "${item.id}".`);
+    }
+    await releaseStock(inventoryId, item.quantity);
+  }));
   return cancelOrder(id);
 }

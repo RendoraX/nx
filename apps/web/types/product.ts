@@ -21,6 +21,15 @@ export interface Category {
   slug: string;
 }
 
+export interface ProductVariant {
+  id: string;
+  productId: string;
+  size: string;
+  sku: string;
+  price: string;
+  inventory?: { id: string; stock: number; reserved: number };
+}
+
 // Minimal stub definitions for relational dependencies to prevent compiler crashes
 export interface OrderItem { id: string; productId: string; quantity: number; }
 export interface CartItem { id: string; productId: string; quantity: number; }
@@ -48,6 +57,7 @@ export interface Product {
   category: Category;
   images: ProductImage[];
   inventory: Inventory | null;
+  variants?: ProductVariant[];
   orderItems?: OrderItem[];
   cartItems?: CartItem[];
   reviews?: Review[];
@@ -67,7 +77,6 @@ export interface Product {
 export interface DetailedProduct extends Product {
   images: ProductImage[];
   inventory: Inventory;
-  variants ?: any;
 }
 
 export interface PaginationMeta {

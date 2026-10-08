@@ -1,0 +1,7 @@
+ALTER TABLE "Order"
+ADD COLUMN "kitName" TEXT,
+ADD COLUMN "kitSlug" TEXT,
+ADD COLUMN "kitBasePrice" DECIMAL(10,2);
+
+ALTER TABLE "RitualTemplate"
+ADD COLUMN "isManualPrice" BOOLEAN NOT NULL DEFAULT false;

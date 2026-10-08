@@ -6,9 +6,10 @@ export async function getAllCustomKits() {
         include : {
             defaultItems : {
                 include : {
+                    variant: true,
                     product : {
                         include : {
-                            variants : true
+                            variants : { include: { inventory: true } }
                         }
                     }
                 }
@@ -24,6 +25,7 @@ export async function createCustomPoojaKit(payload: CreateKitInput) {
       slug: payload.slug,
       description: payload.description,
       baseBoxPrice: payload.baseBoxPrice,
+      isManualPrice: payload.isManualPrice,
       isActive: payload.isActive,
       curatedBy: payload.curatedBy,
       defaultItems: {

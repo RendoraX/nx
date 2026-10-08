@@ -18,39 +18,11 @@ import {
   Search,
   SlidersHorizontal,
   Compass,
-  Check
 } from "lucide-react";
 import { useWishlist } from "@/hooks/useWishlist";
 import { useCart } from "@/providers/CartProvider";
+import type { WishlistItem } from "@/services/wishlist.service";
 import { toast } from "sonner";
-
-export interface RawWishlistItem {
-  id: string;
-  wishlistId: string;
-  productId: string;
-  variantId: string;
-  createdAt: string;
-  product?: {
-    id: string;
-    name: string;
-    slug: string;
-    price: string | number;
-    comparePrice?: string | number;
-    description?: string;
-    sku?: string;
-    images?: Array<{ url: string; position?: number }> | string[];
-    category?: { name: string };
-    [key: string]: any;
-  };
-  variant?: {
-    id: string;
-    size?: string;
-    price?: string | number;
-    sku?: string;
-    [key: string]: any;
-  };
-  [key: string]: any;
-}
 
 export default function WishlistPage() {
   const {
@@ -60,13 +32,13 @@ export default function WishlistPage() {
     isError,
     error,
     refetch,
-    removeItem,
-    clearWishlist,
+    removeItemAsync,
+    clearWishlistAsync,
     isClearing,
   } = useWishlist();
 
   const { addToCart } = useCart();
-  const wishlistItems = items as unknown as RawWishlistItem[];
+  const wishlistItems = items;
 
   // Local state for search & sorting
   const [searchQuery, setSearchQuery] = useState("");
@@ -89,7 +61,7 @@ export default function WishlistPage() {
         const priceB = Number(b.variant?.price ?? b.product?.price ?? 0);
         if (sortBy === "price-asc") return priceA - priceB;
         if (sortBy === "price-desc") return priceB - priceA;
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        return new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime();
       });
   }, [wishlistItems, searchQuery, sortBy]);
 
@@ -97,24 +69,21 @@ export default function WishlistPage() {
 
 const handleRemove = async (productId: string, variantId: string) => {
   try {
-    // 1. Trigger the hook action
-    removeItem({ productId, variantId });
-
-    // 2. Force refetch directly after mutation completes
-    setTimeout(() => {
-      refetch();
-    }, 300);
-
+    await removeItemAsync({ productId, variantId });
     toast.success("Item removed from saved items.");
   } catch (err) {
     toast.error("Could not remove item from wishlist.");
   }
 };
 
-  const handleClear = () => {
+  const handleClear = async () => {
     if (confirm("Are you sure you want to clear all saved items?")) {
-      clearWishlist();
-      toast.success("Wishlist cleared.");
+      try {
+        await clearWishlistAsync();
+        toast.success("Wishlist cleared.");
+      } catch {
+        toast.error("Could not clear the wishlist.");
+      }
     }
   };
 
@@ -383,7 +352,7 @@ function WishlistGlassCard({
   onRemove,
   onQuickAdd,
 }: {
-  item: RawWishlistItem;
+  item: WishlistItem;
   addingId: string | null;
   onRemove: (productId: string, variantId: string) => void;
   onQuickAdd: (variantId: string, productId: string) => void;

@@ -21,12 +21,19 @@ interface OrderItem {
   quantity: number;
   price: number | string;
   product?: Product;
+  variant?: {
+    size?: string;
+    product?: Product;
+  };
   attributes?: ProductAttribute[];
 }
 
 interface Order {
   id: string;
   status: string;
+  type?: 'PRODUCT' | 'KIT';
+  kitName?: string | null;
+  kitBasePrice?: number | string | null;
   totalAmount: number | string;
   createdAt: string | Date;
   items?: OrderItem[];
@@ -175,14 +182,21 @@ export default function AccountOrdersTab({ orders, isLoading = false, error }: A
                         </span>
                       </div>
                       <div>
-                        <span className="text-[10px] text-[#A39785] block font-semibold uppercase tracking-[0.05em] mb-0.5">Items</span>
+                        <span className="text-[10px] text-[#A39785] block font-semibold uppercase tracking-[0.05em] mb-0.5">
+                          {order.type === 'KIT' ? 'Custom kit' : 'Products'}
+                        </span>
                         <span className="text-[#1A1A1A] font-semibold">
-                          {totalItems} {totalItems === 1 ? 'Item' : 'Items'}
+                          {order.type === 'KIT' ? order.kitName || 'Custom kit' : `${totalItems} ${totalItems === 1 ? 'item' : 'items'}`}
                         </span>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-4 ml-auto sm:ml-0">
+                      {order.type === 'KIT' && (
+                        <span className="text-[10px] font-bold uppercase tracking-[0.1em] px-3 py-1 rounded border bg-[#C89B3C]/10 border-[#C89B3C]/30 text-[#1B3B2B]">
+                          Kit order
+                        </span>
+                      )}
                       <span className="text-[10px] font-bold uppercase tracking-[0.1em] px-3 py-1 rounded border bg-white border-[#EAE3D2] text-[#1B3B2B] shadow-sm">
                         {formatStatus(order.status)}
                       </span>
@@ -214,8 +228,11 @@ export default function AccountOrdersTab({ orders, isLoading = false, error }: A
                               </div>
                               <div className="space-y-0.5">
                                 <p className="font-serif font-medium text-sm text-[#1A1A1A] group-hover/item:text-[#1B3B2B] transition-colors">
-                                  {item.product?.name || 'Product Item'}
+                                  {item.variant?.product?.name || item.product?.name || 'Product Item'}
                                 </p>
+                                {item.variant?.size && (
+                                  <p className="text-[11px] text-[#A39785]">{item.variant.size}</p>
+                                )}
                                 {item.attributes && item.attributes.map((attr, idx) => (
                                   <p key={idx} className="text-[11px] text-[#A39785]">
                                     {attr.label}: <span className="text-[#7C7467]">{attr.value}</span>

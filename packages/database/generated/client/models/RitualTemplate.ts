@@ -41,6 +41,7 @@ export type RitualTemplateMinAggregateOutputType = {
   description: string | null
   curatedBy: string | null
   baseBoxPrice: runtime.Decimal | null
+  isManualPrice: boolean | null
   isActive: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -53,6 +54,7 @@ export type RitualTemplateMaxAggregateOutputType = {
   description: string | null
   curatedBy: string | null
   baseBoxPrice: runtime.Decimal | null
+  isManualPrice: boolean | null
   isActive: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -65,6 +67,7 @@ export type RitualTemplateCountAggregateOutputType = {
   description: number
   curatedBy: number
   baseBoxPrice: number
+  isManualPrice: number
   isActive: number
   createdAt: number
   updatedAt: number
@@ -87,6 +90,7 @@ export type RitualTemplateMinAggregateInputType = {
   description?: true
   curatedBy?: true
   baseBoxPrice?: true
+  isManualPrice?: true
   isActive?: true
   createdAt?: true
   updatedAt?: true
@@ -99,6 +103,7 @@ export type RitualTemplateMaxAggregateInputType = {
   description?: true
   curatedBy?: true
   baseBoxPrice?: true
+  isManualPrice?: true
   isActive?: true
   createdAt?: true
   updatedAt?: true
@@ -111,6 +116,7 @@ export type RitualTemplateCountAggregateInputType = {
   description?: true
   curatedBy?: true
   baseBoxPrice?: true
+  isManualPrice?: true
   isActive?: true
   createdAt?: true
   updatedAt?: true
@@ -210,6 +216,7 @@ export type RitualTemplateGroupByOutputType = {
   description: string
   curatedBy: string
   baseBoxPrice: runtime.Decimal
+  isManualPrice: boolean
   isActive: boolean
   createdAt: Date
   updatedAt: Date
@@ -245,6 +252,7 @@ export type RitualTemplateWhereInput = {
   description?: Prisma.StringFilter<"RitualTemplate"> | string
   curatedBy?: Prisma.StringFilter<"RitualTemplate"> | string
   baseBoxPrice?: Prisma.DecimalFilter<"RitualTemplate"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  isManualPrice?: Prisma.BoolFilter<"RitualTemplate"> | boolean
   isActive?: Prisma.BoolFilter<"RitualTemplate"> | boolean
   createdAt?: Prisma.DateTimeFilter<"RitualTemplate"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"RitualTemplate"> | Date | string
@@ -258,6 +266,7 @@ export type RitualTemplateOrderByWithRelationInput = {
   description?: Prisma.SortOrder
   curatedBy?: Prisma.SortOrder
   baseBoxPrice?: Prisma.SortOrder
+  isManualPrice?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -274,6 +283,7 @@ export type RitualTemplateWhereUniqueInput = Prisma.AtLeast<{
   description?: Prisma.StringFilter<"RitualTemplate"> | string
   curatedBy?: Prisma.StringFilter<"RitualTemplate"> | string
   baseBoxPrice?: Prisma.DecimalFilter<"RitualTemplate"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  isManualPrice?: Prisma.BoolFilter<"RitualTemplate"> | boolean
   isActive?: Prisma.BoolFilter<"RitualTemplate"> | boolean
   createdAt?: Prisma.DateTimeFilter<"RitualTemplate"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"RitualTemplate"> | Date | string
@@ -287,6 +297,7 @@ export type RitualTemplateOrderByWithAggregationInput = {
   description?: Prisma.SortOrder
   curatedBy?: Prisma.SortOrder
   baseBoxPrice?: Prisma.SortOrder
+  isManualPrice?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -307,6 +318,7 @@ export type RitualTemplateScalarWhereWithAggregatesInput = {
   description?: Prisma.StringWithAggregatesFilter<"RitualTemplate"> | string
   curatedBy?: Prisma.StringWithAggregatesFilter<"RitualTemplate"> | string
   baseBoxPrice?: Prisma.DecimalWithAggregatesFilter<"RitualTemplate"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  isManualPrice?: Prisma.BoolWithAggregatesFilter<"RitualTemplate"> | boolean
   isActive?: Prisma.BoolWithAggregatesFilter<"RitualTemplate"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"RitualTemplate"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"RitualTemplate"> | Date | string
@@ -319,6 +331,7 @@ export type RitualTemplateCreateInput = {
   description: string
   curatedBy: string
   baseBoxPrice: runtime.Decimal | runtime.DecimalJsLike | number | string
+  isManualPrice?: boolean
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -332,6 +345,7 @@ export type RitualTemplateUncheckedCreateInput = {
   description: string
   curatedBy: string
   baseBoxPrice: runtime.Decimal | runtime.DecimalJsLike | number | string
+  isManualPrice?: boolean
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -345,6 +359,7 @@ export type RitualTemplateUpdateInput = {
   description?: Prisma.StringFieldUpdateOperationsInput | string
   curatedBy?: Prisma.StringFieldUpdateOperationsInput | string
   baseBoxPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  isManualPrice?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -358,6 +373,7 @@ export type RitualTemplateUncheckedUpdateInput = {
   description?: Prisma.StringFieldUpdateOperationsInput | string
   curatedBy?: Prisma.StringFieldUpdateOperationsInput | string
   baseBoxPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  isManualPrice?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -371,6 +387,7 @@ export type RitualTemplateCreateManyInput = {
   description: string
   curatedBy: string
   baseBoxPrice: runtime.Decimal | runtime.DecimalJsLike | number | string
+  isManualPrice?: boolean
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -383,6 +400,7 @@ export type RitualTemplateUpdateManyMutationInput = {
   description?: Prisma.StringFieldUpdateOperationsInput | string
   curatedBy?: Prisma.StringFieldUpdateOperationsInput | string
   baseBoxPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  isManualPrice?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -395,6 +413,7 @@ export type RitualTemplateUncheckedUpdateManyInput = {
   description?: Prisma.StringFieldUpdateOperationsInput | string
   curatedBy?: Prisma.StringFieldUpdateOperationsInput | string
   baseBoxPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  isManualPrice?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -407,6 +426,7 @@ export type RitualTemplateCountOrderByAggregateInput = {
   description?: Prisma.SortOrder
   curatedBy?: Prisma.SortOrder
   baseBoxPrice?: Prisma.SortOrder
+  isManualPrice?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -423,6 +443,7 @@ export type RitualTemplateMaxOrderByAggregateInput = {
   description?: Prisma.SortOrder
   curatedBy?: Prisma.SortOrder
   baseBoxPrice?: Prisma.SortOrder
+  isManualPrice?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -435,6 +456,7 @@ export type RitualTemplateMinOrderByAggregateInput = {
   description?: Prisma.SortOrder
   curatedBy?: Prisma.SortOrder
   baseBoxPrice?: Prisma.SortOrder
+  isManualPrice?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -470,6 +492,7 @@ export type RitualTemplateCreateWithoutDefaultItemsInput = {
   description: string
   curatedBy: string
   baseBoxPrice: runtime.Decimal | runtime.DecimalJsLike | number | string
+  isManualPrice?: boolean
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -482,6 +505,7 @@ export type RitualTemplateUncheckedCreateWithoutDefaultItemsInput = {
   description: string
   curatedBy: string
   baseBoxPrice: runtime.Decimal | runtime.DecimalJsLike | number | string
+  isManualPrice?: boolean
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -510,6 +534,7 @@ export type RitualTemplateUpdateWithoutDefaultItemsInput = {
   description?: Prisma.StringFieldUpdateOperationsInput | string
   curatedBy?: Prisma.StringFieldUpdateOperationsInput | string
   baseBoxPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  isManualPrice?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -522,6 +547,7 @@ export type RitualTemplateUncheckedUpdateWithoutDefaultItemsInput = {
   description?: Prisma.StringFieldUpdateOperationsInput | string
   curatedBy?: Prisma.StringFieldUpdateOperationsInput | string
   baseBoxPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  isManualPrice?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -565,6 +591,7 @@ export type RitualTemplateSelect<ExtArgs extends runtime.Types.Extensions.Intern
   description?: boolean
   curatedBy?: boolean
   baseBoxPrice?: boolean
+  isManualPrice?: boolean
   isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -579,6 +606,7 @@ export type RitualTemplateSelectCreateManyAndReturn<ExtArgs extends runtime.Type
   description?: boolean
   curatedBy?: boolean
   baseBoxPrice?: boolean
+  isManualPrice?: boolean
   isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -591,6 +619,7 @@ export type RitualTemplateSelectUpdateManyAndReturn<ExtArgs extends runtime.Type
   description?: boolean
   curatedBy?: boolean
   baseBoxPrice?: boolean
+  isManualPrice?: boolean
   isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -603,12 +632,13 @@ export type RitualTemplateSelectScalar = {
   description?: boolean
   curatedBy?: boolean
   baseBoxPrice?: boolean
+  isManualPrice?: boolean
   isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type RitualTemplateOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "slug" | "description" | "curatedBy" | "baseBoxPrice" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["ritualTemplate"]>
+export type RitualTemplateOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "slug" | "description" | "curatedBy" | "baseBoxPrice" | "isManualPrice" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["ritualTemplate"]>
 export type RitualTemplateInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   defaultItems?: boolean | Prisma.RitualTemplate$defaultItemsArgs<ExtArgs>
   _count?: boolean | Prisma.RitualTemplateCountOutputTypeDefaultArgs<ExtArgs>
@@ -628,6 +658,7 @@ export type $RitualTemplatePayload<ExtArgs extends runtime.Types.Extensions.Inte
     description: string
     curatedBy: string
     baseBoxPrice: runtime.Decimal
+    isManualPrice: boolean
     isActive: boolean
     createdAt: Date
     updatedAt: Date
@@ -1061,6 +1092,7 @@ export interface RitualTemplateFieldRefs {
   readonly description: Prisma.FieldRef<"RitualTemplate", 'String'>
   readonly curatedBy: Prisma.FieldRef<"RitualTemplate", 'String'>
   readonly baseBoxPrice: Prisma.FieldRef<"RitualTemplate", 'Decimal'>
+  readonly isManualPrice: Prisma.FieldRef<"RitualTemplate", 'Boolean'>
   readonly isActive: Prisma.FieldRef<"RitualTemplate", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"RitualTemplate", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"RitualTemplate", 'DateTime'>

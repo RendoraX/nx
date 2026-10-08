@@ -50,24 +50,26 @@ export interface CustomerInfo {
 
 export interface CreateKitOrderPayload {
   kitId: string;
-  kitSlug: string;
+  addressId: string;
+  paymentMethod: "COD" | "ONLINE";
   items: {
     productId: string;
-    variantId: string | null;
+    variantId: string;
     quantity: number;
-    unitPrice: number;
   }[];
-  totalPrice: number;
-  customerInfo?: CustomerInfo;
-  paymentMethod?: string;
 }
 
-export interface OrderResponse {
-  id: string;
-  orderNumber: string;
-  status: string;
-  totalPrice: number;
-  createdAt: string;
+export interface KitOrderResponse {
+  success: boolean;
+  order: {
+    id: string;
+    type: "KIT";
+    kitName: string;
+    subtotal: number | string;
+    totalAmount: number | string;
+    status: string;
+    createdAt: string;
+  };
 }
 
 export const CustomerKitService = {
@@ -76,7 +78,7 @@ export const CustomerKitService = {
    */
   async getActiveCatalogKits(): Promise<CustomerRitualKit[]> {
     const response = await api.get<{ kits: CustomerRitualKit[] }>("/api/custkits");
-    return response.data.kits;
+    return (response.data.kits ?? []).filter((kit) => kit.isActive);
   },
 
   /**
@@ -90,8 +92,8 @@ export const CustomerKitService = {
   /**
    * Create an order for a customized kit
    */
-  async createOrder(payload: CreateKitOrderPayload): Promise<OrderResponse> {
-    const response = await api.post<OrderResponse>("/api/custkits/order", payload);
+  async createOrder(payload: CreateKitOrderPayload): Promise<KitOrderResponse> {
+    const response = await api.post<KitOrderResponse>("/api/custkits/order", payload);
     return response.data;
   }
 };

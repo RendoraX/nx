@@ -104,11 +104,17 @@ export async function verifyPayment(userId: string, payload: VerifyPaymentDTO) {
 
   /// Hold the stock for that user
   const order = await getOrderById(userId, payment.orderId);
-  await Promise.all(
-    order.items.map((item) =>
-      reserveStock(item.variant.inventory?.id as string, item.quantity)
-    )
-  );
+  if (order.type !== "KIT") {
+    await Promise.all(
+      order.items.map((item) => {
+        const inventoryId = item.variant.inventory?.id;
+        if (!inventoryId) {
+          throw new Error(`Inventory reference missing for order item "${item.id}".`);
+        }
+        return reserveStock(inventoryId, item.quantity);
+      }),
+    );
+  }
 
   await createAuditLog(userId, "payment_verified", "Payment", payment.id, {
     orderId: payment.orderId,
@@ -125,17 +131,23 @@ export async function failPayment(userId: string, orderId: string) {
     throw new Error("Payment not found");
   }
 
+  const order = await getOrderById(userId, orderId);
+  if (order.status !== "PENDING" || payment.status !== "PENDING") {
+    throw new Error("Only pending orders can be marked as payment failed.");
+  }
   await updatePayment(payment.id, { status: "FAILED" });
   await updateStatus(orderId, "CANCELLED");
 
+  await Promise.all(order.items.map((item) => {
+    const inventoryId = item.variant.inventory?.id;
+    if (!inventoryId) {
+      throw new Error(`Inventory reference missing for order item "${item.id}".`);
+    }
+    return releaseStock(inventoryId, item.quantity);
+  }));
+
   if (payment.provider === "RAZORPAY") {
     await deleteOrderCascade(orderId);
-  } else {
-      const order = await getOrderById(userId , orderId);
-
-  order.items.map(async (i) => {
-      await releaseStock(i.variant.inventory?.id as string , i.quantity);
-  })
   }
 
   await createAuditLog(userId, "payment_failed", "Payment", payment.id, { orderId });
